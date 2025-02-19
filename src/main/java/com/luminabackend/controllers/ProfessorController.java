@@ -20,18 +20,18 @@ public class ProfessorController {
     private ProfessorService service;
 
     @GetMapping
-    public ResponseEntity<List<Professor>> getAllProfessors() {
+    public ResponseEntity<List<ProfessorDataDTO>> getAllProfessors() {
         List<Professor> professors = service.getAllProfessors();
         return professors.isEmpty() ?
                 ResponseEntity.noContent().build()
-                : ResponseEntity.ok(professors);
+                : ResponseEntity.ok(professors.stream().map(ProfessorDataDTO::new).toList());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ProfessorDataDTO> getProfessor(@PathVariable UUID id) {
-        Optional<Professor> studentById = service.getProfessorById(id);
-        return studentById.map(student ->
-                        ResponseEntity.ok(new ProfessorDataDTO(student)))
+        Optional<Professor> professorById = service.getProfessorById(id);
+        return professorById.map(professor ->
+                        ResponseEntity.ok(new ProfessorDataDTO(professor)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 

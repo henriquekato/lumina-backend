@@ -20,11 +20,11 @@ public class StudentController {
     private StudentService service;
 
     @GetMapping
-    public ResponseEntity<List<Student>> getAllStudents() {
+    public ResponseEntity<List<StudentDataDTO>> getAllStudents() {
         List<Student> students = service.getAllStudents();
         return students.isEmpty() ?
                 ResponseEntity.noContent().build()
-                : ResponseEntity.ok(students);
+                : ResponseEntity.ok(students.stream().map(StudentDataDTO::new).toList());
     }
 
     @GetMapping("/{id}")
