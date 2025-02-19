@@ -1,4 +1,4 @@
-package com.luminabackend.utils;
+package com.luminabackend.utils.security;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 

@@ -1,10 +1,10 @@
-package com.luminabackend.dtos.student;
+package com.luminabackend.models.user.professor;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.Length;
 
-public record NewStudentDTO(
+public record ProfessorPostDTO(
         @NotBlank(message = "Name can not be null")
         String name,
 

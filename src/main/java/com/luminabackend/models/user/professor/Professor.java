@@ -1,7 +1,6 @@
-package com.luminabackend.models.student;
+package com.luminabackend.models.user.professor;
 
-import com.luminabackend.dtos.student.NewStudentDTO;
-import com.luminabackend.utils.Utils;
+import com.luminabackend.utils.security.Utils;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
@@ -10,10 +9,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.UUID;
 
-@Document(collection = "students")
+@Document(collection = "professors")
 @Getter
 @Setter
-public class Student {
+public class Professor {
     @Id
     private UUID id;
     private String name;
@@ -21,14 +20,14 @@ public class Student {
     private String email;
     private String password;
 
-    public Student(){
+    public Professor() {
         this.id = UUID.randomUUID();
     }
 
-    public Student(NewStudentDTO newStudentDTO){
+    public Professor(ProfessorPostDTO professorPostDTO) {
         this.id = UUID.randomUUID();
-        this.name = newStudentDTO.name();
-        this.email = newStudentDTO.email();
-        this.password = Utils.hashPassword(newStudentDTO.password());
+        this.name = professorPostDTO.name();
+        this.email = professorPostDTO.email();
+        this.password = Utils.hashPassword(professorPostDTO.password());
     }
 }

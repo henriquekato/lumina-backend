@@ -1,8 +1,8 @@
 package com.luminabackend.controllers;
 
-import com.luminabackend.dtos.professor.NewProfessorDTO;
-import com.luminabackend.dtos.professor.ProfessorDataDTO;
-import com.luminabackend.models.professor.Professor;
+import com.luminabackend.models.user.professor.ProfessorPostDTO;
+import com.luminabackend.models.user.professor.ProfessorGetDTO;
+import com.luminabackend.models.user.professor.Professor;
 import com.luminabackend.services.ProfessorService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,29 +20,29 @@ public class ProfessorController {
     private ProfessorService service;
 
     @GetMapping
-    public ResponseEntity<List<ProfessorDataDTO>> getAllProfessors() {
+    public ResponseEntity<List<ProfessorGetDTO>> getAllProfessors() {
         List<Professor> professors = service.getAllProfessors();
         return professors.isEmpty() ?
                 ResponseEntity.noContent().build()
-                : ResponseEntity.ok(professors.stream().map(ProfessorDataDTO::new).toList());
+                : ResponseEntity.ok(professors.stream().map(ProfessorGetDTO::new).toList());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProfessorDataDTO> getProfessor(@PathVariable UUID id) {
+    public ResponseEntity<ProfessorGetDTO> getProfessor(@PathVariable UUID id) {
         Optional<Professor> professorById = service.getProfessorById(id);
         return professorById.map(professor ->
-                        ResponseEntity.ok(new ProfessorDataDTO(professor)))
+                        ResponseEntity.ok(new ProfessorGetDTO(professor)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public ResponseEntity<?> saveProfessor(@Valid @RequestBody NewProfessorDTO newProfessorDTO) {
-        Optional<Professor> professorByEmail = service.getProfessorByEmail(newProfessorDTO.email());
+    public ResponseEntity<?> saveProfessor(@Valid @RequestBody ProfessorPostDTO professorPostDTO) {
+        Optional<Professor> professorByEmail = service.getProfessorByEmail(professorPostDTO.email());
 
         if (professorByEmail.isPresent()) return ResponseEntity.badRequest().body("This email address is already registered");
 
-        Professor newProfessor = service.save(newProfessorDTO);
-        return ResponseEntity.ok(new ProfessorDataDTO(newProfessor));
+        Professor newProfessor = service.save(professorPostDTO);
+        return ResponseEntity.ok(new ProfessorGetDTO(newProfessor));
     }
 
     @DeleteMapping("/{id}")

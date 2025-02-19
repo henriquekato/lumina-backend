@@ -1,7 +1,7 @@
 package com.luminabackend.services;
 
-import com.luminabackend.dtos.student.NewStudentDTO;
-import com.luminabackend.models.student.Student;
+import com.luminabackend.models.user.student.StudentPostDTO;
+import com.luminabackend.models.user.student.Student;
 import com.luminabackend.repositories.student.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,8 +15,8 @@ public class StudentService {
     @Autowired
     private StudentRepository repository;
 
-    public Student save(NewStudentDTO newStudentDTO) {
-        Student student = new Student(newStudentDTO);
+    public Student save(StudentPostDTO studentPostDTO) {
+        Student student = new Student(studentPostDTO);
         return repository.save(student);
     }
 

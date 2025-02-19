@@ -1,6 +1,6 @@
 package com.luminabackend.repositories.student;
 
-import com.luminabackend.models.student.Student;
+import com.luminabackend.models.user.student.Student;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 

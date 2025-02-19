@@ -1,8 +1,8 @@
 package com.luminabackend.controllers;
 
-import com.luminabackend.dtos.student.NewStudentDTO;
-import com.luminabackend.models.student.Student;
-import com.luminabackend.dtos.student.StudentDataDTO;
+import com.luminabackend.models.user.student.StudentPostDTO;
+import com.luminabackend.models.user.student.Student;
+import com.luminabackend.models.user.student.StudentGetDTO;
 import com.luminabackend.services.StudentService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,30 +20,30 @@ public class StudentController {
     private StudentService service;
 
     @GetMapping
-    public ResponseEntity<List<StudentDataDTO>> getAllStudents() {
+    public ResponseEntity<List<StudentGetDTO>> getAllStudents() {
         List<Student> students = service.getAllStudents();
         return students.isEmpty() ?
                 ResponseEntity.noContent().build()
-                : ResponseEntity.ok(students.stream().map(StudentDataDTO::new).toList());
+                : ResponseEntity.ok(students.stream().map(StudentGetDTO::new).toList());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<StudentDataDTO> getStudent(@PathVariable UUID id) {
+    public ResponseEntity<StudentGetDTO> getStudent(@PathVariable UUID id) {
         Optional<Student> studentById = service.getStudentById(id);
         return studentById.map(student ->
-                ResponseEntity.ok(new StudentDataDTO(student)))
+                ResponseEntity.ok(new StudentGetDTO(student)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
 
     @PostMapping
-    public ResponseEntity<?> saveStudent(@Valid @RequestBody NewStudentDTO newStudentDTO) {
-        Optional<Student> studentByEmail = service.getStudentByEmail(newStudentDTO.email());
+    public ResponseEntity<?> saveStudent(@Valid @RequestBody StudentPostDTO studentPostDTO) {
+        Optional<Student> studentByEmail = service.getStudentByEmail(studentPostDTO.email());
 
         if (studentByEmail.isPresent()) return ResponseEntity.badRequest().body("This email address is already registered");
 
-        Student save = service.save(newStudentDTO);
-        return ResponseEntity.ok(new StudentDataDTO(save));
+        Student save = service.save(studentPostDTO);
+        return ResponseEntity.ok(new StudentGetDTO(save));
     }
 
     @DeleteMapping("/{id}")

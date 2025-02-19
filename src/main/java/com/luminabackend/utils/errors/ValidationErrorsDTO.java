@@ -1,4 +1,4 @@
-package com.luminabackend.utils;
+package com.luminabackend.utils.errors;
 
 import org.springframework.validation.FieldError;
 
