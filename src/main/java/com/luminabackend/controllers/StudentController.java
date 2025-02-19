@@ -1,8 +1,8 @@
 package com.luminabackend.controllers;
 
-import com.luminabackend.dtos.student.StudentDTO;
+import com.luminabackend.dtos.student.NewStudentDTO;
 import com.luminabackend.models.student.Student;
-import com.luminabackend.models.student.StudentData;
+import com.luminabackend.dtos.student.StudentDataDTO;
 import com.luminabackend.services.StudentService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,20 +28,20 @@ public class StudentController {
     }
 
     @GetMapping(value = "/{id}")
-    public ResponseEntity<StudentData> getStudent(@PathVariable UUID id) {
+    public ResponseEntity<StudentDataDTO> getStudent(@PathVariable UUID id) {
         Optional<Student> studentById = service.getStudentById(id);
         return studentById.map(student ->
-                ResponseEntity.ok(new StudentData(student)))
+                ResponseEntity.ok(new StudentDataDTO(student)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
 
     @PostMapping
-    public ResponseEntity<StudentData> saveStudent(@Valid @RequestBody StudentDTO studentDTO) {
-        Optional<Student> studentByEmail = service.getStudentByEmail(studentDTO.email());
+    public ResponseEntity<StudentDataDTO> saveStudent(@Valid @RequestBody NewStudentDTO newStudentDTO) {
+        Optional<Student> studentByEmail = service.getStudentByEmail(newStudentDTO.email());
         if (studentByEmail.isEmpty()) {
-            Student save = service.save(studentDTO);
-            return ResponseEntity.ok(new StudentData(save));
+            Student save = service.save(newStudentDTO);
+            return ResponseEntity.ok(new StudentDataDTO(save));
         }
         return ResponseEntity.badRequest().build();
     }

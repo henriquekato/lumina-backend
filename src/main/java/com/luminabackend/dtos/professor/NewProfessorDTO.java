@@ -1,10 +1,10 @@
-package com.luminabackend.dtos.student;
+package com.luminabackend.dtos.professor;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.Length;
 
-public record StudentDTO(
+public record NewProfessorDTO(
         @NotBlank
         String name,
 

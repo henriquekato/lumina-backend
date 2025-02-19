@@ -1,13 +1,15 @@
-package com.luminabackend.models.student;
+package com.luminabackend.dtos.student;
+
+import com.luminabackend.models.student.Student;
 
 import java.util.UUID;
 
-public record StudentData(
+public record StudentDataDTO(
         UUID id,
         String name,
         String email
 ) {
-    public StudentData(Student student){
+    public StudentDataDTO(Student student){
         this(student.getId(), student.getName(), student.getEmail());
     }
 }
