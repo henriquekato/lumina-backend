@@ -1,5 +1,6 @@
 package com.luminabackend.services;
 
+import com.luminabackend.dtos.professor.NewProfessorDTO;
 import com.luminabackend.models.professor.Professor;
 import com.luminabackend.models.student.Student;
 import com.luminabackend.repositories.professor.ProfessorRepository;
@@ -15,7 +16,8 @@ public class ProfessorService {
     @Autowired
     private ProfessorRepository repository;
 
-    public Professor save(Professor professor){
+    public Professor save(NewProfessorDTO newProfessorDTO){
+        Professor professor = new Professor(newProfessorDTO);
         return repository.save(professor);
     }
 

@@ -36,20 +36,19 @@ public class ProfessorController {
     }
 
     @PostMapping
-    public ResponseEntity<ProfessorDataDTO> saveProfessor(@Valid @RequestBody NewProfessorDTO newProfessorDTO) {
+    public ResponseEntity<?> saveProfessor(@Valid @RequestBody NewProfessorDTO newProfessorDTO) {
         Optional<Professor> professorByEmail = service.getProfessorByEmail(newProfessorDTO.email());
-        if (professorByEmail.isEmpty()) {
-            Professor newProfessor = service.save(new Professor(newProfessorDTO));
-            return ResponseEntity.ok(new ProfessorDataDTO(newProfessor));
-        }
-        return ResponseEntity.badRequest().build();
+
+        if (professorByEmail.isPresent()) return ResponseEntity.badRequest().body("This email address is already registered");
+
+        Professor newProfessor = service.save(newProfessorDTO);
+        return ResponseEntity.ok(new ProfessorDataDTO(newProfessor));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteProfessor(@PathVariable UUID id) {
-        if (!service.existsById(id)){
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<Void> deleteProfessor(@PathVariable UUID id) {
+        if (!service.existsById(id)) return ResponseEntity.notFound().build();
+
         service.deleteById(id);
         return ResponseEntity.noContent().build();
     }

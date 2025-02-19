@@ -27,7 +27,7 @@ public class StudentController {
                 : ResponseEntity.ok(students);
     }
 
-    @GetMapping(value = "/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<StudentDataDTO> getStudent(@PathVariable UUID id) {
         Optional<Student> studentById = service.getStudentById(id);
         return studentById.map(student ->
@@ -37,17 +37,17 @@ public class StudentController {
 
 
     @PostMapping
-    public ResponseEntity<StudentDataDTO> saveStudent(@Valid @RequestBody NewStudentDTO newStudentDTO) {
+    public ResponseEntity<?> saveStudent(@Valid @RequestBody NewStudentDTO newStudentDTO) {
         Optional<Student> studentByEmail = service.getStudentByEmail(newStudentDTO.email());
-        if (studentByEmail.isEmpty()) {
-            Student save = service.save(newStudentDTO);
-            return ResponseEntity.ok(new StudentDataDTO(save));
-        }
-        return ResponseEntity.badRequest().build();
+
+        if (studentByEmail.isPresent()) return ResponseEntity.badRequest().body("This email address is already registered");
+
+        Student save = service.save(newStudentDTO);
+        return ResponseEntity.ok(new StudentDataDTO(save));
     }
 
-    @DeleteMapping(value = "/{id}")
-    public ResponseEntity<?> deleteStudent(@PathVariable UUID id) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteStudent(@PathVariable UUID id) {
         if (!service.existsById(id)){
             return ResponseEntity.notFound().build();
         }

@@ -17,8 +17,7 @@ public class StudentService {
 
     public Student save(NewStudentDTO newStudentDTO) {
         Student student = new Student(newStudentDTO);
-        repository.save(student);
-        return student;
+        return repository.save(student);
     }
 
     public void deleteById(UUID id) {
