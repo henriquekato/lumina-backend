@@ -1,4 +1,4 @@
-package com.luminabackend.repositories.professor;
+package com.luminabackend.repositories;
 
 import com.luminabackend.models.user.professor.Professor;
 import org.springframework.data.mongodb.repository.MongoRepository;
