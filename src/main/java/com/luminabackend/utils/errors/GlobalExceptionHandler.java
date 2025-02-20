@@ -1,6 +1,5 @@
 package com.luminabackend.utils.errors;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -14,17 +13,17 @@ import java.util.UUID;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<List<ValidationErrorsDTO>> handleError400(MethodArgumentNotValidException e){
+    public ResponseEntity<List<ErrorResponseDTO>> handleError400(MethodArgumentNotValidException e){
         var errors = e.getFieldErrors();
-        var errorsList = errors.stream().map(ValidationErrorsDTO::new).toList();
+        var errorsList = errors.stream().map(ErrorResponseDTO::new).toList();
         return ResponseEntity.badRequest().body(errorsList);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<Object> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex, WebRequest request) {
+    public ResponseEntity<?> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex, WebRequest request) {
         if (ex.getRequiredType() == UUID.class) {
-            return new ResponseEntity<>("Invalid UUID", HttpStatus.BAD_REQUEST);
+            return ResponseEntity.badRequest().body(new ErrorResponseDTO("UUID", "Invalid UUID"));
         }
-        return new ResponseEntity<>("Bad request", HttpStatus.BAD_REQUEST);
+        return ResponseEntity.badRequest().body("Bad request");
     }
 }
