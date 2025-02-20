@@ -3,16 +3,16 @@ package com.luminabackend.controllers;
 import com.luminabackend.models.user.User;
 import com.luminabackend.models.user.UserLoginDTO;
 import com.luminabackend.models.user.UserSignupDTO;
-import com.luminabackend.models.user.professor.Professor;
 import com.luminabackend.services.AccountService;
 import com.luminabackend.services.TokenService;
+import com.luminabackend.utils.errors.ErrorResponseDTO;
 import com.luminabackend.utils.security.TokenDTO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,13 +34,18 @@ public class AccountController {
     private AccountService accountService;
 
     @PostMapping("/login")
-    public ResponseEntity<TokenDTO> login(@RequestBody @Valid UserLoginDTO data){
+    public ResponseEntity<?> login(@RequestBody @Valid UserLoginDTO data){
         String username = data.username().trim();
         String password = data.password().trim();
-        var token = new UsernamePasswordAuthenticationToken(username, password);
-        var authentication = manager.authenticate(token);
-        TokenDTO tokenData = new TokenDTO(tokenService.generateToken((User) authentication.getPrincipal()));
-        return ResponseEntity.ok(tokenData);
+
+        try {
+            var token = new UsernamePasswordAuthenticationToken(username, password);
+            var authentication = manager.authenticate(token);
+            TokenDTO tokenData = new TokenDTO(tokenService.generateToken((User) authentication.getPrincipal()));
+            return ResponseEntity.ok(tokenData);
+        } catch (UsernameNotFoundException e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDTO("auth", "Incorrect username or password"));
+        }
     }
 
     @PostMapping("/signup")

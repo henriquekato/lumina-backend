@@ -22,7 +22,11 @@ public class AccountService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return repository.findByUsername(username);
+        UserDetails byUsername = repository.findByUsername(username);
+        if (byUsername == null){
+            throw new UsernameNotFoundException("Username not found");
+        }
+        return byUsername;
     }
 
     public User save(UserSignupDTO userSignupDTO){
