@@ -38,14 +38,10 @@ public class AccountController {
         String username = data.username().trim();
         String password = data.password().trim();
 
-        try {
-            var token = new UsernamePasswordAuthenticationToken(username, password);
-            var authentication = manager.authenticate(token);
-            TokenDTO tokenData = new TokenDTO(tokenService.generateToken((User) authentication.getPrincipal()));
-            return ResponseEntity.ok(tokenData);
-        } catch (UsernameNotFoundException e){
-            return ResponseEntity.badRequest().body(new ErrorResponseDTO("auth", "Incorrect username or password"));
-        }
+        var token = new UsernamePasswordAuthenticationToken(username, password);
+        var authentication = manager.authenticate(token);
+        TokenDTO tokenData = new TokenDTO(tokenService.generateToken((User) authentication.getPrincipal()));
+        return ResponseEntity.ok(tokenData);
     }
 
     @PostMapping("/signup")
