@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 import java.util.Optional;
@@ -36,13 +37,14 @@ public class ProfessorController {
     }
 
     @PostMapping
-    public ResponseEntity<?> saveProfessor(@Valid @RequestBody ProfessorPostDTO professorPostDTO) {
+    public ResponseEntity<?> saveProfessor(@Valid @RequestBody ProfessorPostDTO professorPostDTO, UriComponentsBuilder uriBuilder) {
         Optional<Professor> professorByEmail = service.getProfessorByEmail(professorPostDTO.email());
 
         if (professorByEmail.isPresent()) return ResponseEntity.badRequest().body("This email address is already registered");
 
         Professor newProfessor = service.save(professorPostDTO);
-        return ResponseEntity.ok(new ProfessorGetDTO(newProfessor));
+        var uri = uriBuilder.path("/user/{id}").buildAndExpand(newProfessor.getId()).toUri();
+        return ResponseEntity.created(uri).build();
     }
 
     @DeleteMapping("/{id}")
