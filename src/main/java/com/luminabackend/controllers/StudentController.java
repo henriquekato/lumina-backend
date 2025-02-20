@@ -14,7 +14,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/student")
+@RequestMapping("/student")
 public class StudentController {
     @Autowired
     private StudentService service;
