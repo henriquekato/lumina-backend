@@ -1,6 +1,6 @@
 package com.luminabackend.repositories.classroom;
 
-import com.luminabackend.models.education.Classroom;
+import com.luminabackend.models.education.classroom.Classroom;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 

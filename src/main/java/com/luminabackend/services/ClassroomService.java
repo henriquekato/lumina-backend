@@ -1,7 +1,7 @@
 package com.luminabackend.services;
 
-import com.luminabackend.models.education.Classroom;
-import com.luminabackend.models.education.ClassroomPostDTO;
+import com.luminabackend.models.education.classroom.Classroom;
+import com.luminabackend.models.education.classroom.ClassroomPostDTO;
 import com.luminabackend.repositories.classroom.ClassroomRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
