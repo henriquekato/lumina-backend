@@ -1,7 +1,7 @@
 package com.luminabackend.controllers;
 
 import com.luminabackend.models.user.student.StudentPostDTO;
-import com.luminabackend.models.user.student.Student;
+import com.luminabackend.models.user.Student;
 import com.luminabackend.models.user.student.StudentGetDTO;
 import com.luminabackend.services.StudentService;
 import jakarta.validation.Valid;

@@ -2,7 +2,7 @@ package com.luminabackend.controllers;
 
 import com.luminabackend.models.user.professor.ProfessorPostDTO;
 import com.luminabackend.models.user.professor.ProfessorGetDTO;
-import com.luminabackend.models.user.professor.Professor;
+import com.luminabackend.models.user.Professor;
 import com.luminabackend.services.ProfessorService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

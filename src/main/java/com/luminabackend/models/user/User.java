@@ -12,12 +12,11 @@ import java.util.List;
 import java.util.UUID;
 
 @Document(collection = "users")
-@AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
 @EqualsAndHashCode(of = "id")
-public class User implements UserDetails {
+public sealed class User implements UserDetails permits Student, Professor  {
     @Id
     private UUID id;
     private String username;
