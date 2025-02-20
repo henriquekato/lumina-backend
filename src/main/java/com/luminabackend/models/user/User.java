@@ -1,9 +1,6 @@
 package com.luminabackend.models.user;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
@@ -18,12 +15,28 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@Setter
 @EqualsAndHashCode(of = "id")
 public class User implements UserDetails {
     @Id
     private UUID id;
     private String username;
+    private String email;
     private String password;
+
+    public User(String username, String email, String password) {
+        this.id = UUID.randomUUID();
+        this.username = username;
+        this.email = email;
+        this.password = password;
+    }
+
+    public User(UserSignupDTO userSignupDTO) {
+        this.id = UUID.randomUUID();
+        this.username = userSignupDTO.username();
+        this.email = userSignupDTO.email();
+        this.password = userSignupDTO.password();
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
