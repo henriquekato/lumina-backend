@@ -1,4 +1,4 @@
-package com.luminabackend.models.education;
+package com.luminabackend.models.education.classroom;
 
 
 import lombok.Getter;
