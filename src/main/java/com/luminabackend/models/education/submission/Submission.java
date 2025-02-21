@@ -1,0 +1,31 @@
+package com.luminabackend.models.education.submission;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Document(collection = "submissions")
+@Getter @Setter @NoArgsConstructor
+public class Submission {
+    @Id
+    private UUID id;
+    private UUID taskId;
+    private UUID studentId;
+    private String content;
+    private LocalDateTime submittedAt;
+    private Double grade;
+
+
+    public Submission(SubmissionPostDTO submissionPostDTO) {
+        this.id = UUID.randomUUID();
+        this.taskId = submissionPostDTO.taskId();
+        this.studentId = submissionPostDTO.studentId();
+        this.content = submissionPostDTO.content();
+        this.submittedAt = submissionPostDTO.submittedAt();
+    }
+}
