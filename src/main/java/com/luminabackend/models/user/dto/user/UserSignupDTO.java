@@ -1,12 +1,12 @@
-package com.luminabackend.models.user.professor;
+package com.luminabackend.models.user.dto.user;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.Length;
 
-public record ProfessorPostDTO(
-        @NotBlank(message = "Name can not be null")
-        String name,
+public record UserSignupDTO(
+        @NotBlank(message = "Username can not be null")
+        String username,
 
         @Email(message = "Invalid email")
         @NotBlank(message = "Email can not be null")

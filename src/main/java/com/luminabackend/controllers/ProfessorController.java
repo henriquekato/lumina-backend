@@ -1,13 +1,16 @@
 package com.luminabackend.controllers;
 
-import com.luminabackend.models.user.professor.ProfessorPostDTO;
-import com.luminabackend.models.user.professor.ProfessorGetDTO;
-import com.luminabackend.models.user.professor.Professor;
+import com.luminabackend.models.user.User;
+import com.luminabackend.models.user.dto.professor.ProfessorPostDTO;
+import com.luminabackend.models.user.dto.professor.ProfessorGetDTO;
+import com.luminabackend.models.user.Professor;
+import com.luminabackend.services.AccountService;
 import com.luminabackend.services.ProfessorService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,6 +21,9 @@ import java.util.UUID;
 public class ProfessorController {
     @Autowired
     private ProfessorService service;
+
+    @Autowired
+    private AccountService accountService;
 
     @GetMapping
     public ResponseEntity<List<ProfessorGetDTO>> getAllProfessors() {
@@ -36,13 +42,14 @@ public class ProfessorController {
     }
 
     @PostMapping
-    public ResponseEntity<?> saveProfessor(@Valid @RequestBody ProfessorPostDTO professorPostDTO) {
-        Optional<Professor> professorByEmail = service.getProfessorByEmail(professorPostDTO.email());
+    public ResponseEntity<?> saveProfessor(@Valid @RequestBody ProfessorPostDTO professorPostDTO, UriComponentsBuilder uriBuilder) {
+        Optional<User> professorByEmail = accountService.getUserByEmail(professorPostDTO.email());
 
         if (professorByEmail.isPresent()) return ResponseEntity.badRequest().body("This email address is already registered");
 
         Professor newProfessor = service.save(professorPostDTO);
-        return ResponseEntity.ok(new ProfessorGetDTO(newProfessor));
+        var uri = uriBuilder.path("/user/{id}").buildAndExpand(newProfessor.getId()).toUri();
+        return ResponseEntity.created(uri).build();
     }
 
     @DeleteMapping("/{id}")

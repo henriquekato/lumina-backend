@@ -1,13 +1,16 @@
 package com.luminabackend.controllers;
 
-import com.luminabackend.models.user.student.StudentPostDTO;
-import com.luminabackend.models.user.student.Student;
-import com.luminabackend.models.user.student.StudentGetDTO;
+import com.luminabackend.models.user.User;
+import com.luminabackend.models.user.dto.student.StudentPostDTO;
+import com.luminabackend.models.user.Student;
+import com.luminabackend.models.user.dto.student.StudentGetDTO;
+import com.luminabackend.services.AccountService;
 import com.luminabackend.services.StudentService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,6 +21,9 @@ import java.util.UUID;
 public class StudentController {
     @Autowired
     private StudentService service;
+
+    @Autowired
+    private AccountService accountService;
 
     @GetMapping
     public ResponseEntity<List<StudentGetDTO>> getAllStudents() {
@@ -35,15 +41,15 @@ public class StudentController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-
     @PostMapping
-    public ResponseEntity<?> saveStudent(@Valid @RequestBody StudentPostDTO studentPostDTO) {
-        Optional<Student> studentByEmail = service.getStudentByEmail(studentPostDTO.email());
+    public ResponseEntity<?> saveStudent(@Valid @RequestBody StudentPostDTO studentPostDTO, UriComponentsBuilder uriBuilder) {
+        Optional<User> studentByEmail = accountService.getUserByEmail(studentPostDTO.email());
 
         if (studentByEmail.isPresent()) return ResponseEntity.badRequest().body("This email address is already registered");
 
-        Student save = service.save(studentPostDTO);
-        return ResponseEntity.ok(new StudentGetDTO(save));
+        Student newStudent = service.save(studentPostDTO);
+        var uri = uriBuilder.path("/user/{id}").buildAndExpand(newStudent.getId()).toUri();
+        return ResponseEntity.created(uri).build();
     }
 
     @DeleteMapping("/{id}")
