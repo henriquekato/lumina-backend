@@ -1,6 +1,6 @@
 package com.luminabackend.services;
 
-import com.luminabackend.models.user.student.StudentPostDTO;
+import com.luminabackend.models.user.dto.student.StudentPostDTO;
 import com.luminabackend.models.user.Student;
 import com.luminabackend.repositories.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,14 +1,11 @@
 package com.luminabackend.models.user;
 
+import com.luminabackend.models.user.dto.user.UserSignupDTO;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.UUID;
 
 @Document(collection = "users")
@@ -16,7 +13,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @EqualsAndHashCode(of = "id")
-public sealed class User implements UserDetails permits Student, Professor  {
+public sealed abstract class User implements UserDetails permits Student, Professor  {
     @Id
     private UUID id;
     private String username;
@@ -35,11 +32,6 @@ public sealed class User implements UserDetails permits Student, Professor  {
         this.username = userSignupDTO.username();
         this.email = userSignupDTO.email();
         this.password = userSignupDTO.password();
-    }
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
     }
 
     @Override

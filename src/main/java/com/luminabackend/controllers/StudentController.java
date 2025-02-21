@@ -1,9 +1,9 @@
 package com.luminabackend.controllers;
 
 import com.luminabackend.models.user.User;
-import com.luminabackend.models.user.student.StudentPostDTO;
+import com.luminabackend.models.user.dto.student.StudentPostDTO;
 import com.luminabackend.models.user.Student;
-import com.luminabackend.models.user.student.StudentGetDTO;
+import com.luminabackend.models.user.dto.student.StudentGetDTO;
 import com.luminabackend.services.AccountService;
 import com.luminabackend.services.StudentService;
 import jakarta.validation.Valid;
@@ -40,7 +40,6 @@ public class StudentController {
                 ResponseEntity.ok(new StudentGetDTO(student)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
-
 
     @PostMapping
     public ResponseEntity<?> saveStudent(@Valid @RequestBody StudentPostDTO studentPostDTO, UriComponentsBuilder uriBuilder) {

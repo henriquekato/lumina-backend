@@ -1,16 +1,15 @@
 package com.luminabackend.models.user;
 
-import com.luminabackend.models.user.User;
-import com.luminabackend.models.user.professor.ProfessorPostDTO;
-import com.luminabackend.utils.security.Utils;
+import com.luminabackend.models.user.dto.professor.ProfessorPostDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import java.util.UUID;
+import java.util.Collection;
+import java.util.List;
 
 @Document(collection = "professors")
 @Getter
@@ -30,5 +29,10 @@ public final class Professor extends User {
         super(professorPostDTO.username(), professorPostDTO.email(), professorPostDTO.password());
         this.firstName = professorPostDTO.firstName();
         this.lastName = professorPostDTO.lastName();
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("ROLE_PROFESSOR"));
     }
 }

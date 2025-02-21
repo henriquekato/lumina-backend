@@ -1,8 +1,7 @@
 package com.luminabackend.controllers;
 
 import com.luminabackend.models.user.User;
-import com.luminabackend.models.user.UserLoginDTO;
-import com.luminabackend.services.AccountService;
+import com.luminabackend.models.user.dto.user.UserLoginDTO;
 import com.luminabackend.services.TokenService;
 import com.luminabackend.utils.security.TokenDTO;
 import jakarta.validation.Valid;
@@ -23,9 +22,6 @@ public class AccountController {
 
     @Autowired
     private TokenService tokenService;
-
-    @Autowired
-    private AccountService accountService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody @Valid UserLoginDTO data){

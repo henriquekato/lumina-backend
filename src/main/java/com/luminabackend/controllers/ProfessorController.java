@@ -1,8 +1,8 @@
 package com.luminabackend.controllers;
 
 import com.luminabackend.models.user.User;
-import com.luminabackend.models.user.professor.ProfessorPostDTO;
-import com.luminabackend.models.user.professor.ProfessorGetDTO;
+import com.luminabackend.models.user.dto.professor.ProfessorPostDTO;
+import com.luminabackend.models.user.dto.professor.ProfessorGetDTO;
 import com.luminabackend.models.user.Professor;
 import com.luminabackend.services.AccountService;
 import com.luminabackend.services.ProfessorService;

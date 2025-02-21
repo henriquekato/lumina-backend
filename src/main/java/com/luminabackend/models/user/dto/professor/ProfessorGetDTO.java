@@ -1,4 +1,4 @@
-package com.luminabackend.models.user.professor;
+package com.luminabackend.models.user.dto.professor;
 
 import com.luminabackend.models.user.Professor;
 

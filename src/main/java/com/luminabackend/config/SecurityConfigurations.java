@@ -29,7 +29,10 @@ public class SecurityConfigurations {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(req -> {
                     req.requestMatchers(antMatcher("/login")).permitAll();
-                    req.anyRequest().authenticated();
+                    req
+                            .requestMatchers(antMatcher("/student/**")).hasRole("STUDENT")
+                            .requestMatchers(antMatcher("/professor/**")).hasRole("PROFESSOR")
+                            .anyRequest().authenticated();
                 })
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

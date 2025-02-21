@@ -1,4 +1,4 @@
-package com.luminabackend.models.user.student;
+package com.luminabackend.models.user.dto.student;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

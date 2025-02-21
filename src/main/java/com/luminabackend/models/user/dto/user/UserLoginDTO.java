@@ -1,4 +1,4 @@
-package com.luminabackend.models.user;
+package com.luminabackend.models.user.dto.user;
 
 import jakarta.validation.constraints.NotBlank;
 
