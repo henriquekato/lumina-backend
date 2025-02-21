@@ -1,8 +1,10 @@
 package com.luminabackend.controllers;
 
+import com.luminabackend.models.user.User;
 import com.luminabackend.models.user.student.StudentPostDTO;
 import com.luminabackend.models.user.Student;
 import com.luminabackend.models.user.student.StudentGetDTO;
+import com.luminabackend.services.AccountService;
 import com.luminabackend.services.StudentService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,9 @@ import java.util.UUID;
 public class StudentController {
     @Autowired
     private StudentService service;
+
+    @Autowired
+    private AccountService accountService;
 
     @GetMapping
     public ResponseEntity<List<StudentGetDTO>> getAllStudents() {
@@ -39,7 +44,7 @@ public class StudentController {
 
     @PostMapping
     public ResponseEntity<?> saveStudent(@Valid @RequestBody StudentPostDTO studentPostDTO, UriComponentsBuilder uriBuilder) {
-        Optional<Student> studentByEmail = service.getStudentByEmail(studentPostDTO.email());
+        Optional<User> studentByEmail = accountService.getUserByEmail(studentPostDTO.email());
 
         if (studentByEmail.isPresent()) return ResponseEntity.badRequest().body("This email address is already registered");
 
