@@ -2,8 +2,6 @@ package com.luminabackend.services;
 
 import com.luminabackend.models.education.task.Task;
 import com.luminabackend.models.education.task.TaskPostDTO;
-import com.luminabackend.models.user.student.Student;
-import com.luminabackend.models.user.student.StudentPostDTO;
 import com.luminabackend.repositories.task.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,12 +24,8 @@ public class TaskService {
         repository.deleteById(id);
     }
 
-    public boolean existsById(UUID id) {
-        return repository.existsById(id);
-    }
-
-    public List<Task> getAllTasks() {
-        return repository.findAll();
+    public List<Task> getAllTasks(UUID classroomId) {
+        return repository.findAll().stream().filter(t -> t.getClassroomId().equals(classroomId)).toList();
     }
 
     public Optional<Task> getTaskById(UUID id) {
