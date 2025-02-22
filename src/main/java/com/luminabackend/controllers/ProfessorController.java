@@ -48,7 +48,7 @@ public class ProfessorController {
         if (professorByEmail.isPresent()) return ResponseEntity.badRequest().body("This email address is already registered");
 
         Professor newProfessor = service.save(professorPostDTO);
-        var uri = uriBuilder.path("/user/{id}").buildAndExpand(newProfessor.getId()).toUri();
+        var uri = uriBuilder.path("/professor/{id}").buildAndExpand(newProfessor.getId()).toUri();
         return ResponseEntity.created(uri).build();
     }
 

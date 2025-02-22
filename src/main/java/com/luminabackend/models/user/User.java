@@ -13,7 +13,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @EqualsAndHashCode(of = "id")
-public sealed abstract class User implements UserDetails permits Student, Professor  {
+public sealed abstract class User implements UserDetails permits Student, Professor, Admin  {
     @Id
     private UUID id;
     private String username;

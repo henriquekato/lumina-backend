@@ -3,7 +3,7 @@ package com.luminabackend.utils.security;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.luminabackend.repositories.UserRepository;
+import com.luminabackend.repositories.user.UserRepository;
 import com.luminabackend.services.TokenService;
 import com.luminabackend.utils.errors.ErrorResponseDTO;
 import jakarta.servlet.FilterChain;

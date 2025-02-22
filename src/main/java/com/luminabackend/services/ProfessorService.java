@@ -2,7 +2,7 @@ package com.luminabackend.services;
 
 import com.luminabackend.models.user.dto.professor.ProfessorPostDTO;
 import com.luminabackend.models.user.Professor;
-import com.luminabackend.repositories.ProfessorRepository;
+import com.luminabackend.repositories.professor.ProfessorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
