@@ -19,14 +19,14 @@ public final class Student extends User {
     private String firstName;
     private String lastName;
 
-    public Student(String username, String email, String password, String firstName, String lastName) {
-        super(username, email, password);
+    public Student(String email, String password, String firstName, String lastName) {
+        super(email, password);
         this.firstName = firstName;
         this.lastName = lastName;
     }
 
     public Student(StudentPostDTO studentPostDTO){
-        super(studentPostDTO.username(), studentPostDTO.email(), studentPostDTO.password());
+        super(studentPostDTO.email(), studentPostDTO.password());
         this.firstName = studentPostDTO.firstName();
         this.lastName = studentPostDTO.lastName();
     }

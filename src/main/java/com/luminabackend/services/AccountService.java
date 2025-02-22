@@ -3,7 +3,6 @@ package com.luminabackend.services;
 import com.luminabackend.models.user.User;
 import com.luminabackend.repositories.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -16,12 +15,12 @@ public class AccountService implements UserDetailsService {
     private UserRepository repository;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserDetails byUsername = repository.findByUsername(username);
-        if (byUsername == null){
-            throw new UsernameNotFoundException("Username not found");
+    public User loadUserByUsername(String email) throws UsernameNotFoundException {
+        Optional<User> user = repository.findByEmail(email);
+        if (user.isEmpty()){
+            throw new UsernameNotFoundException("Email not found");
         }
-        return byUsername;
+        return user.get();
     }
 
     public Optional<User> getUserByEmail(String email){

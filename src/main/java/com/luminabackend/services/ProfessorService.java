@@ -20,14 +20,13 @@ public class ProfessorService {
     private PasswordEncoder passwordEncoder;
 
     public Professor save(ProfessorPostDTO professorPostDTO){
-        String username = professorPostDTO.username().trim();
         String email = professorPostDTO.email().trim();
         String password = professorPostDTO.password().trim();
         String encodedPassword = passwordEncoder.encode(password);
-        String firstName = professorPostDTO.username().trim();
-        String lastName = professorPostDTO.username().trim();
+        String firstName = professorPostDTO.firstName().trim();
+        String lastName = professorPostDTO.lastName().trim();
 
-        Professor professor = new Professor(username, email, encodedPassword, firstName, lastName);
+        Professor professor = new Professor(email, encodedPassword, firstName, lastName);
         return repository.save(professor);
     }
 

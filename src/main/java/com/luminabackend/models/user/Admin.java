@@ -16,12 +16,12 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public final class Admin extends User {
-    public Admin(String username, String email, String password) {
-        super(username, email, password);
+    public Admin(String email, String password) {
+        super(email, password);
     }
 
     public Admin(AdminPostDTO adminPostDTO){
-        super(adminPostDTO.username(), adminPostDTO.email(), adminPostDTO.password());
+        super(adminPostDTO.email(), adminPostDTO.password());
     }
 
     @Override

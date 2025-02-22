@@ -11,9 +11,6 @@ public record ProfessorPostDTO(
         @NotBlank(message = "Last name can not be null")
         String lastName,
 
-        @NotBlank(message = "Username can not be null")
-        String username,
-
         @Email(message = "Invalid email")
         @NotBlank(message = "Email can not be null")
         String email,
