@@ -14,6 +14,7 @@ public interface UserRepository extends MongoRepository<User, UUID> {
     @Aggregation(pipeline = {
             "{ '$unionWith': { 'coll': 'students', 'pipeline': [] } }",
             "{ '$unionWith': { 'coll': 'professors', 'pipeline': [] } }",
+            "{ '$unionWith': { 'coll': 'admin', 'pipeline': [] } }",
             "{ '$match': { 'username': '?0' } }",
             "{ '$limit': 1 }"
     })
@@ -22,6 +23,7 @@ public interface UserRepository extends MongoRepository<User, UUID> {
     @Aggregation(pipeline = {
             "{ '$unionWith': { 'coll': 'students', 'pipeline': [] } }",
             "{ '$unionWith': { 'coll': 'professors', 'pipeline': [] } }",
+            "{ '$unionWith': { 'coll': 'admin', 'pipeline': [] } }",
             "{ '$match': { 'email': '?0' } }",
             "{ '$limit': 1 }"
     })

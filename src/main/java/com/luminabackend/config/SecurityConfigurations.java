@@ -30,8 +30,7 @@ public class SecurityConfigurations {
                 .authorizeHttpRequests(req -> {
                     req.requestMatchers(antMatcher("/login")).permitAll();
                     req
-                            .requestMatchers(antMatcher("/student/**")).hasRole("STUDENT")
-                            .requestMatchers(antMatcher("/professor/**")).hasRole("PROFESSOR")
+                            .requestMatchers(antMatcher("/student/**"), antMatcher("/professor/**"), antMatcher("/admin/**")).hasRole("ADMIN")
                             .anyRequest().authenticated();
                 })
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
