@@ -48,7 +48,7 @@ public class StudentController {
         if (studentByEmail.isPresent()) return ResponseEntity.badRequest().body("This email address is already registered");
 
         Student newStudent = service.save(studentPostDTO);
-        var uri = uriBuilder.path("/user/{id}").buildAndExpand(newStudent.getId()).toUri();
+        var uri = uriBuilder.path("/student/{id}").buildAndExpand(newStudent.getId()).toUri();
         return ResponseEntity.created(uri).build();
     }
 

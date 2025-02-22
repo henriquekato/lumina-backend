@@ -1,4 +1,4 @@
-package com.luminabackend.repositories;
+package com.luminabackend.repositories.user;
 
 import com.luminabackend.models.user.User;
 import org.springframework.data.mongodb.repository.Aggregation;
