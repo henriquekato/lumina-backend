@@ -13,7 +13,6 @@ public record SubmissionPostDTO(
         @NotNull(message = "Student ID can not be null")
         UUID studentId,
 
-        @NotBlank(message = "Content can not be null")
         String content,
 
         @NotNull(message = "Submission date can not be null")

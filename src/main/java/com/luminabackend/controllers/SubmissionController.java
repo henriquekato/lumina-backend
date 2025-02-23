@@ -4,13 +4,20 @@ import com.luminabackend.models.education.submission.Submission;
 import com.luminabackend.models.education.submission.SubmissionGetDTO;
 import com.luminabackend.models.education.submission.SubmissionPostDTO;
 import com.luminabackend.services.ClassroomService;
+import com.luminabackend.services.FileStorageService;
 import com.luminabackend.services.SubmissionService;
 import com.luminabackend.services.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.data.mongodb.gridfs.GridFsResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,6 +31,8 @@ public class SubmissionController {
     private ClassroomService classroomService;
     @Autowired
     private TaskService taskService;
+    @Autowired
+    private FileStorageService fileStorageService;
 
     @GetMapping("/{submissionId}")
     public ResponseEntity<SubmissionGetDTO> getTaskSubmissionById(@PathVariable UUID submissionId) {
@@ -36,7 +45,7 @@ public class SubmissionController {
 
     @GetMapping
     public ResponseEntity<List<SubmissionGetDTO>> getAllTaskSubmissions(@PathVariable UUID classroomId,
-                                                                    @PathVariable UUID taskId) {
+                                                                        @PathVariable UUID taskId) {
         if (classroomService.getClassroomById(classroomId).isEmpty() ||
                 taskService.getTaskById(taskId).isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -48,22 +57,33 @@ public class SubmissionController {
         return ResponseEntity.ok(submissions);
     }
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<SubmissionGetDTO> createSubmission(@PathVariable UUID classroomId,
                                                              @PathVariable UUID taskId,
-                                                             @RequestBody SubmissionPostDTO submissionPostDTO) {
+                                                             @RequestPart("submission") SubmissionPostDTO submissionPostDTO,
+                                                             @RequestPart("file") MultipartFile file) throws IOException {
         if (classroomService.getClassroomById(classroomId).isEmpty() ||
                 taskService.getTaskById(taskId).isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        Submission submission = submissionService.save(submissionPostDTO);
+        Submission submission = submissionService.saveSubmission(submissionPostDTO, file);
         return ResponseEntity.status(HttpStatus.CREATED).body(new SubmissionGetDTO(submission));
     }
+
+    @GetMapping("/{submissionId}/file/{fileId}")
+    public ResponseEntity<ByteArrayResource> downloadSubmissionFile(@PathVariable String fileId) throws IOException {
+        GridFsResource file = fileStorageService.getFile(fileId);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(file.getContentType()))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
+                .body(new ByteArrayResource(file.getInputStream().readAllBytes()));
+    }
+
 
     @DeleteMapping("/{submissionId}")
     public ResponseEntity<Void> deleteSubmission(@PathVariable UUID submissionId) {
         Optional<Submission> submission = submissionService.getSubmissionById(submissionId);
-
         if (submission.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
