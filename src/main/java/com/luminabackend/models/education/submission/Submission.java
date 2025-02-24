@@ -17,15 +17,17 @@ public class Submission {
     private UUID taskId;
     private UUID studentId;
     private String content;
+    private String fileId;
     private LocalDateTime submittedAt;
     private Double grade;
 
 
-    public Submission(SubmissionPostDTO submissionPostDTO) {
+    public Submission(SubmissionPostDTO submissionPostDTO, String fileId) {
         this.id = UUID.randomUUID();
         this.taskId = submissionPostDTO.taskId();
         this.studentId = submissionPostDTO.studentId();
         this.content = submissionPostDTO.content();
+        this.fileId = fileId;
         this.submittedAt = submissionPostDTO.submittedAt();
     }
 }

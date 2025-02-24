@@ -5,7 +5,9 @@ import com.luminabackend.models.education.submission.SubmissionPostDTO;
 import com.luminabackend.repositories.submission.SubmissionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -15,12 +17,21 @@ public class SubmissionService {
     @Autowired
     private SubmissionRepository repository;
 
-    public Submission save(SubmissionPostDTO submissionPostDTO) {
-        Submission submission = new Submission(submissionPostDTO);
+    @Autowired
+    private FileStorageService fileStorageService;
+
+    public Submission saveSubmission(SubmissionPostDTO submissionPostDTO, MultipartFile file) throws IOException {
+        String fileId = fileStorageService.storeFile(file);
+        Submission submission = new Submission(submissionPostDTO, fileId);
         return repository.save(submission);
     }
 
     public void deleteById(UUID id) {
+        Optional<Submission> submission = repository.findById(id);
+        submission.ifPresent(s -> {
+            if (s.getFileId() != null) fileStorageService.deleteFile(s.getFileId());
+            repository.delete(s);
+        });
         repository.deleteById(id);
     }
 

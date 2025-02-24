@@ -8,6 +8,7 @@ public record SubmissionGetDTO(
         UUID taskId,
         UUID studentId,
         String content,
+        String fileId,
         LocalDateTime submittedAt,
         Double grade
 ) {
@@ -17,6 +18,7 @@ public record SubmissionGetDTO(
                 submission.getTaskId(),
                 submission.getStudentId(),
                 submission.getContent(),
+                submission.getFileId(),
                 LocalDateTime.now(),
                 submission.getGrade());
     }
