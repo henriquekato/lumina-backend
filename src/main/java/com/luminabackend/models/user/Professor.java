@@ -19,14 +19,14 @@ public final class Professor extends User {
     private String firstName;
     private String lastName;
 
-    public Professor(String username, String email, String password, String firstName, String lastName) {
-        super(username, email, password);
+    public Professor(String email, String password, String firstName, String lastName) {
+        super(email, password);
         this.firstName = firstName;
         this.lastName = lastName;
     }
 
     public Professor(ProfessorPostDTO professorPostDTO){
-        super(professorPostDTO.username(), professorPostDTO.email(), professorPostDTO.password());
+        super(professorPostDTO.email(), professorPostDTO.password());
         this.firstName = professorPostDTO.firstName();
         this.lastName = professorPostDTO.lastName();
     }

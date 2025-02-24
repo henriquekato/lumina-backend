@@ -20,12 +20,11 @@ public class AdminService {
     private PasswordEncoder passwordEncoder;
 
     public Admin save(AdminPostDTO adminPostDTO){
-        String username = adminPostDTO.username().trim();
         String email = adminPostDTO.email().trim();
         String password = adminPostDTO.password().trim();
         String encodedPassword = passwordEncoder.encode(password);
 
-        Admin admin = new Admin(username, email, encodedPassword);
+        Admin admin = new Admin(email, encodedPassword);
         return repository.save(admin);
     }
 
