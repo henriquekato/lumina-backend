@@ -14,6 +14,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,13 +28,16 @@ import java.util.UUID;
 public class SubmissionController {
     @Autowired
     private SubmissionService submissionService;
+
     @Autowired
     private ClassroomService classroomService;
+
     @Autowired
     private TaskService taskService;
     @Autowired
     private FileStorageService fileStorageService;
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
     @GetMapping("/{submissionId}")
     public ResponseEntity<SubmissionGetDTO> getTaskSubmissionById(@PathVariable UUID submissionId) {
         Optional<Submission> submission = submissionService.getSubmissionById(submissionId);
@@ -42,7 +46,7 @@ public class SubmissionController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR')")
     @GetMapping
     public ResponseEntity<List<SubmissionGetDTO>> getAllTaskSubmissions(@PathVariable UUID classroomId,
                                                                         @PathVariable UUID taskId) {
@@ -57,6 +61,7 @@ public class SubmissionController {
         return ResponseEntity.ok(submissions);
     }
 
+    @PreAuthorize("hasRole('STUDENT')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<SubmissionGetDTO> createSubmission(@PathVariable UUID classroomId,
                                                              @PathVariable UUID taskId,
@@ -81,6 +86,7 @@ public class SubmissionController {
     }
 
 
+    @PreAuthorize("hasRole('STUDENT')")
     @DeleteMapping("/{submissionId}")
     public ResponseEntity<Void> deleteSubmission(@PathVariable UUID submissionId) {
         Optional<Submission> submission = submissionService.getSubmissionById(submissionId);

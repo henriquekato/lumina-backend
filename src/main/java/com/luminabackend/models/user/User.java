@@ -16,20 +16,17 @@ import java.util.UUID;
 public sealed abstract class User implements UserDetails permits Student, Professor, Admin  {
     @Id
     private UUID id;
-    private String username;
     private String email;
     private String password;
 
-    public User(String username, String email, String password) {
+    public User(String email, String password) {
         this.id = UUID.randomUUID();
-        this.username = username;
         this.email = email;
         this.password = password;
     }
 
     public User(UserSignupDTO userSignupDTO) {
         this.id = UUID.randomUUID();
-        this.username = userSignupDTO.username();
         this.email = userSignupDTO.email();
         this.password = userSignupDTO.password();
     }
@@ -41,7 +38,7 @@ public sealed abstract class User implements UserDetails permits Student, Profes
 
     @Override
     public String getUsername() {
-        return username;
+        return email;
     }
 
     @Override

@@ -6,12 +6,11 @@ import java.util.UUID;
 
 public record ProfessorGetDTO(
         UUID id,
-        String username,
         String firstName,
         String lastName,
         String email
 ) {
     public ProfessorGetDTO(Professor professor){
-        this(professor.getId(), professor.getUsername(), professor.getFirstName(), professor.getLastName(), professor.getEmail());
+        this(professor.getId(), professor.getFirstName(), professor.getLastName(), professor.getEmail());
     }
 }

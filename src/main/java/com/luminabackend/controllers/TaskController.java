@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,9 +22,11 @@ import java.util.UUID;
 public class TaskController {
     @Autowired
     private TaskService taskService;
+
     @Autowired
     private ClassroomService classroomService;
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
     @GetMapping
     public ResponseEntity<List<TaskGetDTO>> getAllClassroomTasks(@PathVariable UUID classroomId){
         Optional<Classroom> classroomById = classroomService.getClassroomById(classroomId);
@@ -33,6 +36,7 @@ public class TaskController {
         return ResponseEntity.notFound().build();
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
     @GetMapping("/{taskId}")
     public ResponseEntity<TaskGetDTO> getClassroomTask(@PathVariable UUID classroomId,
                                                        @PathVariable UUID taskId){
@@ -46,6 +50,7 @@ public class TaskController {
         return ResponseEntity.notFound().build();
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR')")
     @PostMapping
     public ResponseEntity<TaskGetDTO> createTask(@PathVariable UUID classroomId,
                                                  @Valid @RequestBody TaskPostDTO taskPostDTO) {
@@ -56,6 +61,7 @@ public class TaskController {
         return ResponseEntity.status(HttpStatus.CREATED).body(new TaskGetDTO(savedTask));
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR')")
     @DeleteMapping("/{taskId}")
     public ResponseEntity<Void> deleteTask(@PathVariable UUID classroomId,
                                            @PathVariable UUID taskId) {

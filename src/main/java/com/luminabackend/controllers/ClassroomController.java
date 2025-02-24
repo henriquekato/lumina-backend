@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -21,6 +22,7 @@ public class ClassroomController {
     @Autowired
     private ClassroomService classroomService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<List<ClassroomGetDTO>> getAllClassrooms() {
         List<Classroom> classrooms = classroomService.getAllClassrooms();
@@ -29,6 +31,7 @@ public class ClassroomController {
                 : ResponseEntity.ok(classrooms.stream().map(ClassroomGetDTO::new).toList());
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
     @GetMapping("/{classroomId}")
     public ResponseEntity<ClassroomGetDTO> getClassroom(@PathVariable UUID classroomId) {
         Optional<Classroom> classroomById = classroomService.getClassroomById(classroomId);
@@ -36,12 +39,14 @@ public class ClassroomController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<Classroom> saveClassroom(@Valid @RequestBody ClassroomPostDTO classroomPostDTO) {
         Classroom classroom = classroomService.save(classroomPostDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(classroom);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{classroomId}")
     public ResponseEntity<Void> deleteClassroom(@PathVariable UUID classroomId) {
         if (!classroomService.existsClassroomById(classroomId)) {
@@ -51,6 +56,7 @@ public class ClassroomController {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR')")
     @PostMapping("/{classroomId}/students/{studentId}")
     public ResponseEntity<?> addStudent(@PathVariable UUID classroomId,
                                         @PathVariable UUID studentId) {
@@ -60,6 +66,7 @@ public class ClassroomController {
         return ResponseEntity.ok(classroomService.addStudentToClassroom(classroomId, studentId));
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR')")
     @DeleteMapping("/{classroomId}/students/{studentId}")
     public ResponseEntity<?> removeStudent(@PathVariable UUID classroomId,
                                            @PathVariable UUID studentId) {

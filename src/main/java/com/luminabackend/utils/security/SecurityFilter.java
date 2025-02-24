@@ -3,6 +3,7 @@ package com.luminabackend.utils.security;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.luminabackend.models.user.User;
 import com.luminabackend.repositories.user.UserRepository;
 import com.luminabackend.services.TokenService;
 import com.luminabackend.utils.errors.ErrorResponseDTO;
@@ -18,6 +19,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Optional;
 
 @Component
 public class SecurityFilter extends OncePerRequestFilter {
@@ -35,7 +37,13 @@ public class SecurityFilter extends OncePerRequestFilter {
             if (authorizationHeader != null) {
                 String token = authorizationHeader.replace("Bearer ", "");
                 var subject = tokenService.getSubject(token);
-                var user = repository.findByUsername(subject);
+
+                Optional<User> optionalUser = repository.findByEmail(subject);
+                if (optionalUser.isEmpty()) {
+                    throw new UserNotFoundException("User not found");
+                }
+
+                User user = optionalUser.get();
                 var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
@@ -54,6 +62,14 @@ public class SecurityFilter extends OncePerRequestFilter {
             try (PrintWriter writer = response.getWriter()) {
                 ObjectMapper objectMapper = new ObjectMapper();
                 String errorJson = objectMapper.writeValueAsString(new ErrorResponseDTO("JWT", "Error generating JWT token"));
+                writer.write(errorJson);
+            }
+        } catch (UserNotFoundException e){
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            try (PrintWriter writer = response.getWriter()) {
+                ObjectMapper objectMapper = new ObjectMapper();
+                String errorJson = objectMapper.writeValueAsString(new ErrorResponseDTO("Auth", "User not found"));
                 writer.write(errorJson);
             }
         }

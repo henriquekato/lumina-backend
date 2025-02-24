@@ -25,10 +25,10 @@ public class AccountController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody @Valid UserLoginDTO data){
-        String username = data.username().trim();
+        String email = data.email().trim();
         String password = data.password().trim();
 
-        var token = new UsernamePasswordAuthenticationToken(username, password);
+        var token = new UsernamePasswordAuthenticationToken(email, password);
         var authentication = manager.authenticate(token);
         TokenDTO tokenData = new TokenDTO(tokenService.generateToken((User) authentication.getPrincipal()));
         return ResponseEntity.ok(tokenData);
