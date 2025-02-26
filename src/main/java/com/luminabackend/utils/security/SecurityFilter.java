@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.luminabackend.models.user.User;
 import com.luminabackend.repositories.user.UserRepository;
 import com.luminabackend.services.TokenService;
-import com.luminabackend.utils.errors.ErrorResponseDTO;
+import com.luminabackend.utils.errors.GeneralErrorResponseDTO;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -40,7 +41,7 @@ public class SecurityFilter extends OncePerRequestFilter {
 
                 Optional<User> optionalUser = repository.findByEmail(subject);
                 if (optionalUser.isEmpty()) {
-                    throw new UserNotFoundException("User not found");
+                    throw new UsernameNotFoundException("Incorrect username or password");
                 }
 
                 User user = optionalUser.get();
@@ -53,7 +54,7 @@ public class SecurityFilter extends OncePerRequestFilter {
             response.setContentType("application/json");
             try (PrintWriter writer = response.getWriter()) {
                 ObjectMapper objectMapper = new ObjectMapper();
-                String errorJson = objectMapper.writeValueAsString(new ErrorResponseDTO("JWT", "Invalid or expired JWT token"));
+                String errorJson = objectMapper.writeValueAsString(new GeneralErrorResponseDTO("Invalid or expired JWT token"));
                 writer.write(errorJson);
             }
         } catch (JWTCreationException e){
@@ -61,15 +62,15 @@ public class SecurityFilter extends OncePerRequestFilter {
             response.setContentType("application/json");
             try (PrintWriter writer = response.getWriter()) {
                 ObjectMapper objectMapper = new ObjectMapper();
-                String errorJson = objectMapper.writeValueAsString(new ErrorResponseDTO("JWT", "Error generating JWT token"));
+                String errorJson = objectMapper.writeValueAsString(new GeneralErrorResponseDTO("Error generating JWT token"));
                 writer.write(errorJson);
             }
-        } catch (UserNotFoundException e){
+        } catch (UsernameNotFoundException e){
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             try (PrintWriter writer = response.getWriter()) {
                 ObjectMapper objectMapper = new ObjectMapper();
-                String errorJson = objectMapper.writeValueAsString(new ErrorResponseDTO("Auth", "User not found"));
+                String errorJson = objectMapper.writeValueAsString(new GeneralErrorResponseDTO(e.getMessage()));
                 writer.write(errorJson);
             }
         }
