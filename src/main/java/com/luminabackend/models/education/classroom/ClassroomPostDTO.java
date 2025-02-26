@@ -14,5 +14,4 @@ public record ClassroomPostDTO(
         @NotNull(message = "Professor ID can not be null")
         UUID professorId
 ) {
-
 }

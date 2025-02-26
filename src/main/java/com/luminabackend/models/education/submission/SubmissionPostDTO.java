@@ -1,6 +1,6 @@
 package com.luminabackend.models.education.submission;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
@@ -16,6 +16,7 @@ public record SubmissionPostDTO(
         String content,
 
         @NotNull(message = "Submission date can not be null")
+        @FutureOrPresent(message = "Due date must be in the future or present")
         LocalDateTime submittedAt
 ) {
 }

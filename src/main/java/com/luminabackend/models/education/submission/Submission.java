@@ -19,8 +19,7 @@ public class Submission {
     private String content;
     private String fileId;
     private LocalDateTime submittedAt;
-    private Double grade;
-
+    private double grade;
 
     public Submission(SubmissionPostDTO submissionPostDTO, String fileId) {
         this.id = UUID.randomUUID();

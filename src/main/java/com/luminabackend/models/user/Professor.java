@@ -1,6 +1,6 @@
 package com.luminabackend.models.user;
 
-import com.luminabackend.models.user.dto.professor.ProfessorPostDTO;
+import com.luminabackend.models.user.dto.user.UserSignupDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,19 +16,12 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public final class Professor extends User {
-    private String firstName;
-    private String lastName;
-
     public Professor(String email, String password, String firstName, String lastName) {
-        super(email, password);
-        this.firstName = firstName;
-        this.lastName = lastName;
+        super(email, password, firstName, lastName);
     }
 
-    public Professor(ProfessorPostDTO professorPostDTO){
-        super(professorPostDTO.email(), professorPostDTO.password());
-        this.firstName = professorPostDTO.firstName();
-        this.lastName = professorPostDTO.lastName();
+    public Professor(UserSignupDTO professorPostDTO){
+        super(professorPostDTO.email(), professorPostDTO.password(), professorPostDTO.firstName(), professorPostDTO.lastName());
     }
 
     @Override

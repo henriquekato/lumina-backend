@@ -1,6 +1,5 @@
 package com.luminabackend.models.user;
 
-import com.luminabackend.models.user.dto.user.UserSignupDTO;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -18,17 +17,15 @@ public sealed abstract class User implements UserDetails permits Student, Profes
     private UUID id;
     private String email;
     private String password;
+    private String firstName;
+    private String lastName;
 
-    public User(String email, String password) {
+    public User(String email, String password, String firstName, String lastName) {
         this.id = UUID.randomUUID();
         this.email = email;
         this.password = password;
-    }
-
-    public User(UserSignupDTO userSignupDTO) {
-        this.id = UUID.randomUUID();
-        this.email = userSignupDTO.email();
-        this.password = userSignupDTO.password();
+        this.firstName = firstName;
+        this.lastName = lastName;
     }
 
     @Override
