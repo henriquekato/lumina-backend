@@ -1,9 +1,12 @@
 package com.luminabackend.controllers;
 
+import com.luminabackend.exceptions.EmailAlreadyInUseException;
+import com.luminabackend.exceptions.EntityNotFoundException;
 import com.luminabackend.models.user.Admin;
 import com.luminabackend.models.user.User;
 import com.luminabackend.models.user.dto.admin.AdminGetDTO;
-import com.luminabackend.models.user.dto.admin.AdminPostDTO;
+import com.luminabackend.models.user.dto.user.UserPutDTO;
+import com.luminabackend.models.user.dto.user.UserSignupDTO;
 import com.luminabackend.services.AccountService;
 import com.luminabackend.services.AdminService;
 import jakarta.validation.Valid;
@@ -40,25 +43,50 @@ public class AdminController {
         Optional<Admin> adminById = service.getAdminById(id);
         return adminById.map(admin ->
                 ResponseEntity.ok(new AdminGetDTO(admin)))
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .orElseThrow(() -> new EntityNotFoundException("Admin not found"));
     }
 
     @PostMapping
-    public ResponseEntity<?> saveAdmin(@Valid @RequestBody AdminPostDTO adminPostDTO, UriComponentsBuilder uriBuilder) {
-        Optional<User> adminByEmail = accountService.getUserByEmail(adminPostDTO.email());
+    public ResponseEntity<?> saveAdmin(@Valid @RequestBody UserSignupDTO adminPostDTO, UriComponentsBuilder uriBuilder) {
+        Optional<User> userByEmail = accountService.getUserByEmail(adminPostDTO.email());
 
-        if (adminByEmail.isPresent()) return ResponseEntity.badRequest().body("This email address is already registered");
+        if (userByEmail.isPresent()) throw new EmailAlreadyInUseException();
 
         Admin newAdmin = service.save(adminPostDTO);
         var uri = uriBuilder.path("/admin/{id}").buildAndExpand(newAdmin.getId()).toUri();
         return ResponseEntity.created(uri).build();
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<?> editAdmin(@PathVariable UUID id, @Valid @RequestBody UserPutDTO adminPostDTO) {
+        Optional<Admin> adminById = service.getAdminById(id);
+        if(adminById.isEmpty()) throw new EntityNotFoundException("Admin not found");
+
+        Admin admin = adminById.get();
+        String newEmail = adminPostDTO.email();
+        if (newEmail != null) {
+            newEmail = newEmail.trim();
+            Optional<User> user = accountService.getUserByEmail(newEmail);
+            if (user.isPresent()) throw new EmailAlreadyInUseException();
+            admin.setEmail(newEmail);
+        }
+        if (adminPostDTO.password() != null) {
+            admin.setPassword(adminPostDTO.password().trim());
+        }
+        if (adminPostDTO.firstName() != null) {
+            admin.setFirstName(adminPostDTO.firstName().trim());
+        }
+        if (adminPostDTO.lastName() != null) {
+            admin.setLastName(adminPostDTO.lastName().trim());
+        }
+
+        service.save(admin);
+        return ResponseEntity.ok(admin);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteAdmin(@PathVariable UUID id) {
-        if (!service.existsById(id)){
-            return ResponseEntity.notFound().build();
-        }
+        if (!service.existsById(id)) throw new EntityNotFoundException("Admin not found");
 
         if (service.count() == 1) {
             return ResponseEntity.badRequest().body("The last administrator cannot be deleted");

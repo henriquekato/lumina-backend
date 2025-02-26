@@ -1,9 +1,12 @@
 package com.luminabackend.controllers;
 
-import com.luminabackend.models.user.User;
-import com.luminabackend.models.user.dto.student.StudentPostDTO;
+import com.luminabackend.exceptions.EmailAlreadyInUseException;
+import com.luminabackend.exceptions.EntityNotFoundException;
 import com.luminabackend.models.user.Student;
+import com.luminabackend.models.user.User;
 import com.luminabackend.models.user.dto.student.StudentGetDTO;
+import com.luminabackend.models.user.dto.user.UserPutDTO;
+import com.luminabackend.models.user.dto.user.UserSignupDTO;
 import com.luminabackend.services.AccountService;
 import com.luminabackend.services.StudentService;
 import jakarta.validation.Valid;
@@ -40,24 +43,51 @@ public class StudentController {
         Optional<Student> studentById = service.getStudentById(id);
         return studentById.map(student ->
                 ResponseEntity.ok(new StudentGetDTO(student)))
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .orElseThrow(() -> new EntityNotFoundException("Student not found"));
     }
 
     @PostMapping
-    public ResponseEntity<?> saveStudent(@Valid @RequestBody StudentPostDTO studentPostDTO, UriComponentsBuilder uriBuilder) {
-        Optional<User> studentByEmail = accountService.getUserByEmail(studentPostDTO.email());
+    public ResponseEntity<?> saveStudent(@Valid @RequestBody UserSignupDTO studentPostDTO, UriComponentsBuilder uriBuilder) {
+        Optional<User> userByEmail = accountService.getUserByEmail(studentPostDTO.email());
 
-        if (studentByEmail.isPresent()) return ResponseEntity.badRequest().body("This email address is already registered");
+        if (userByEmail.isPresent()) throw new EmailAlreadyInUseException();
 
         Student newStudent = service.save(studentPostDTO);
         var uri = uriBuilder.path("/student/{id}").buildAndExpand(newStudent.getId()).toUri();
         return ResponseEntity.created(uri).build();
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<?> editStudent(@PathVariable UUID id, @Valid @RequestBody UserPutDTO studentPostDTO) {
+        Optional<Student> studentById = service.getStudentById(id);
+        if(studentById.isEmpty()) throw new EntityNotFoundException("Student not found");
+
+        Student student = studentById.get();
+        String newEmail = studentPostDTO.email();
+        if (newEmail != null) {
+            newEmail = newEmail.trim();
+            Optional<User> user = accountService.getUserByEmail(newEmail);
+            if (user.isPresent()) throw new EmailAlreadyInUseException();
+            student.setEmail(newEmail);
+        }
+        if (studentPostDTO.password() != null) {
+            student.setPassword(studentPostDTO.password().trim());
+        }
+        if (studentPostDTO.firstName() != null) {
+            student.setFirstName(studentPostDTO.firstName().trim());
+        }
+        if (studentPostDTO.lastName() != null) {
+            student.setLastName(studentPostDTO.lastName().trim());
+        }
+
+        service.save(student);
+        return ResponseEntity.ok(student);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteStudent(@PathVariable UUID id) {
         if (!service.existsById(id)){
-            return ResponseEntity.notFound().build();
+            throw new EntityNotFoundException("Student not found");
         }
         service.deleteById(id);
         return ResponseEntity.noContent().build();
