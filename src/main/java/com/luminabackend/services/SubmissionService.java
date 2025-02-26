@@ -21,8 +21,12 @@ public class SubmissionService {
     private FileStorageService fileStorageService;
 
     public Submission saveSubmission(SubmissionPostDTO submissionPostDTO, MultipartFile file) throws IOException {
-        String fileId = fileStorageService.storeFile(file);
+        String fileId = fileStorageService.storeFile(file, submissionPostDTO.taskId());
         Submission submission = new Submission(submissionPostDTO, fileId);
+        return repository.save(submission);
+    }
+
+    public Submission submissionAssessment(Submission submission) {
         return repository.save(submission);
     }
 
@@ -33,6 +37,13 @@ public class SubmissionService {
             repository.delete(s);
         });
         repository.deleteById(id);
+    }
+
+    public void deleteAll(UUID classroomId) {
+          getAllSubmissions(classroomId).forEach(s -> {
+              fileStorageService.deleteAll(s.getId());
+              repository.delete(s);
+          });
     }
 
     public List<Submission> getAllSubmissions(UUID taskId) {

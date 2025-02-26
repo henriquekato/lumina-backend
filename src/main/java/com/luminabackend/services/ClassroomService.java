@@ -1,5 +1,6 @@
 package com.luminabackend.services;
 
+import com.luminabackend.exceptions.EntityNotFoundException;
 import com.luminabackend.models.education.classroom.Classroom;
 import com.luminabackend.models.education.classroom.ClassroomPostDTO;
 import com.luminabackend.repositories.classroom.ClassroomRepository;
@@ -17,6 +18,14 @@ public class ClassroomService {
 
     public Classroom save(ClassroomPostDTO classroomDTO){
         Classroom classroom = new Classroom(classroomDTO);
+
+        classroom.setName(classroom.getName().trim());
+        classroom.setDescription(classroom.getDescription().trim());
+
+        return repository.save(classroom);
+    }
+
+    public Classroom save(Classroom classroom){
         return repository.save(classroom);
     }
 
@@ -40,24 +49,25 @@ public class ClassroomService {
 
     public boolean studentInClassroom(UUID classroomId, UUID studentId) {
         Classroom classroom = repository.findById(classroomId)
-                .orElseThrow(() -> new RuntimeException("Classroom not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Classroom not found"));
 
         return classroom.getStudentsIds().contains(studentId);
     }
 
     public Classroom addStudentToClassroom(UUID classroomId, UUID studentId) {
         Classroom classroom = repository.findById(classroomId)
-                .orElseThrow(() -> new RuntimeException("Classroom not found"));
-        if (!studentInClassroom(classroomId, studentId)) {
-            classroom.getStudentsIds().add(studentId);
-            return repository.save(classroom);
-        }
-        return classroom;
+                .orElseThrow(() -> new EntityNotFoundException("Classroom not found"));
+
+        if (studentInClassroom(classroomId, studentId)) return classroom;
+
+        classroom.getStudentsIds().add(studentId);
+        return repository.save(classroom);
     }
 
     public Classroom removeStudentFromClassroom(UUID classroomId, UUID studentId) {
         Classroom classroom = repository.findById(classroomId)
-                .orElseThrow(() -> new RuntimeException("Classroom not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Classroom not found"));
+
         classroom.getStudentsIds().remove(studentId);
 
         return repository.save(classroom);

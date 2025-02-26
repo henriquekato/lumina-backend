@@ -1,7 +1,7 @@
 package com.luminabackend.services;
 
-import com.luminabackend.models.user.dto.student.StudentPostDTO;
 import com.luminabackend.models.user.Student;
+import com.luminabackend.models.user.dto.user.UserSignupDTO;
 import com.luminabackend.repositories.student.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,7 +19,7 @@ public class StudentService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public Student save(StudentPostDTO studentPostDTO) {
+    public Student save(UserSignupDTO studentPostDTO) {
         String email = studentPostDTO.email().trim();
         String password = studentPostDTO.password().trim();
         String encodedPassword = passwordEncoder.encode(password);
@@ -27,6 +27,10 @@ public class StudentService {
         String lastName = studentPostDTO.lastName().trim();
 
         Student student = new Student(email, encodedPassword, firstName, lastName);
+        return repository.save(student);
+    }
+
+    public Student save(Student student) {
         return repository.save(student);
     }
 

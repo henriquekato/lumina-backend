@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class AccountService implements UserDetailsService {
@@ -18,12 +19,16 @@ public class AccountService implements UserDetailsService {
     public User loadUserByUsername(String email) throws UsernameNotFoundException {
         Optional<User> user = repository.findByEmail(email);
         if (user.isEmpty()){
-            throw new UsernameNotFoundException("Email not found");
+            throw new UsernameNotFoundException("Incorrect username or password");
         }
         return user.get();
     }
 
     public Optional<User> getUserByEmail(String email){
         return repository.findByEmail(email);
+    }
+
+    public Optional<User> getUserById(UUID id){
+        return repository.findByUUID(id);
     }
 }

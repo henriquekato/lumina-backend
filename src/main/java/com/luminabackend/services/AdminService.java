@@ -1,7 +1,7 @@
 package com.luminabackend.services;
 
 import com.luminabackend.models.user.Admin;
-import com.luminabackend.models.user.dto.admin.AdminPostDTO;
+import com.luminabackend.models.user.dto.user.UserSignupDTO;
 import com.luminabackend.repositories.admin.AdminRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,12 +19,18 @@ public class AdminService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public Admin save(AdminPostDTO adminPostDTO){
+    public Admin save(UserSignupDTO adminPostDTO){
         String email = adminPostDTO.email().trim();
         String password = adminPostDTO.password().trim();
         String encodedPassword = passwordEncoder.encode(password);
+        String firstName = adminPostDTO.firstName().trim();
+        String lastName = adminPostDTO.lastName().trim();
 
-        Admin admin = new Admin(email, encodedPassword);
+        Admin admin = new Admin(email, encodedPassword, firstName, lastName);
+        return repository.save(admin);
+    }
+
+    public Admin save(Admin admin){
         return repository.save(admin);
     }
 
