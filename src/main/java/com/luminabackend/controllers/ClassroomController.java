@@ -36,8 +36,7 @@ public class ClassroomController {
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
     @GetMapping
     public ResponseEntity<List<ClassroomGetDTO>> getAllClassrooms(@RequestHeader("Authorization") String authorizationHeader) {
-        String tokenJWT = authorizationHeader.replace("Bearer ", "");
-        PayloadDTO payload = tokenService.getPayloadFromToken(tokenJWT);
+        PayloadDTO payload = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
         List<Classroom> classrooms = classroomService.getAllClassrooms();
         List<Classroom> filteredClassrooms;
 
@@ -63,7 +62,8 @@ public class ClassroomController {
     @GetMapping("/{classroomId}")
     public ResponseEntity<?> getClassroom(@PathVariable UUID classroomId,
                                         @RequestHeader("Authorization") String authorizationHeader) {
-        PayloadDTO payload = tokenService.getPayloadFromToken(authorizationHeader);
+
+        PayloadDTO payload = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
         Optional<Classroom> classroomById = classroomService.getClassroomById(classroomId);
 
         if (payload.role().equals(Role.ADMIN)) {
@@ -112,9 +112,7 @@ public class ClassroomController {
         if (!classroomService.existsClassroomById(classroomId)) {
             throw new EntityNotFoundException("Classroom not found");
         }
-        // tasks
         taskService.deleteAll(classroomId);
-        // submissions
         submissionService.deleteAll(classroomId);
         // materials
 
