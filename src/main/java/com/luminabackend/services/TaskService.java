@@ -31,7 +31,7 @@ public class TaskService {
     }
 
     public List<Task> getAllTasks(UUID classroomId) {
-        return repository.findAll().stream().filter(t -> t.getClassroomId().equals(classroomId)).toList();
+        return repository.findByClassroomId(classroomId);
     }
 
     public Optional<Task> getTaskById(UUID id) {
@@ -39,10 +39,7 @@ public class TaskService {
     }
 
     public void deleteAll(UUID classroomId){
-        List<Task> classroomTasks = repository
-                                    .findAll()
-                                    .stream()
-                                    .filter(c -> c.getClassroomId().equals(classroomId)).toList();
+        List<Task> classroomTasks = repository.findByClassroomId(classroomId);
         repository.deleteAllById(classroomTasks.stream().map(Task::getId).toList());
     }
 }

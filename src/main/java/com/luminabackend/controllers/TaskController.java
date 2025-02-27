@@ -32,10 +32,8 @@ public class TaskController {
     @GetMapping
     public ResponseEntity<List<TaskGetDTO>> getAllClassroomTasks(@PathVariable UUID classroomId){
         Optional<Classroom> classroomById = classroomService.getClassroomById(classroomId);
-
-        if(classroomById.isPresent())
+        if(classroomById.isEmpty())
             throw new EntityNotFoundException("Classroom not found");
-
         return ResponseEntity.ok(taskService.getAllTasks(classroomId).stream().map(TaskGetDTO::new).toList());
     }
 
