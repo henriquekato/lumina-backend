@@ -41,4 +41,8 @@ public class Classroom {
     public void removeStudent(UUID studentId){
         studentsIds.remove(studentId);
     }
+
+    public boolean containsStudent(UUID studentId){
+        return studentsIds.contains(studentId);
+    }
 }

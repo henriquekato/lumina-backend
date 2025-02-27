@@ -25,7 +25,7 @@ public class ClassroomResourceDTO extends RepresentationModel<ClassroomResourceD
 
         add(linkTo(methodOn(ClassroomController.class).getClassroom(id, null)).withSelfRel());
         add(linkTo(methodOn(ClassroomController.class).deleteClassroom(id)).withRel("delete").withType("DELETE"));
-        add(linkTo(methodOn(ClassroomController.class).addStudent(id, UUID.randomUUID())).withRel("add student").withType("POST"));
-        add(linkTo(methodOn(ClassroomController.class).removeStudent(id, UUID.randomUUID())).withRel("remove student").withType("DELETE"));
+        add(linkTo(methodOn(ClassroomController.class).addStudent(id, UUID.randomUUID(), null)).withRel("add student").withType("POST"));
+        add(linkTo(methodOn(ClassroomController.class).removeStudent(id, UUID.randomUUID(), null)).withRel("remove student").withType("DELETE"));
     }
 }

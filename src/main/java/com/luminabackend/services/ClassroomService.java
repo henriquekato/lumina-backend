@@ -1,6 +1,5 @@
 package com.luminabackend.services;
 
-import com.luminabackend.exceptions.AccessDeniedException;
 import com.luminabackend.exceptions.EntityNotFoundException;
 import com.luminabackend.exceptions.StudentAlreadyInClassroomException;
 import com.luminabackend.models.education.classroom.Classroom;
@@ -8,6 +7,7 @@ import com.luminabackend.models.education.classroom.ClassroomPostDTO;
 import com.luminabackend.models.education.classroom.ClassroomPutDTO;
 import com.luminabackend.models.user.Role;
 import com.luminabackend.repositories.classroom.ClassroomRepository;
+import com.luminabackend.utils.security.PayloadDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,41 +23,36 @@ public class ClassroomService {
     @Autowired
     private TaskService taskService;
 
+    @Autowired
+    private PermissionService permissionService;
+
     public List<Classroom> getFilteredClassrooms(Role role, UUID userId) {
-        if (role.equals(Role.ADMIN)) {
+        if (role.equals(Role.ADMIN))
             return repository.findAll();
-        }
-        else if (role.equals(Role.PROFESSOR)) {
+
+        if (role.equals(Role.PROFESSOR))
             return repository.findAllByProfessorId(userId);
-        }
+
         return repository.findAllByStudentsIdsContains(userId);
     }
 
-    public Optional<Classroom> getClassroomById(UUID id) {
-        return repository.findById(id);
+    public Classroom getClassroomById(UUID id) {
+        Optional<Classroom> classroomById = repository.findById(id);
+        if (classroomById.isEmpty()) throw new EntityNotFoundException("Classroom not found");
+        return classroomById.get();
     }
 
-    public Classroom getClassroomBasedOnUserPermission(UUID classroomId, Role role, UUID userId) {
-        Optional<Classroom> classroomById = repository.findById(classroomId);
-
-        if (classroomById.isEmpty()) throw new EntityNotFoundException("Classroom not found");
-
-        Classroom classroom = classroomById.get();
-
-        if (role.equals(Role.ADMIN)) return classroom;
-
-        if (classroom.getProfessorId().equals(userId)) return classroom;
-
-        if (studentInClassroom(classroom, userId)) return classroom;
-
-        throw new AccessDeniedException("You don't have permission to access this resource");
+    public Classroom getClassroomBasedOnUserPermission(UUID classroomId, PayloadDTO payloadDTO) {
+        Classroom classroom = getClassroomById(classroomId);
+        permissionService.checkAccessToClassroom(payloadDTO, classroom);
+        return classroom;
     }
 
     public Optional<Classroom> getClassroomByName(String name) {
         return repository.findByName(name);
     }
 
-    public boolean existsClassroomById(UUID id) {
+    public boolean existsById(UUID id) {
         return repository.existsById(id);
     }
 
@@ -71,10 +66,7 @@ public class ClassroomService {
     }
 
     public Classroom edit(UUID id, ClassroomPutDTO classroomPutDTO) {
-        Optional<Classroom> classroomById = getClassroomById(id);
-        if (classroomById.isEmpty()) throw new EntityNotFoundException("Classroom not found");
-
-        Classroom classroom = classroomById.get();
+        Classroom classroom = getClassroomById(id);
 
         if (classroomPutDTO.name() != null) {
             classroom.setName(classroomPutDTO.name().trim());
@@ -86,8 +78,8 @@ public class ClassroomService {
         return repository.save(classroom);
     }
 
-    public void deleteClassroomById(UUID id) {
-        if (!existsClassroomById(id)) {
+    public void deleteById(UUID id) {
+        if (!existsById(id)) {
             throw new EntityNotFoundException("Classroom not found");
         }
 
@@ -97,24 +89,24 @@ public class ClassroomService {
         repository.deleteById(id);
     }
 
-    private boolean studentInClassroom(Classroom classroom, UUID studentId) {
-        return classroom.getStudentsIds().contains(studentId);
-    }
+    public Classroom addStudentToClassroom(UUID classroomId, PayloadDTO payloadDTO, UUID studentId) {
+        Classroom classroom = getClassroomById(classroomId);
 
-    public Classroom addStudentToClassroom(UUID classroomId, UUID studentId) {
-        Classroom classroom = repository.findById(classroomId).orElseThrow(() -> new EntityNotFoundException("Classroom not found"));
+        permissionService.checkAccessToClassroom(payloadDTO, classroom);
 
-        if (studentInClassroom(classroom, studentId))
+        if (classroom.containsStudent(studentId))
             throw new StudentAlreadyInClassroomException("The student you are trying to add is already in this class");
 
         classroom.addStudent(studentId);
         return repository.save(classroom);
     }
 
-    public void removeStudentFromClassroom(UUID classroomId, UUID studentId) {
-        Classroom classroom = repository.findById(classroomId).orElseThrow(() -> new EntityNotFoundException("Classroom not found"));
+    public void removeStudentFromClassroom(UUID classroomId, PayloadDTO payloadDTO, UUID studentId) {
+        Classroom classroom = getClassroomById(classroomId);
 
-        if (studentInClassroom(classroom, studentId))
+        permissionService.checkAccessToClassroom(payloadDTO, classroom);
+
+        if (!classroom.containsStudent(studentId))
             throw new EntityNotFoundException("The student you are trying to remove is not in this class");
 
         classroom.removeStudent(studentId);

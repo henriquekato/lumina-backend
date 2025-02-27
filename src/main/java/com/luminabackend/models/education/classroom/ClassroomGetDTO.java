@@ -28,7 +28,7 @@ public class ClassroomGetDTO extends RepresentationModel<ClassroomGetDTO> {
         this.professorId = classroom.getProfessorId();
 
         add(linkTo(methodOn(ClassroomController.class).deleteClassroom(id)).withRel("delete").withType("DELETE"));
-        add(linkTo(methodOn(ClassroomController.class).addStudent(id, UUID.randomUUID())).withRel("add student").withType("POST"));
-        add(linkTo(methodOn(ClassroomController.class).removeStudent(id, UUID.randomUUID())).withRel("remove student").withType("DELETE"));
+        add(linkTo(methodOn(ClassroomController.class).addStudent(id, UUID.randomUUID(), null)).withRel("add student").withType("POST"));
+        add(linkTo(methodOn(ClassroomController.class).removeStudent(id, UUID.randomUUID(), null)).withRel("remove student").withType("DELETE"));
     }
 }

@@ -36,9 +36,9 @@ public class ClassroomController {
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
     @GetMapping("/{classroomId}")
     public ResponseEntity<ClassroomResourceDTO> getClassroom(@PathVariable UUID classroomId,
-                                        @RequestHeader("Authorization") String authorizationHeader) {
-        PayloadDTO payload = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        Classroom classroom = classroomService.getClassroomBasedOnUserPermission(classroomId, payload.role(), payload.id());
+                                                             @RequestHeader("Authorization") String authorizationHeader) {
+        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+        Classroom classroom = classroomService.getClassroomBasedOnUserPermission(classroomId, payloadDTO);
         return ResponseEntity.ok(new ClassroomResourceDTO(classroom));
     }
 
@@ -52,7 +52,8 @@ public class ClassroomController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<ClassroomResourceDTO> editClassroom(@PathVariable UUID id, @Valid @RequestBody ClassroomPutDTO classroomPutDTO) {
+    public ResponseEntity<ClassroomResourceDTO> editClassroom(@PathVariable UUID id,
+                                                              @Valid @RequestBody ClassroomPutDTO classroomPutDTO) {
         Classroom classroom = classroomService.edit(id, classroomPutDTO);
         return ResponseEntity.ok(new ClassroomResourceDTO(classroom));
     }
@@ -60,24 +61,27 @@ public class ClassroomController {
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{classroomId}")
     public ResponseEntity<Void> deleteClassroom(@PathVariable UUID classroomId) {
-        classroomService.deleteClassroomById(classroomId);
+        classroomService.deleteById(classroomId);
         return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR')")
     @PostMapping("/{classroomId}/student/{studentId}")
     public ResponseEntity<ClassroomResourceDTO> addStudent(@PathVariable UUID classroomId,
-                                        @PathVariable UUID studentId) {
-
-        Classroom classroom = classroomService.addStudentToClassroom(classroomId, studentId);
+                                                           @PathVariable UUID studentId,
+                                                           @RequestHeader("Authorization") String authorizationHeader) {
+        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+        Classroom classroom = classroomService.addStudentToClassroom(classroomId, payloadDTO, studentId);
         return ResponseEntity.ok(new ClassroomResourceDTO(classroom));
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR')")
     @DeleteMapping("/{classroomId}/student/{studentId}")
     public ResponseEntity<Void> removeStudent(@PathVariable UUID classroomId,
-                                           @PathVariable UUID studentId) {
-        classroomService.removeStudentFromClassroom(classroomId, studentId);
+                                              @PathVariable UUID studentId,
+                                              @RequestHeader("Authorization") String authorizationHeader) {
+        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+        classroomService.removeStudentFromClassroom(classroomId, payloadDTO, studentId);
         return ResponseEntity.noContent().build();
     }
 }
