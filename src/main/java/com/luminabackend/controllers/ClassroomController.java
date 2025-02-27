@@ -1,11 +1,9 @@
 package com.luminabackend.controllers;
 
 import com.luminabackend.exceptions.EntityNotFoundException;
-import com.luminabackend.models.education.classroom.*;
-import com.luminabackend.models.education.task.Task;
+import com.luminabackend.models.education.classroom.*;;
 import com.luminabackend.models.user.Role;
 import com.luminabackend.services.ClassroomService;
-import com.luminabackend.services.SubmissionService;
 import com.luminabackend.services.TaskService;
 import com.luminabackend.services.TokenService;
 import com.luminabackend.utils.security.PayloadDTO;
@@ -30,8 +28,6 @@ public class ClassroomController {
     private TokenService tokenService;
     @Autowired
     private TaskService taskService;
-    @Autowired
-    private SubmissionService submissionService;
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
     @GetMapping
@@ -113,7 +109,6 @@ public class ClassroomController {
             throw new EntityNotFoundException("Classroom not found");
         }
         taskService.deleteAll(classroomId);
-        submissionService.deleteAll(classroomId);
         // materials
 
         classroomService.deleteClassroomById(classroomId);

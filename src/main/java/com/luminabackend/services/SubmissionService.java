@@ -39,15 +39,17 @@ public class SubmissionService {
         repository.deleteById(id);
     }
 
-    public void deleteAll(UUID classroomId) {
-          getAllSubmissions(classroomId).forEach(s -> {
-              fileStorageService.deleteAll(s.getId());
+    public void deleteAllByTaskId(UUID taskId) {
+          getAllSubmissions(taskId).forEach(s -> {
+              if (s.getFileId() != null) {
+                  fileStorageService.deleteFile(s.getFileId());
+              }
               repository.delete(s);
           });
     }
 
     public List<Submission> getAllSubmissions(UUID taskId) {
-        return repository.findAll().stream().filter(s -> s.getTaskId().equals(taskId)).toList();
+        return repository.findAllByTaskId(taskId);
     }
 
     public Optional<Submission> getSubmissionById(UUID id) {

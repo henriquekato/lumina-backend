@@ -15,6 +15,9 @@ public class TaskService {
     @Autowired
     private TaskRepository repository;
 
+    @Autowired
+    private SubmissionService submissionService;
+
     public Task save(TaskPostDTO taskPostDTO) {
         Task task = new Task(taskPostDTO);
         task.setTitle(task.getTitle().trim());
@@ -26,8 +29,9 @@ public class TaskService {
         return repository.save(task);
     }
 
-    public void deleteById(UUID id) {
-        repository.deleteById(id);
+    public void deleteById(UUID taskId) {
+        submissionService.deleteAllByTaskId(taskId);
+        repository.deleteById(taskId);
     }
 
     public List<Task> getAllTasks(UUID classroomId) {
@@ -40,6 +44,7 @@ public class TaskService {
 
     public void deleteAll(UUID classroomId){
         List<Task> classroomTasks = repository.findByClassroomId(classroomId);
+        classroomTasks.forEach(task -> submissionService.deleteAllByTaskId(task.getId()));
         repository.deleteAllById(classroomTasks.stream().map(Task::getId).toList());
     }
 }

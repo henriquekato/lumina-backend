@@ -40,8 +40,4 @@ public class FileStorageService {
     public void deleteFile(String fileId) {
         gridFsTemplate.delete(new Query(Criteria.where("_id").is(fileId)));
     }
-
-    public void deleteAll(UUID referenceId) {
-        gridFsTemplate.delete(new Query(Criteria.where("metadata.referenceId").is(referenceId)));
-    }
 }
