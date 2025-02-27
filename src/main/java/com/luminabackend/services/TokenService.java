@@ -45,14 +45,14 @@ public class TokenService {
         return jwtVerifier.verify(tokenJWT).getSubject();
     }
 
-    public PayloadDTO getPayloadFromToken(String tokenJWT){
+    public PayloadDTO getPayloadFromHeader(String authorizationHeader){
+        String tokenJWT = authorizationHeader.replace("Bearer ", "");
         var algorithm = Algorithm.HMAC256(secret);
         JWTVerifier jwtVerifier = JWT.require(algorithm)
                 .withIssuer(issuer)
                 .build();
         DecodedJWT decodedJWT = jwtVerifier.verify(tokenJWT);
 
-        System.out.println(decodedJWT.getClaim("id").asString());
         UUID id = UUID.fromString(decodedJWT.getClaim("id").asString());
         String firstName = decodedJWT.getClaim("first_name").asString();
         String lastName = decodedJWT.getClaim("last_name").asString();
