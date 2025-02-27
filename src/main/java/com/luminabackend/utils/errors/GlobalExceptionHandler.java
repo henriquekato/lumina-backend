@@ -1,6 +1,7 @@
 package com.luminabackend.utils.errors;
 
 import com.luminabackend.exceptions.*;
+import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -54,5 +55,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CannotDeleteLastAdministratorException.class)
     public ResponseEntity<GeneralErrorResponseDTO> handleCannotDeleteLastAdministratorException(CannotDeleteLastAdministratorException e){
         return ResponseEntity.badRequest().body(new GeneralErrorResponseDTO(e.getMessage()));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<GeneralErrorResponseDTO> handleAccessDeniedException(AccessDeniedException e){
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new GeneralErrorResponseDTO(e.getMessage()));
+    }
+
+    @ExceptionHandler(StudentAlreadyInClassroomException.class)
+    public ResponseEntity<GeneralErrorResponseDTO> handleStudentAlreadyInClassroomException(StudentAlreadyInClassroomException e){
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new GeneralErrorResponseDTO(e.getMessage()));
     }
 }
