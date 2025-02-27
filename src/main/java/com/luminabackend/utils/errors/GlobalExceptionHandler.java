@@ -1,7 +1,6 @@
 package com.luminabackend.utils.errors;
 
-import com.luminabackend.exceptions.EmailAlreadyInUseException;
-import com.luminabackend.exceptions.EntityNotFoundException;
+import com.luminabackend.exceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -50,5 +49,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<GeneralErrorResponseDTO> handleEntityNotFoundException(EntityNotFoundException e){
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new GeneralErrorResponseDTO(e.getMessage()));
+    }
+
+    @ExceptionHandler(CannotDeleteLastAdministratorException.class)
+    public ResponseEntity<GeneralErrorResponseDTO> handleCannotDeleteLastAdministratorException(CannotDeleteLastAdministratorException e){
+        return ResponseEntity.badRequest().body(new GeneralErrorResponseDTO(e.getMessage()));
     }
 }

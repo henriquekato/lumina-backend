@@ -3,6 +3,7 @@ package com.luminabackend.utils.security;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.luminabackend.exceptions.AuthorizationHeaderNotFoundException;
 import com.luminabackend.models.user.User;
 import com.luminabackend.repositories.user.UserRepository;
 import com.luminabackend.services.TokenService;
@@ -20,6 +21,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Objects;
 import java.util.Optional;
 
 @Component
@@ -32,24 +34,39 @@ public class SecurityFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        var authorizationHeader = request.getHeader("Authorization");
-
         try {
-            if (authorizationHeader != null) {
-                String token = authorizationHeader.replace("Bearer ", "");
-                var subject = tokenService.getSubject(token);
-
-                Optional<User> optionalUser = repository.findByEmail(subject);
-                if (optionalUser.isEmpty()) {
-                    throw new UsernameNotFoundException("Incorrect username or password");
-                }
-
-                User user = optionalUser.get();
-                var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+            String requestURI = request.getRequestURI();
+            if (Objects.equals(requestURI, "/login")) {
+                filterChain.doFilter(request, response);
+                return;
             }
+
+            var authorizationHeader = request.getHeader("Authorization");
+            if (authorizationHeader == null)
+                throw new AuthorizationHeaderNotFoundException("Required Authorization header was not provided. Please include a valid Bearer token");
+
+            String token = authorizationHeader.replace("Bearer ", "");
+            var subject = tokenService.getSubject(token);
+
+            Optional<User> optionalUser = repository.findByEmail(subject);
+            if (optionalUser.isEmpty()) {
+                throw new UsernameNotFoundException("Incorrect username or password");
+            }
+
+            User user = optionalUser.get();
+            var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
             filterChain.doFilter(request, response);
-        } catch (JWTVerificationException e){
+        } catch (AuthorizationHeaderNotFoundException | UsernameNotFoundException e) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            try (PrintWriter writer = response.getWriter()) {
+                ObjectMapper objectMapper = new ObjectMapper();
+                String errorJson = objectMapper.writeValueAsString(new GeneralErrorResponseDTO(e.getMessage()));
+                writer.write(errorJson);
+            }
+        } catch (JWTVerificationException e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             try (PrintWriter writer = response.getWriter()) {
@@ -57,20 +74,12 @@ public class SecurityFilter extends OncePerRequestFilter {
                 String errorJson = objectMapper.writeValueAsString(new GeneralErrorResponseDTO("Invalid or expired JWT token"));
                 writer.write(errorJson);
             }
-        } catch (JWTCreationException e){
+        } catch (JWTCreationException e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             try (PrintWriter writer = response.getWriter()) {
                 ObjectMapper objectMapper = new ObjectMapper();
                 String errorJson = objectMapper.writeValueAsString(new GeneralErrorResponseDTO("Error generating JWT token"));
-                writer.write(errorJson);
-            }
-        } catch (UsernameNotFoundException e){
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-            try (PrintWriter writer = response.getWriter()) {
-                ObjectMapper objectMapper = new ObjectMapper();
-                String errorJson = objectMapper.writeValueAsString(new GeneralErrorResponseDTO(e.getMessage()));
                 writer.write(errorJson);
             }
         }
