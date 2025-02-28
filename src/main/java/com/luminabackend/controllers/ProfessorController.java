@@ -26,9 +26,7 @@ public class ProfessorController {
     @GetMapping
     public ResponseEntity<List<ProfessorGetDTO>> getAllProfessors() {
         List<Professor> professors = service.getAllProfessors();
-        return professors.isEmpty() ?
-                ResponseEntity.noContent().build()
-                : ResponseEntity.ok(professors.stream().map(ProfessorGetDTO::new).toList());
+        return ResponseEntity.ok(professors.stream().map(ProfessorGetDTO::new).toList());
     }
 
     @GetMapping("/{id}")

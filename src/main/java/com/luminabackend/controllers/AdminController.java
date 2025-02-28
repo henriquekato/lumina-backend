@@ -26,9 +26,7 @@ public class AdminController {
     @GetMapping
     public ResponseEntity<List<AdminGetDTO>> getAllAdmins() {
         List<Admin> admins = service.getAllAdmins();
-        return admins.isEmpty() ?
-                ResponseEntity.noContent().build()
-                : ResponseEntity.ok(admins.stream().map(AdminGetDTO::new).toList());
+        return ResponseEntity.ok(admins.stream().map(AdminGetDTO::new).toList());
     }
 
     @GetMapping("/{id}")

@@ -28,9 +28,7 @@ public class ClassroomController {
     public ResponseEntity<List<ClassroomGetDTO>> getAllClassrooms(@RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payload = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
         List<Classroom> filteredClassrooms = classroomService.getFilteredClassrooms(payload.role(), payload.id());
-        return filteredClassrooms.isEmpty() ?
-                ResponseEntity.noContent().build()
-                : ResponseEntity.ok(filteredClassrooms.stream().map(ClassroomGetDTO::new).toList());
+        return ResponseEntity.ok(filteredClassrooms.stream().map(ClassroomGetDTO::new).toList());
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
