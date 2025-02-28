@@ -21,12 +21,12 @@ public class Submission {
     private LocalDateTime submittedAt;
     private double grade;
 
-    public Submission(SubmissionPostDTO submissionPostDTO, String fileId) {
+    public Submission(SubmissionPostDTO submissionPostDTO, UUID taskId, UUID studentId, String fileId) {
         this.id = UUID.randomUUID();
-        this.taskId = submissionPostDTO.taskId();
-        this.studentId = submissionPostDTO.studentId();
+        this.taskId = taskId;
+        this.studentId = studentId;
         this.content = submissionPostDTO.content();
         this.fileId = fileId;
-        this.submittedAt = submissionPostDTO.submittedAt();
+        this.submittedAt = LocalDateTime.now();
     }
 }

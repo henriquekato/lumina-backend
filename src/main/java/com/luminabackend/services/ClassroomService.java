@@ -83,7 +83,8 @@ public class ClassroomService {
             throw new EntityNotFoundException("Classroom not found");
         }
 
-        taskService.deleteAll(id);
+        taskService.deleteAllByClassroomId(id);
+
         // materials
 
         repository.deleteById(id);

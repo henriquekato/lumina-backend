@@ -86,7 +86,7 @@ public class TaskService {
         repository.deleteById(taskId);
     }
 
-    public void deleteAll(UUID classroomId){
+    public void deleteAllByClassroomId(UUID classroomId){
         List<Task> classroomTasks = repository.findAllByClassroomId(classroomId);
         classroomTasks.forEach(task -> submissionService.deleteAllByTaskId(task.getId()));
         repository.deleteAllById(classroomTasks.stream().map(Task::getId).toList());

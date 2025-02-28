@@ -1,14 +1,12 @@
 package com.luminabackend.controllers;
 
-import com.luminabackend.exceptions.EntityNotFoundException;
 import com.luminabackend.models.education.submission.Submission;
 import com.luminabackend.models.education.submission.SubmissionAssessmentDTO;
 import com.luminabackend.models.education.submission.SubmissionGetDTO;
 import com.luminabackend.models.education.submission.SubmissionPostDTO;
-import com.luminabackend.services.ClassroomService;
-import com.luminabackend.services.FileStorageService;
-import com.luminabackend.services.SubmissionService;
-import com.luminabackend.services.TaskService;
+import com.luminabackend.services.*;
+import com.luminabackend.utils.security.PayloadDTO;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.mongodb.gridfs.GridFsResource;
@@ -21,7 +19,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -31,24 +28,20 @@ public class SubmissionController {
     private SubmissionService submissionService;
 
     @Autowired
-    private ClassroomService classroomService;
-
-    @Autowired
-    private TaskService taskService;
-
-    @Autowired
     private FileStorageService fileStorageService;
+
+    @Autowired
+    private TokenService tokenService;
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR')")
     @GetMapping
-    public ResponseEntity<List<SubmissionGetDTO>> getAllTaskSubmissions(@PathVariable UUID classroomId,
-                                                                        @PathVariable UUID taskId) {
-        if (!classroomService.existsById(classroomId))
-            throw new EntityNotFoundException("Classroom not found");
-        if(!taskService.existsById(taskId))
-            throw new EntityNotFoundException("Task not found");
+    public ResponseEntity<List<SubmissionGetDTO>> getAllTaskSubmissions(
+            @PathVariable UUID classroomId,
+            @PathVariable UUID taskId,
+            @RequestHeader("Authorization") String authorizationHeader){
+        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
 
-        List<SubmissionGetDTO> submissions = submissionService.getAllSubmissions(taskId)
+        List<SubmissionGetDTO> submissions = submissionService.getAllSubmissions(classroomId, taskId, payloadDTO)
                 .stream()
                 .map(SubmissionGetDTO::new)
                 .toList();
@@ -57,44 +50,56 @@ public class SubmissionController {
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
     @GetMapping("/{submissionId}")
-    public ResponseEntity<SubmissionGetDTO> getTaskSubmissionById(@PathVariable UUID submissionId) {
-        Optional<Submission> submission = submissionService.getSubmissionById(submissionId);
+    public ResponseEntity<SubmissionGetDTO> getTaskSubmissionById(
+            @PathVariable UUID classroomId,
+            @PathVariable UUID taskId,
+            @PathVariable UUID submissionId,
+            @RequestHeader("Authorization") String authorizationHeader) {
+        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
 
-        return submission.map(value -> ResponseEntity.ok(new SubmissionGetDTO(value)))
-                .orElseThrow(() -> new EntityNotFoundException("Submission not found"));
+        Submission submission = submissionService.getSubmissionBasedOnUserPermission(submissionId, classroomId, taskId, payloadDTO);
+        return ResponseEntity.ok(new SubmissionGetDTO(submission));
     }
 
     @PreAuthorize("hasRole('STUDENT')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<SubmissionGetDTO> createSubmission(@PathVariable UUID classroomId,
-                                                             @PathVariable UUID taskId,
-                                                             @RequestPart("submission") SubmissionPostDTO submissionPostDTO,
-                                                             @RequestPart("file") MultipartFile file
-                                                             ) throws IOException {
-        if (!classroomService.existsById(classroomId))
-            throw new EntityNotFoundException("Classroom not found");
+    public ResponseEntity<SubmissionGetDTO> createSubmission(
+            @PathVariable UUID classroomId,
+            @PathVariable UUID taskId,
+            @RequestPart("submission") SubmissionPostDTO submissionPostDTO,
+            @RequestPart("file") MultipartFile file,
+            @RequestHeader("Authorization") String authorizationHeader) throws IOException {
+        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
 
-        if(!taskService.existsById(taskId))
-            throw new EntityNotFoundException("Task not found");
-
-        Submission savedSubmission = submissionService.saveSubmission(submissionPostDTO, file);
-
+        Submission savedSubmission = submissionService.saveSubmission(classroomId, taskId, payloadDTO, submissionPostDTO, file);
         return ResponseEntity.ok(new SubmissionGetDTO(savedSubmission));
     }
 
     @PreAuthorize("hasRole('STUDENT')")
     @DeleteMapping("/{submissionId}")
-    public ResponseEntity<Void> deleteSubmission(@PathVariable UUID submissionId) {
-        Optional<Submission> submission = submissionService.getSubmissionById(submissionId);
-        if (submission.isEmpty()) throw new EntityNotFoundException("Submission not found");
+    public ResponseEntity<Void> deleteSubmission(
+            @PathVariable UUID classroomId,
+            @PathVariable UUID taskId,
+            @PathVariable UUID submissionId,
+            @RequestHeader("Authorization") String authorizationHeader) {
+        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
 
-        submissionService.deleteById(submissionId);
+        submissionService.deleteById(submissionId, classroomId, taskId, payloadDTO);
         return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
     @GetMapping("/{submissionId}/file/{fileId}")
-    public ResponseEntity<ByteArrayResource> downloadSubmissionFile(@PathVariable String fileId) throws IOException {
+    public ResponseEntity<ByteArrayResource> downloadSubmissionFile(
+            @PathVariable UUID classroomId,
+            @PathVariable UUID taskId,
+            @PathVariable UUID submissionId,
+            @PathVariable String fileId,
+            @RequestHeader("Authorization") String authorizationHeader) throws IOException {
+        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+
+        submissionService.checkPermission(classroomId, taskId, submissionId, payloadDTO);
+
         GridFsResource file = fileStorageService.getFile(fileId);
 
         return ResponseEntity.ok()
@@ -105,16 +110,14 @@ public class SubmissionController {
 
     @PreAuthorize("hasRole('PROFESSOR')")
     @PutMapping("/{submissionId}")
-    public ResponseEntity<Void> submissionAssessment(@PathVariable UUID submissionId,
-                                                     SubmissionAssessmentDTO submissionAssessmentDTO) {
-        Optional<Submission> submissionById = submissionService.getSubmissionById(submissionId);
-
-        if (submissionById.isEmpty()) throw new EntityNotFoundException("Submission not found");
-
-        Submission submission = submissionById.get();
-        submission.setGrade(submissionAssessmentDTO.grade());
-
-        submissionService.submissionAssessment(submission);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<SubmissionGetDTO> submissionAssessment(
+            @PathVariable UUID classroomId,
+            @PathVariable UUID taskId,
+            @PathVariable UUID submissionId,
+            @Valid @RequestBody SubmissionAssessmentDTO submissionAssessmentDTO,
+            @RequestHeader("Authorization") String authorizationHeader) {
+        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+        Submission submission = submissionService.submissionAssessment(submissionId, classroomId, taskId, payloadDTO, submissionAssessmentDTO);
+        return ResponseEntity.ok(new SubmissionGetDTO(submission));
     }
 }
