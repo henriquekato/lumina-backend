@@ -44,7 +44,9 @@ public class AdminController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<AdminGetDTO> editAdmin(@PathVariable UUID id, @Valid @RequestBody UserPutDTO userPutDTO) {
+    public ResponseEntity<AdminGetDTO> editAdmin(
+            @PathVariable UUID id,
+            @Valid @RequestBody UserPutDTO userPutDTO) {
         Admin admin = service.edit(id, userPutDTO);
         return ResponseEntity.ok(new AdminGetDTO(admin));
     }

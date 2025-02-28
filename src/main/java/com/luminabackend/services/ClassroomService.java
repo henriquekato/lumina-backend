@@ -89,10 +89,8 @@ public class ClassroomService {
         repository.deleteById(id);
     }
 
-    public Classroom addStudentToClassroom(UUID classroomId, PayloadDTO payloadDTO, UUID studentId) {
-        Classroom classroom = getClassroomById(classroomId);
-
-        permissionService.checkAccessToClassroom(payloadDTO, classroom);
+    public Classroom addStudentToClassroom(UUID studentId, UUID classroomId, PayloadDTO payloadDTO) {
+        Classroom classroom = getClassroomBasedOnUserPermission(classroomId, payloadDTO);
 
         if (classroom.containsStudent(studentId))
             throw new StudentAlreadyInClassroomException("The student you are trying to add is already in this class");
@@ -101,10 +99,8 @@ public class ClassroomService {
         return repository.save(classroom);
     }
 
-    public void removeStudentFromClassroom(UUID classroomId, PayloadDTO payloadDTO, UUID studentId) {
-        Classroom classroom = getClassroomById(classroomId);
-
-        permissionService.checkAccessToClassroom(payloadDTO, classroom);
+    public void removeStudentFromClassroom(UUID studentId, UUID classroomId, PayloadDTO payloadDTO) {
+        Classroom classroom = getClassroomBasedOnUserPermission(classroomId, payloadDTO);
 
         if (!classroom.containsStudent(studentId))
             throw new EntityNotFoundException("The student you are trying to remove is not in this class");

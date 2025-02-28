@@ -24,7 +24,7 @@ public class AccountController {
     private TokenService tokenService;
 
     @PostMapping("/login")
-    public ResponseEntity<TokenDTO> login(@RequestBody @Valid UserLoginDTO data){
+    public ResponseEntity<TokenDTO> login(@Valid @RequestBody UserLoginDTO data){
         String email = data.email().trim();
         String password = data.password().trim();
 
