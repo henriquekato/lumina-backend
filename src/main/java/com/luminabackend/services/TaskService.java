@@ -1,8 +1,13 @@
 package com.luminabackend.services;
 
+import com.luminabackend.exceptions.EntityNotFoundException;
+import com.luminabackend.models.education.classroom.Classroom;
 import com.luminabackend.models.education.task.Task;
+import com.luminabackend.models.education.task.TaskCreateDTO;
 import com.luminabackend.models.education.task.TaskPostDTO;
+import com.luminabackend.models.education.task.TaskPutDTO;
 import com.luminabackend.repositories.task.TaskRepository;
+import com.luminabackend.utils.security.PayloadDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,36 +19,81 @@ import java.util.UUID;
 public class TaskService {
     @Autowired
     private TaskRepository repository;
+    
+    @Autowired
+    private ClassroomService classroomService;
 
     @Autowired
     private SubmissionService submissionService;
+    
+    @Autowired
+    private PermissionService permissionService;
 
-    public Task save(TaskPostDTO taskPostDTO) {
-        Task task = new Task(taskPostDTO);
+    public List<Task> getAllTasks(UUID classroomId, PayloadDTO payloadDTO) {
+        Classroom classroom = classroomService.getClassroomById(classroomId);
+        permissionService.checkAccessToClassroom(payloadDTO, classroom);
+        return repository.findAllByClassroomId(classroomId);
+    }
+
+    public Task getTaskById(UUID id) {
+        Optional<Task> taskById = repository.findById(id);
+        if (taskById.isEmpty()) throw new EntityNotFoundException("Task not found");
+        return taskById.get();
+    }
+    
+    public Task getTaskBasedOnUserPermission(UUID classroomId, PayloadDTO payloadDTO, UUID taskId){
+        Classroom classroom = classroomService.getClassroomById(classroomId);
+        Task task = getTaskById(taskId);
+        permissionService.checkAccessToClassroom(payloadDTO, classroom);
+        return task;
+    }
+
+    public boolean existsById(UUID id) {
+        return repository.existsById(id);
+    }
+
+    public Task save(UUID classroomId, PayloadDTO payloadDTO, TaskCreateDTO taskCreateDTO) {
+        Classroom classroom = classroomService.getClassroomById(classroomId);
+        permissionService.checkAccessToClassroom(payloadDTO, classroom);
+
+        Task task = new Task(taskCreateDTO);
         task.setTitle(task.getTitle().trim());
         task.setDescription(task.getDescription().trim());
         return repository.save(task);
     }
 
-    public Task save(Task task) {
+    public Task edit(UUID taskId, UUID classroomId, PayloadDTO payloadDTO, TaskPutDTO taskPutDTO) {
+        Classroom classroom = classroomService.getClassroomById(classroomId);
+        permissionService.checkAccessToClassroom(payloadDTO, classroom);
+
+        Task task = getTaskById(taskId);
+        if (taskPutDTO.title() != null) {
+            task.setTitle(taskPutDTO.title().trim());
+        }
+        if (taskPutDTO.description() != null) {
+            task.setDescription(taskPutDTO.description().trim());
+        }
+        if (taskPutDTO.dueDate() != null) {
+            task.setDueDate(taskPutDTO.dueDate());
+        }
+
         return repository.save(task);
     }
 
-    public void deleteById(UUID taskId) {
+    public void deleteById(UUID taskId, UUID classroomId, PayloadDTO payloadDTO) {
+        Classroom classroom = classroomService.getClassroomById(classroomId);
+        permissionService.checkAccessToClassroom(payloadDTO, classroom);
+
+        if (!existsById(taskId)) {
+            throw new EntityNotFoundException("Task not found");
+        }
+
         submissionService.deleteAllByTaskId(taskId);
         repository.deleteById(taskId);
     }
 
-    public List<Task> getAllTasks(UUID classroomId) {
-        return repository.findByClassroomId(classroomId);
-    }
-
-    public Optional<Task> getTaskById(UUID id) {
-        return repository.findById(id);
-    }
-
     public void deleteAll(UUID classroomId){
-        List<Task> classroomTasks = repository.findByClassroomId(classroomId);
+        List<Task> classroomTasks = repository.findAllByClassroomId(classroomId);
         classroomTasks.forEach(task -> submissionService.deleteAllByTaskId(task.getId()));
         repository.deleteAllById(classroomTasks.stream().map(Task::getId).toList());
     }

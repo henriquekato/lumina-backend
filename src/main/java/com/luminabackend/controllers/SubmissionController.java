@@ -13,13 +13,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.mongodb.gridfs.GridFsResource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.List;
@@ -37,6 +35,7 @@ public class SubmissionController {
 
     @Autowired
     private TaskService taskService;
+
     @Autowired
     private FileStorageService fileStorageService;
 
@@ -44,9 +43,9 @@ public class SubmissionController {
     @GetMapping
     public ResponseEntity<List<SubmissionGetDTO>> getAllTaskSubmissions(@PathVariable UUID classroomId,
                                                                         @PathVariable UUID taskId) {
-        if (classroomService.getClassroomById(classroomId).isEmpty())
+        if (!classroomService.existsById(classroomId))
             throw new EntityNotFoundException("Classroom not found");
-        if(taskService.getTaskById(taskId).isEmpty())
+        if(!taskService.existsById(taskId))
             throw new EntityNotFoundException("Task not found");
 
         List<SubmissionGetDTO> submissions = submissionService.getAllSubmissions(taskId)
@@ -72,10 +71,10 @@ public class SubmissionController {
                                                              @RequestPart("submission") SubmissionPostDTO submissionPostDTO,
                                                              @RequestPart("file") MultipartFile file
                                                              ) throws IOException {
-        if (classroomService.getClassroomById(classroomId).isEmpty())
+        if (!classroomService.existsById(classroomId))
             throw new EntityNotFoundException("Classroom not found");
 
-        if(taskService.getTaskById(taskId).isEmpty())
+        if(!taskService.existsById(taskId))
             throw new EntityNotFoundException("Task not found");
 
         Submission savedSubmission = submissionService.saveSubmission(submissionPostDTO, file);

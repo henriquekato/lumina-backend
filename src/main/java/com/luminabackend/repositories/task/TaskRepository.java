@@ -7,5 +7,5 @@ import java.util.List;
 import java.util.UUID;
 
 public interface TaskRepository extends MongoRepository<Task, UUID> {
-    List<Task> findByClassroomId(UUID classroomId);
+    List<Task> findAllByClassroomId(UUID classroomId);
 }

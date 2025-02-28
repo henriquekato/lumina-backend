@@ -1,19 +1,14 @@
 package com.luminabackend.controllers;
 
-import com.luminabackend.exceptions.EntityNotFoundException;
-import com.luminabackend.models.education.classroom.Classroom;
-import com.luminabackend.models.education.task.Task;
-import com.luminabackend.models.education.task.TaskGetDTO;
-import com.luminabackend.models.education.task.TaskPostDTO;
-import com.luminabackend.models.education.task.TaskPutDTO;
-import com.luminabackend.services.ClassroomService;
+import com.luminabackend.models.education.task.*;
 import com.luminabackend.services.TaskService;
+import com.luminabackend.services.TokenService;
+import com.luminabackend.utils.security.PayloadDTO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,76 +21,56 @@ public class TaskController {
     private TaskService taskService;
 
     @Autowired
-    private ClassroomService classroomService;
+    private TokenService tokenService;
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
     @GetMapping
-    public ResponseEntity<List<TaskGetDTO>> getAllClassroomTasks(@PathVariable UUID classroomId){
-        Optional<Classroom> classroomById = classroomService.getClassroomById(classroomId);
-        if(classroomById.isEmpty())
-            throw new EntityNotFoundException("Classroom not found");
-        return ResponseEntity.ok(taskService.getAllTasks(classroomId).stream().map(TaskGetDTO::new).toList());
+    public ResponseEntity<List<TaskGetDTO>> getAllClassroomTasks(@PathVariable UUID classroomId,
+                                                                 @RequestHeader("Authorization") String authorizationHeader){
+        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+        List<TaskGetDTO> tasks = taskService.getAllTasks(classroomId, payloadDTO).stream().map(TaskGetDTO::new).toList();
+        return ResponseEntity.ok(tasks);
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
     @GetMapping("/{taskId}")
     public ResponseEntity<TaskGetDTO> getClassroomTask(@PathVariable UUID classroomId,
-                                                       @PathVariable UUID taskId){
-        Optional<Classroom> classroomById = classroomService.getClassroomById(classroomId);
-        if(classroomById.isEmpty()) throw new EntityNotFoundException("Classroom not found");
-
-        Optional<Task> taskById = taskService.getTaskById(taskId);
-        return taskById.map(task ->
-                        ResponseEntity.ok(new TaskGetDTO(task)))
-                        .orElseThrow(() -> new EntityNotFoundException("Task not found"));
+                                                       @PathVariable UUID taskId,
+                                                       @RequestHeader("Authorization") String authorizationHeader){
+        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+        Task task = taskService.getTaskBasedOnUserPermission(classroomId, payloadDTO, taskId);
+        return ResponseEntity.ok(new TaskGetDTO(task));
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR')")
     @PostMapping
     public ResponseEntity<TaskGetDTO> createTask(@PathVariable UUID classroomId,
                                                  @Valid @RequestBody TaskPostDTO taskPostDTO,
-                                                 UriComponentsBuilder uriBuilder) {
-        if (classroomService.getClassroomById(classroomId).isEmpty())
-            throw new EntityNotFoundException("Classroom not found");
-
-        Task savedTask = taskService.save(taskPostDTO);
-        var uri = uriBuilder.path("/classroom/{classroomId}/task/{id}").buildAndExpand(savedTask.getClassroomId(), savedTask.getId()).toUri();
-        return ResponseEntity.created(uri).build();
+                                                 @RequestHeader("Authorization") String authorizationHeader) {
+        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+        TaskCreateDTO taskCreateDTO = new TaskCreateDTO(taskPostDTO, classroomId);
+        Task savedTask = taskService.save(classroomId, payloadDTO, taskCreateDTO);
+        return ResponseEntity.ok(new TaskGetDTO(savedTask));
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR')")
-    @PutMapping("/{id}")
-    public ResponseEntity<?> editTask(@PathVariable UUID id, @Valid @RequestBody TaskPutDTO taskPutDTO) {
-        Optional<Task> taskById = taskService.getTaskById(id);
-        if(taskById.isEmpty())
-            throw new EntityNotFoundException("Task not found");
-
-        Task task = taskById.get();
-        if (taskPutDTO.title() != null) {
-            task.setTitle(taskPutDTO.title().trim());
-        }
-        if (taskPutDTO.description() != null) {
-            task.setDescription(taskPutDTO.description().trim());
-        }
-        if (taskPutDTO.dueDate() != null) {
-            task.setDueDate(taskPutDTO.dueDate());
-        }
-
-        taskService.save(task);
-        return ResponseEntity.ok(task);
+    @PutMapping("/{taskId}")
+    public ResponseEntity<TaskGetDTO> editTask(@PathVariable UUID classroomId,
+                                               @PathVariable UUID taskId,
+                                               @Valid @RequestBody TaskPutDTO taskPutDTO,
+                                               @RequestHeader("Authorization") String authorizationHeader) {
+        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+        Task task = taskService.edit(taskId, classroomId, payloadDTO, taskPutDTO);
+        return ResponseEntity.ok(new TaskGetDTO(task));
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR')")
     @DeleteMapping("/{taskId}")
     public ResponseEntity<Void> deleteTask(@PathVariable UUID classroomId,
-                                           @PathVariable UUID taskId) {
-        if (classroomService.getClassroomById(classroomId).isEmpty())
-            throw new EntityNotFoundException("Classroom not found");
-
-        if (taskService.getTaskById(taskId).isEmpty())
-            throw new EntityNotFoundException("Task not found");
-
-        taskService.deleteById(taskId);
+                                           @PathVariable UUID taskId,
+                                           @RequestHeader("Authorization") String authorizationHeader) {
+        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+        taskService.deleteById(taskId, classroomId, payloadDTO);
         return ResponseEntity.noContent().build();
     }
 }
