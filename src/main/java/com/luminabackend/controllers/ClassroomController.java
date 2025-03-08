@@ -25,10 +25,10 @@ public class ClassroomController {
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
     @GetMapping
-    public ResponseEntity<List<ClassroomGetDTO>> getAllClassrooms(@RequestHeader("Authorization") String authorizationHeader) {
+    public ResponseEntity<List<ClassroomResourceDTO>> getAllClassrooms(@RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payload = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
         List<Classroom> filteredClassrooms = classroomService.getFilteredClassrooms(payload.role(), payload.id());
-        return ResponseEntity.ok(filteredClassrooms.stream().map(ClassroomGetDTO::new).toList());
+        return ResponseEntity.ok(filteredClassrooms.stream().map(ClassroomResourceDTO::new).toList());
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
@@ -39,6 +39,16 @@ public class ClassroomController {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
         Classroom classroom = classroomService.getClassroomBasedOnUserPermission(classroomId, payloadDTO);
         return ResponseEntity.ok(new ClassroomResourceDTO(classroom));
+    }
+
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
+    @GetMapping("/{classroomId}/members")
+    public ResponseEntity<ClassroomWithRelationsDTO> getClassroomWithRelations(
+        @PathVariable UUID classroomId,
+        @RequestHeader("Authorization") String authorizationHeader) {
+        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+        ClassroomWithRelationsDTO classroom = classroomService.getClassroomWithRelations(classroomId, payloadDTO);
+        return ResponseEntity.ok(classroom);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

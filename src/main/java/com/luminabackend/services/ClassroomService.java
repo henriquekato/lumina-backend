@@ -5,7 +5,12 @@ import com.luminabackend.exceptions.StudentAlreadyInClassroomException;
 import com.luminabackend.models.education.classroom.Classroom;
 import com.luminabackend.models.education.classroom.ClassroomPostDTO;
 import com.luminabackend.models.education.classroom.ClassroomPutDTO;
+import com.luminabackend.models.education.classroom.ClassroomWithRelationsDTO;
+import com.luminabackend.models.user.Professor;
 import com.luminabackend.models.user.Role;
+import com.luminabackend.models.user.Student;
+import com.luminabackend.models.user.dto.professor.ProfessorGetDTO;
+import com.luminabackend.models.user.dto.student.StudentGetDTO;
 import com.luminabackend.repositories.classroom.ClassroomRepository;
 import com.luminabackend.utils.security.PayloadDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +30,12 @@ public class ClassroomService {
 
     @Autowired
     private PermissionService permissionService;
+
+    @Autowired
+    private StudentService studentService;
+
+    @Autowired
+    private ProfessorService professorService;
 
     public List<Classroom> getFilteredClassrooms(Role role, UUID userId) {
         if (role.equals(Role.ADMIN))
@@ -50,6 +61,24 @@ public class ClassroomService {
 
     public Optional<Classroom> getClassroomByName(String name) {
         return repository.findByName(name);
+    }
+
+    public ClassroomWithRelationsDTO getClassroomWithRelations(UUID classroomId, PayloadDTO payloadDTO){
+        Classroom classroom = getClassroomById(classroomId);
+        permissionService.checkAccessToClassroom(payloadDTO, classroom);
+
+        Optional<Professor> professorById = professorService.getProfessorById(classroom.getProfessorId());
+        ProfessorGetDTO professor = professorById
+                .map(ProfessorGetDTO::new)
+                .orElseGet(() -> null);
+
+        List<StudentGetDTO> students = studentService
+                .getAllStudentsById(classroom.getStudentsIds())
+                .stream()
+                .map(StudentGetDTO::new)
+                .toList();
+
+        return new ClassroomWithRelationsDTO(classroomId, professor, students);
     }
 
     public boolean existsById(UUID id) {

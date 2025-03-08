@@ -33,6 +33,10 @@ public class StudentService {
         return repository.findAll();
     }
 
+    public List<Student> getAllStudentsById(List<UUID> studentIds){
+        return repository.findAllById(studentIds);
+    }
+
     public Optional<Student> getStudentById(UUID id) {
         return repository.findById(id);
     }
