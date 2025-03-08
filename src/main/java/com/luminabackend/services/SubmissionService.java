@@ -2,6 +2,7 @@ package com.luminabackend.services;
 
 import com.luminabackend.exceptions.AccessDeniedException;
 import com.luminabackend.exceptions.EntityNotFoundException;
+import com.luminabackend.exceptions.TaskAlreadySubmittedException;
 import com.luminabackend.exceptions.TaskDueDateExpiredException;
 import com.luminabackend.models.education.classroom.Classroom;
 import com.luminabackend.models.education.submission.Submission;
@@ -63,6 +64,9 @@ public class SubmissionService {
         Task task = taskService.getTaskById(taskId);
         if (task.getDueDate().isBefore(LocalDateTime.now()))
             throw new TaskDueDateExpiredException("Task due date expired");
+
+        if (repository.existsByStudentIdAndTaskId(payloadDTO.id(), taskId))
+            throw new TaskAlreadySubmittedException("You have already submitted this task");
 
         String fileId = fileStorageService.storeFile(file, taskId);
         Submission submission = new Submission(submissionPostDTO, taskId, payloadDTO.id(), fileId);

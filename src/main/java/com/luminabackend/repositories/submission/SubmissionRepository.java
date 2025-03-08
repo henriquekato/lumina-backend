@@ -8,5 +8,5 @@ import java.util.UUID;
 
 public interface SubmissionRepository extends MongoRepository<Submission, UUID> {
     List<Submission> findAllByTaskId(UUID taskId);
-
+    boolean existsByStudentIdAndTaskId(UUID studentId, UUID taskId);
 }
