@@ -1,5 +1,6 @@
 package com.luminabackend.controllers;
 
+import com.luminabackend.exceptions.MissingFileException;
 import com.luminabackend.models.education.submission.Submission;
 import com.luminabackend.models.education.submission.SubmissionAssessmentDTO;
 import com.luminabackend.models.education.submission.SubmissionGetDTO;
@@ -70,6 +71,10 @@ public class SubmissionController {
             @RequestPart("file") MultipartFile file,
             @RequestHeader("Authorization") String authorizationHeader) throws IOException {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+
+        if (file == null || file.isEmpty()) {
+            throw new MissingFileException("Missing submission file");
+        }
 
         Submission savedSubmission = submissionService.saveSubmission(classroomId, taskId, payloadDTO, submissionPostDTO, file);
         return ResponseEntity.ok(new SubmissionGetDTO(savedSubmission));

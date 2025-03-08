@@ -10,6 +10,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import java.util.List;
 import java.util.UUID;
@@ -75,5 +76,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(TaskAlreadySubmittedException.class)
     public ResponseEntity<GeneralErrorResponseDTO> handleTaskAlreadySubmittedException(TaskAlreadySubmittedException e){
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new GeneralErrorResponseDTO(e.getMessage()));
+    }
+
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<GeneralErrorResponseDTO> handleMissingServletRequestPartException(MissingServletRequestPartException e) {
+        return ResponseEntity.badRequest().body(new GeneralErrorResponseDTO(e.getMessage()));
+    }
+
+    @ExceptionHandler(MissingFileException.class)
+    public ResponseEntity<GeneralErrorResponseDTO> handleMissingFileException(MissingFileException e) {
+        return ResponseEntity.badRequest().body(new GeneralErrorResponseDTO(e.getMessage()));
     }
 }
