@@ -110,4 +110,8 @@ public class ClassroomService {
 
         repository.save(classroom);
     }
+
+    public void removeStudentFromAllClassrooms(UUID studentId){
+        repository.pullStudentFromAllClassrooms(studentId);
+    }
 }

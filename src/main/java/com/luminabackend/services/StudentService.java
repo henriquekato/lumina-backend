@@ -26,6 +26,9 @@ public class StudentService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private ClassroomService classroomService;
+
     public List<Student> getAllStudents() {
         return repository.findAll();
     }
@@ -70,6 +73,9 @@ public class StudentService {
         if (!existsById(id)) {
             throw new EntityNotFoundException("Student not found");
         }
+
+        classroomService.removeStudentFromAllClassrooms(id);
+
         repository.deleteById(id);
     }
 }
