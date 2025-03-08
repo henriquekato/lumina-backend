@@ -21,6 +21,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -32,15 +34,30 @@ public class SecurityFilter extends OncePerRequestFilter {
     @Autowired
     private UserRepository repository;
 
+    private final List<String> excludedUrls = Arrays.asList(
+            "/login",
+            "/v1/api/",
+            "/v2/api-docs",
+            "/v3/api-docs",
+            "/v3/api-docs/",
+            "/swagger-resources",
+            "/swagger-resources/",
+            "/configuration/ui",
+            "/configuration/security",
+            "/swagger-ui/",
+            "/webjars/",
+            "/swagger-ui.html"
+    );
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        try {
-            String requestURI = request.getRequestURI();
-            if (Objects.equals(requestURI, "/login")) {
-                filterChain.doFilter(request, response);
-                return;
-            }
+        String requestURI = request.getRequestURI();
+        if (excludedUrls.stream().anyMatch(requestURI::startsWith)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
+        try {
             var authorizationHeader = request.getHeader("Authorization");
             if (authorizationHeader == null)
                 throw new AuthorizationHeaderNotFoundException("Required Authorization header was not provided. Please include a valid Bearer token");
