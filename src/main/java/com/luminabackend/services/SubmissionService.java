@@ -2,10 +2,12 @@ package com.luminabackend.services;
 
 import com.luminabackend.exceptions.AccessDeniedException;
 import com.luminabackend.exceptions.EntityNotFoundException;
+import com.luminabackend.exceptions.TaskDueDateExpiredException;
 import com.luminabackend.models.education.classroom.Classroom;
 import com.luminabackend.models.education.submission.Submission;
 import com.luminabackend.models.education.submission.SubmissionAssessmentDTO;
 import com.luminabackend.models.education.submission.SubmissionPostDTO;
+import com.luminabackend.models.education.task.Task;
 import com.luminabackend.models.user.Role;
 import com.luminabackend.repositories.submission.SubmissionRepository;
 import com.luminabackend.utils.security.PayloadDTO;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -57,6 +60,10 @@ public class SubmissionService {
     public Submission saveSubmission(UUID classroomId, UUID taskId, PayloadDTO payloadDTO, SubmissionPostDTO submissionPostDTO, MultipartFile file) throws IOException {
         checkAccess(classroomId, taskId, payloadDTO);
 
+        Task task = taskService.getTaskById(taskId);
+        if (task.getDueDate().isBefore(LocalDateTime.now()))
+            throw new TaskDueDateExpiredException("Task due date expired");
+
         String fileId = fileStorageService.storeFile(file, taskId);
         Submission submission = new Submission(submissionPostDTO, taskId, payloadDTO.id(), fileId);
         return repository.save(submission);
@@ -68,6 +75,10 @@ public class SubmissionService {
         Submission submission = getSubmissionById(submissionId);
         if (payloadDTO.role().equals(Role.STUDENT) && !submission.getStudentId().equals(payloadDTO.id()))
             throw new AccessDeniedException("This submission you are trying to delete is not yours");
+
+        Task task = taskService.getTaskById(taskId);
+        if (task.getDueDate().isBefore(LocalDateTime.now()))
+            throw new TaskDueDateExpiredException("Task due date expired");
 
         if (submission.getFileId() != null)
             fileStorageService.deleteFile(submission.getFileId());

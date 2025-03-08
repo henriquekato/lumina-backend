@@ -66,4 +66,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<GeneralErrorResponseDTO> handleStudentAlreadyInClassroomException(StudentAlreadyInClassroomException e){
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new GeneralErrorResponseDTO(e.getMessage()));
     }
+
+    @ExceptionHandler(TaskDueDateExpiredException.class)
+    public ResponseEntity<GeneralErrorResponseDTO> handleTaskDueDateExpiredException(TaskDueDateExpiredException e){
+        return ResponseEntity.badRequest().body(new GeneralErrorResponseDTO(e.getMessage()));
+    }
 }
