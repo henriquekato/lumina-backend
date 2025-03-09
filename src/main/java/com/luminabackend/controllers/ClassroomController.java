@@ -98,7 +98,7 @@ public class ClassroomController {
                     description = "Returns the professor and the list of students of the classroom",
                     content = { @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ClassroomResourceDTO.class)) }),
+                            schema = @Schema(implementation = ClassroomWithRelationsDTO.class)) }),
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid classroom id",
