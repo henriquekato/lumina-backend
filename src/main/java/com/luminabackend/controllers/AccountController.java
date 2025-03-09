@@ -5,6 +5,7 @@ import com.luminabackend.models.user.dto.user.UserLoginDTO;
 import com.luminabackend.services.TokenService;
 import com.luminabackend.utils.errors.GeneralErrorResponseDTO;
 import com.luminabackend.utils.security.TokenDTO;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -28,6 +29,7 @@ public class AccountController {
     @Autowired
     private TokenService tokenService;
 
+    @Operation(summary = "Login with email and password")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
