@@ -62,7 +62,7 @@ public class ProfessorController {
                             schema = @Schema(implementation = ProfessorGetDTO.class)) }),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Invalid id",
+                    description = "Invalid professor id",
                     content = { @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
@@ -118,7 +118,7 @@ public class ProfessorController {
                             schema = @Schema(implementation = ProfessorGetDTO.class)) }),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Invalid id",
+                    description = "Invalid professor id",
                     content = { @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
@@ -156,7 +156,7 @@ public class ProfessorController {
                     description = "Successfully delete the professor"),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Invalid id",
+                    description = "Invalid professor id",
                     content = { @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),

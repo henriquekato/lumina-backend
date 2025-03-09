@@ -62,7 +62,7 @@ public class AdminController {
                             schema = @Schema(implementation = AdminGetDTO.class)) }),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Invalid id",
+                    description = "Invalid admin id",
                     content = { @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
@@ -118,7 +118,7 @@ public class AdminController {
                             schema = @Schema(implementation = AdminGetDTO.class)) }),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Invalid id",
+                    description = "Invalid admin id",
                     content = { @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
@@ -156,7 +156,7 @@ public class AdminController {
                     description = "Successfully delete the admin"),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Invalid id",
+                    description = "Invalid admin id",
                     content = { @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),

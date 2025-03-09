@@ -62,7 +62,7 @@ public class StudentController {
                             schema = @Schema(implementation = StudentGetDTO.class)) }),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Invalid id",
+                    description = "Invalid student id",
                     content = { @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
@@ -118,7 +118,7 @@ public class StudentController {
                             schema = @Schema(implementation = StudentGetDTO.class)) }),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Invalid id",
+                    description = "Invalid student id",
                     content = { @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
@@ -156,7 +156,7 @@ public class StudentController {
                     description = "Successfully delete the student"),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Invalid id",
+                    description = "Invalid student id",
                     content = { @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),

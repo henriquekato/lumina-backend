@@ -64,13 +64,13 @@ public class ClassroomController {
                             schema = @Schema(implementation = ClassroomResourceDTO.class)) }),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Invalid id",
+                    description = "Invalid classroom id",
                     content = { @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
             @ApiResponse(
                     responseCode = "403",
-                    description = "Access denied to this class",
+                    description = "Access denied to this classroom",
                     content = { @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
@@ -101,13 +101,13 @@ public class ClassroomController {
                             schema = @Schema(implementation = ClassroomResourceDTO.class)) }),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Invalid id",
+                    description = "Invalid classroom id",
                     content = { @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
             @ApiResponse(
                     responseCode = "403",
-                    description = "Access denied to this class",
+                    description = "Access denied to this classroom",
                     content = { @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
@@ -158,7 +158,7 @@ public class ClassroomController {
                             schema = @Schema(implementation = ClassroomResourceDTO.class)) }),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Invalid id",
+                    description = "Invalid classroom id",
                     content = { @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
@@ -176,11 +176,11 @@ public class ClassroomController {
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
     })
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/{id}")
+    @PutMapping("/{classroomId}")
     public ResponseEntity<ClassroomResourceDTO> editClassroom(
-            @PathVariable UUID id,
+            @PathVariable UUID classroomId,
             @Valid @RequestBody ClassroomPutDTO classroomPutDTO) {
-        Classroom classroom = classroomService.edit(id, classroomPutDTO);
+        Classroom classroom = classroomService.edit(classroomId, classroomPutDTO);
         return ResponseEntity.ok(new ClassroomResourceDTO(classroom));
     }
 
@@ -191,7 +191,7 @@ public class ClassroomController {
                     description = "Successfully delete the classroom and its dependencies"),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Invalid id",
+                    description = "Invalid classroom id",
                     content = { @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
