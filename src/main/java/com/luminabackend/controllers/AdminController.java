@@ -61,6 +61,12 @@ public class AdminController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = AdminGetDTO.class)) }),
             @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid id",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+            @ApiResponse(
                     responseCode = "404",
                     description = "Admin not found",
                     content = { @Content(
@@ -112,6 +118,12 @@ public class AdminController {
                             schema = @Schema(implementation = AdminGetDTO.class)) }),
             @ApiResponse(
                     responseCode = "400",
+                    description = "Invalid id",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+            @ApiResponse(
+                    responseCode = "400",
                     description = "Validation errors",
                     content = { @Content(
                             mediaType = "application/json",
@@ -142,6 +154,18 @@ public class AdminController {
             @ApiResponse(
                     responseCode = "204",
                     description = "Successfully delete the admin"),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid id",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "The last administrator cannot be deleted",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
             @ApiResponse(
                     responseCode = "404",
                     description = "Admin not found",
