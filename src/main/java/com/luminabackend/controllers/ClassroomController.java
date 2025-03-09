@@ -188,9 +188,7 @@ public class ClassroomController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "204",
-                    description = "Successfully delete the classroom and its dependencies",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ClassroomResourceDTO.class)) }),
+                    description = "Successfully delete the classroom and its dependencies"),
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid id",
@@ -264,9 +262,7 @@ public class ClassroomController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "204",
-                    description = "Successfully remove the student from the classroom",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ClassroomResourceDTO.class)) }),
+                    description = "Successfully remove the student from the classroom"),
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid classroom id or student id",
