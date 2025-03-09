@@ -105,7 +105,7 @@ public class TaskController {
         return ResponseEntity.ok(new TaskGetDTO(task));
     }
 
-    @Operation(summary = "Create a task")
+    @Operation(summary = "Create a new task")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "201",
@@ -175,7 +175,7 @@ public class TaskController {
         return ResponseEntity.ok(new TaskGetDTO(task));
     }
 
-    @Operation(summary = "Delete a task by its id")
+    @Operation(summary = "Delete a task and its dependencies by task id")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "204",

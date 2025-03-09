@@ -5,7 +5,6 @@ import com.luminabackend.models.education.submission.Submission;
 import com.luminabackend.models.education.submission.SubmissionAssessmentDTO;
 import com.luminabackend.models.education.submission.SubmissionGetDTO;
 import com.luminabackend.models.education.submission.SubmissionPostDTO;
-import com.luminabackend.models.education.task.TaskGetDTO;
 import com.luminabackend.services.*;
 import com.luminabackend.utils.errors.GeneralErrorResponseDTO;
 import com.luminabackend.utils.errors.ValidationErrorResponseDTO;
