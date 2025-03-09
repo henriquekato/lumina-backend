@@ -85,13 +85,13 @@ public class ProfessorController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "201",
-                    description = "Returns the created professor",
+                    description = "Successfully create a professor",
                     content = { @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ProfessorGetDTO.class)) }),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Validation errors",
+                    description = "Fail on request body validation",
                     content = { @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ValidationErrorResponseDTO.class)) }),
@@ -112,7 +112,7 @@ public class ProfessorController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Returns the edited professor",
+                    description = "Successfully edit the professor",
                     content = { @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ProfessorGetDTO.class)) }),
@@ -124,7 +124,7 @@ public class ProfessorController {
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Validation errors",
+                    description = "Fail on request body validation",
                     content = { @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ValidationErrorResponseDTO.class)) }),
