@@ -14,6 +14,8 @@ import com.luminabackend.models.user.dto.student.StudentGetDTO;
 import com.luminabackend.repositories.classroom.ClassroomRepository;
 import com.luminabackend.utils.security.PayloadDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -45,6 +47,16 @@ public class ClassroomService {
             return repository.findAllByProfessorId(userId);
 
         return repository.findAllByStudentsIdsContains(userId);
+    }
+
+    public Page<Classroom> getPaginatedClassrooms(Role role, UUID userId, Pageable page) {
+        if (role.equals(Role.ADMIN))
+            return repository.findAll(page);
+
+        if (role.equals(Role.PROFESSOR))
+            return repository.findAllByProfessorId(userId, page);
+
+        return repository.findAllByStudentsIdsContains(userId, page);
     }
 
     public Classroom getClassroomById(UUID id) {

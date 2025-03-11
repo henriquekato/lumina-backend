@@ -13,6 +13,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -41,20 +43,36 @@ public class ClassroomController {
     @Autowired
     private TokenService tokenService;
 
-    @Operation(summary = "Get a list of classrooms based on user access")
+    @Operation(summary = "Get a list of all classrooms based on user access")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Returns a list of classrooms",
+                    description = "Returns a list of all classrooms",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ClassroomGetDTO.class)) })
+    })
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
+    @GetMapping("/all")
+    public ResponseEntity<List<ClassroomGetDTO>> getAllClassrooms(@RequestHeader("Authorization") String authorizationHeader) {
+        PayloadDTO payload = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+        List<Classroom> filteredClassrooms = classroomService.getFilteredClassrooms(payload.role(), payload.id());
+        return ResponseEntity.ok(filteredClassrooms.stream().map(ClassroomGetDTO::new).toList());
+    }
+
+    @Operation(summary = "Get a paginated list of classrooms based on user access")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Returns a paginated list of classrooms",
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ClassroomGetDTO.class)) })
     })
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
     @GetMapping
-    public ResponseEntity<List<ClassroomGetDTO>> getAllClassrooms(@RequestHeader("Authorization") String authorizationHeader) {
+    public ResponseEntity<Page<ClassroomGetDTO>> getPaginatedClassrooms(Pageable page, @RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payload = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        List<Classroom> filteredClassrooms = classroomService.getFilteredClassrooms(payload.role(), payload.id());
-        return ResponseEntity.ok(filteredClassrooms.stream().map(ClassroomGetDTO::new).toList());
+        Page<Classroom> filteredClassrooms = classroomService.getPaginatedClassrooms(payload.role(), payload.id(), page);
+        return ResponseEntity.ok(filteredClassrooms.map(ClassroomGetDTO::new));
     }
 
     @Operation(summary = "Get a classroom by its id based on user access")
