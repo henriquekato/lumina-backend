@@ -15,6 +15,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -41,18 +43,32 @@ public class StudentController {
     @Autowired
     private StudentService service;
 
-    @Operation(summary = "Get a list of students")
+    @Operation(summary = "Get all students")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Returns a list of students",
+                    description = "Returns a list with all students",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = StudentGetDTO.class)) })
+    })
+    @GetMapping("/all")
+    public ResponseEntity<List<StudentGetDTO>> getAllStudents() {
+        List<Student> students = service.getAllStudents();
+        return ResponseEntity.ok(students.stream().map(StudentGetDTO::new).toList());
+    }
+
+    @Operation(summary = "Get a paginated list of students")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Returns a paginated list of students",
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = StudentGetDTO.class)) })
     })
     @GetMapping
-    public ResponseEntity<List<StudentGetDTO>> getAllStudents() {
-        List<Student> students = service.getAllStudents();
-        return ResponseEntity.ok(students.stream().map(StudentGetDTO::new).toList());
+    public ResponseEntity<Page<StudentGetDTO>> getPaginatedStudents(Pageable page) {
+        Page<Student> students = service.getPaginatedStudents(page);
+        return ResponseEntity.ok(students.map(StudentGetDTO::new));
     }
 
     @Operation(summary = "Get a student by its id")

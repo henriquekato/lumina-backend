@@ -8,6 +8,8 @@ import com.luminabackend.models.user.dto.user.UserPutDTO;
 import com.luminabackend.models.user.dto.user.UserSignupDTO;
 import com.luminabackend.repositories.student.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +33,10 @@ public class StudentService {
 
     public List<Student> getAllStudents() {
         return repository.findAll();
+    }
+
+    public Page<Student> getPaginatedStudents(Pageable page) {
+        return repository.findAll(page);
     }
 
     public List<Student> getAllStudentsById(List<UUID> studentIds){
