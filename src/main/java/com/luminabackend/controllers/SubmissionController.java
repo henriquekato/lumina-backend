@@ -6,7 +6,14 @@ import com.luminabackend.models.education.submission.SubmissionAssessmentDTO;
 import com.luminabackend.models.education.submission.SubmissionGetDTO;
 import com.luminabackend.models.education.submission.SubmissionPostDTO;
 import com.luminabackend.services.*;
+import com.luminabackend.utils.errors.GeneralErrorResponseDTO;
+import com.luminabackend.utils.errors.ValidationErrorResponseDTO;
 import com.luminabackend.utils.security.PayloadDTO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -22,6 +29,32 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
+@ApiResponses(value = {
+        @ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized. Incorrect or invalid credentials",
+                content = { @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+        @ApiResponse(
+                responseCode = "403",
+                description = "Access denied to this resource",
+                content = { @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+        @ApiResponse(
+                responseCode = "404",
+                description = "Classroom not found",
+                content = { @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+        @ApiResponse(
+                responseCode = "404",
+                description = "Task not found",
+                content = { @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+})
 @RestController
 @RequestMapping("/classroom/{classroomId}/task/{taskId}/submission")
 public class SubmissionController {
@@ -34,6 +67,20 @@ public class SubmissionController {
     @Autowired
     private TokenService tokenService;
 
+    @Operation(summary = "Get a list of submissions from a classroom task")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Returns a list of submissions",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = SubmissionGetDTO.class)) }),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid classroom id or task id",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+    })
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR')")
     @GetMapping
     public ResponseEntity<List<SubmissionGetDTO>> getAllTaskSubmissions(
@@ -49,6 +96,26 @@ public class SubmissionController {
         return ResponseEntity.ok(submissions);
     }
 
+    @Operation(summary = "Get a task submission")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Returns the task submission",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = SubmissionGetDTO.class)) }),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid classroom id, task id or submission id",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Submission not found",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+    })
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
     @GetMapping("/{submissionId}")
     public ResponseEntity<SubmissionGetDTO> getTaskSubmissionById(
@@ -62,6 +129,38 @@ public class SubmissionController {
         return ResponseEntity.ok(new SubmissionGetDTO(submission));
     }
 
+    @Operation(summary = "Create a new task submission")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Successfully create a task submission",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = SubmissionGetDTO.class)) }),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid classroom id or task id",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class))}),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Task due date expired",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Fail on request part validation",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ValidationErrorResponseDTO.class)) }),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Submission already sent to this task",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+    })
     @PreAuthorize("hasRole('STUDENT')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<SubmissionGetDTO> createSubmission(
@@ -80,6 +179,30 @@ public class SubmissionController {
         return ResponseEntity.ok(new SubmissionGetDTO(savedSubmission));
     }
 
+    @Operation(summary = "Delete a task submission")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "Successfully delete the task submission"),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid classroom id, task id or submission id",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Task due date expired",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Submission not found",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+    })
     @PreAuthorize("hasRole('STUDENT')")
     @DeleteMapping("/{submissionId}")
     public ResponseEntity<Void> deleteSubmission(
@@ -93,6 +216,32 @@ public class SubmissionController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Get a submission file")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Returns the submission file",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = GridFsResource.class)) }),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid classroom id, task id, submission id, or file id",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Submission not found",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "File not found",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+    })
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
     @GetMapping("/{submissionId}/file/{fileId}")
     public ResponseEntity<ByteArrayResource> downloadSubmissionFile(
@@ -113,6 +262,32 @@ public class SubmissionController {
                 .body(new ByteArrayResource(file.getInputStream().readAllBytes()));
     }
 
+    @Operation(summary = "Evaluate a task submission")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Successfully evaluate the task submission",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = SubmissionGetDTO.class)) }),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid classroom id, task id or submission id",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Fail on request body validation",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ValidationErrorResponseDTO.class)) }),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Submission not found",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+    })
     @PreAuthorize("hasRole('PROFESSOR')")
     @PutMapping("/{submissionId}")
     public ResponseEntity<SubmissionGetDTO> submissionAssessment(
