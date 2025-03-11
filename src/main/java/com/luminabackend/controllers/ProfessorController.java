@@ -23,6 +23,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 @ApiResponses(value = {
         @ApiResponse(
                 responseCode = "401",
@@ -105,7 +108,11 @@ public class ProfessorController {
     @PostMapping
     public ResponseEntity<ProfessorGetDTO> saveProfessor(@Valid @RequestBody UserSignupDTO professorPostDTO) {
         Professor newProfessor = service.save(professorPostDTO);
-        return ResponseEntity.ok(new ProfessorGetDTO(newProfessor));
+        return ResponseEntity
+                .created(linkTo(methodOn(ProfessorController.class)
+                        .getProfessor(newProfessor.getId()))
+                        .toUri())
+                .body(new ProfessorGetDTO(newProfessor));
     }
 
     @Operation(summary = "Edit a professor by its id")

@@ -21,6 +21,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 @ApiResponses(value = {
         @ApiResponse(
                 responseCode = "401",
@@ -44,14 +47,14 @@ public class ClassroomController {
                     responseCode = "200",
                     description = "Returns a list of classrooms",
                     content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ClassroomResourceDTO.class)) })
+                            schema = @Schema(implementation = ClassroomGetDTO.class)) })
     })
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
     @GetMapping
-    public ResponseEntity<List<ClassroomResourceDTO>> getAllClassrooms(@RequestHeader("Authorization") String authorizationHeader) {
+    public ResponseEntity<List<ClassroomGetDTO>> getAllClassrooms(@RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payload = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
         List<Classroom> filteredClassrooms = classroomService.getFilteredClassrooms(payload.role(), payload.id());
-        return ResponseEntity.ok(filteredClassrooms.stream().map(ClassroomResourceDTO::new).toList());
+        return ResponseEntity.ok(filteredClassrooms.stream().map(ClassroomGetDTO::new).toList());
     }
 
     @Operation(summary = "Get a classroom by its id based on user access")
@@ -61,7 +64,7 @@ public class ClassroomController {
                     description = "Returns the specified classroom",
                     content = { @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ClassroomResourceDTO.class)) }),
+                            schema = @Schema(implementation = ClassroomGetDTO.class)) }),
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid classroom id",
@@ -83,12 +86,12 @@ public class ClassroomController {
     })
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
     @GetMapping("/{classroomId}")
-    public ResponseEntity<ClassroomResourceDTO> getClassroom(
+    public ResponseEntity<ClassroomGetDTO> getClassroom(
             @PathVariable UUID classroomId,
             @RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
         Classroom classroom = classroomService.getClassroomBasedOnUserPermission(classroomId, payloadDTO);
-        return ResponseEntity.ok(new ClassroomResourceDTO(classroom));
+        return ResponseEntity.ok(new ClassroomGetDTO(classroom));
     }
 
     @Operation(summary = "Get the classroom professor and a list of its students")
@@ -134,7 +137,7 @@ public class ClassroomController {
                     responseCode = "201",
                     description = "Successfully create a classroom",
                     content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ClassroomResourceDTO.class)) }),
+                            schema = @Schema(implementation = ClassroomGetDTO.class)) }),
             @ApiResponse(
                     responseCode = "400",
                     description = "Fail on request body validation",
@@ -144,9 +147,15 @@ public class ClassroomController {
     })
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<ClassroomResourceDTO> saveClassroom(@Valid @RequestBody ClassroomPostDTO classroomPostDTO) {
+    public ResponseEntity<ClassroomGetDTO> saveClassroom(
+            @Valid @RequestBody ClassroomPostDTO classroomPostDTO,
+            @RequestHeader("Authorization") String authorizationHeader) {
         Classroom savedClassroom = classroomService.save(classroomPostDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ClassroomResourceDTO(savedClassroom));
+        return ResponseEntity
+                .created(linkTo(methodOn(ClassroomController.class)
+                        .getClassroom(savedClassroom.getId(), authorizationHeader))
+                        .toUri())
+                .body(new ClassroomGetDTO(savedClassroom));
     }
 
     @Operation(summary = "Edit a classroom by its id")
@@ -155,7 +164,7 @@ public class ClassroomController {
                     responseCode = "200",
                     description = "Successfully edit the classroom",
                     content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ClassroomResourceDTO.class)) }),
+                            schema = @Schema(implementation = ClassroomGetDTO.class)) }),
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid classroom id",
@@ -177,11 +186,11 @@ public class ClassroomController {
     })
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{classroomId}")
-    public ResponseEntity<ClassroomResourceDTO> editClassroom(
+    public ResponseEntity<ClassroomGetDTO> editClassroom(
             @PathVariable UUID classroomId,
             @Valid @RequestBody ClassroomPutDTO classroomPutDTO) {
         Classroom classroom = classroomService.edit(classroomId, classroomPutDTO);
-        return ResponseEntity.ok(new ClassroomResourceDTO(classroom));
+        return ResponseEntity.ok(new ClassroomGetDTO(classroom));
     }
 
     @Operation(summary = "Delete a classroom and its dependencies by classroom id")
@@ -215,7 +224,7 @@ public class ClassroomController {
                     responseCode = "200",
                     description = "Successfully add the student to the classroom",
                     content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ClassroomResourceDTO.class)) }),
+                            schema = @Schema(implementation = ClassroomGetDTO.class)) }),
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid classroom id or student id",
@@ -249,13 +258,13 @@ public class ClassroomController {
     })
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR')")
     @PostMapping("/{classroomId}/student/{studentId}")
-    public ResponseEntity<ClassroomResourceDTO> addStudent(
+    public ResponseEntity<ClassroomGetDTO> addStudent(
             @PathVariable UUID classroomId,
             @PathVariable UUID studentId,
             @RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
         Classroom classroom = classroomService.addStudentToClassroom(studentId, classroomId, payloadDTO);
-        return ResponseEntity.ok(new ClassroomResourceDTO(classroom));
+        return ResponseEntity.ok(new ClassroomGetDTO(classroom));
     }
 
     @Operation(summary = "Remove a student from classroom")

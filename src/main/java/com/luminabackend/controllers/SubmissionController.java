@@ -29,6 +29,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 @ApiResponses(value = {
         @ApiResponse(
                 responseCode = "401",
@@ -176,7 +179,11 @@ public class SubmissionController {
         }
 
         Submission savedSubmission = submissionService.saveSubmission(classroomId, taskId, payloadDTO, submissionPostDTO, file);
-        return ResponseEntity.ok(new SubmissionGetDTO(savedSubmission));
+        return ResponseEntity
+                .created(linkTo(methodOn(SubmissionController.class)
+                        .getTaskSubmissionById(classroomId, taskId, savedSubmission.getId(), authorizationHeader))
+                        .toUri())
+                .body(new SubmissionGetDTO(savedSubmission));
     }
 
     @Operation(summary = "Delete a task submission")

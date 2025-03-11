@@ -21,6 +21,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 @ApiResponses(value = {
         @ApiResponse(
                 responseCode = "401",
@@ -134,7 +137,11 @@ public class TaskController {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
         TaskCreateDTO taskCreateDTO = new TaskCreateDTO(taskPostDTO, classroomId);
         Task savedTask = taskService.save(classroomId, payloadDTO, taskCreateDTO);
-        return ResponseEntity.ok(new TaskGetDTO(savedTask));
+        return ResponseEntity
+                .created(linkTo(methodOn(TaskController.class)
+                        .getClassroomTask(classroomId, savedTask.getId(), authorizationHeader))
+                        .toUri())
+                .body(new TaskGetDTO(savedTask));
     }
 
     @Operation(summary = "Edit a task by its id")

@@ -23,6 +23,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 @ApiResponses(value = {
         @ApiResponse(
                 responseCode = "401",
@@ -105,7 +108,11 @@ public class AdminController {
     @PostMapping
     public ResponseEntity<AdminGetDTO> saveAdmin(@Valid @RequestBody UserSignupDTO adminPostDTO) {
         Admin newAdmin = service.save(adminPostDTO);
-        return ResponseEntity.ok(new AdminGetDTO(newAdmin));
+        return ResponseEntity
+                .created(linkTo(methodOn(AdminController.class)
+                        .getAdmin(newAdmin.getId()))
+                        .toUri())
+                .body(new AdminGetDTO(newAdmin));
     }
 
     @Operation(summary = "Edit a admin by its id")

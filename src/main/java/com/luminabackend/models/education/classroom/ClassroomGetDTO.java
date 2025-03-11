@@ -1,34 +1,18 @@
 package com.luminabackend.models.education.classroom;
 
-import com.luminabackend.controllers.ClassroomController;
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.hateoas.Link;
-import org.springframework.hateoas.RepresentationModel;
-
 import java.util.UUID;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
-
-@Getter @Setter
-public class ClassroomGetDTO extends RepresentationModel<ClassroomGetDTO> {
-    private UUID id;
-    private String name;
-    private String description;
-    private UUID professorId;
-    private Link get;
-    private Link post;
-    private Link delete;
-
+public record ClassroomGetDTO (
+        UUID id,
+        String name,
+        String description,
+        UUID professorId
+) {
     public ClassroomGetDTO(Classroom classroom) {
-        this.id = classroom.getId();
-        this.name = classroom.getName();
-        this.description = classroom.getDescription();
-        this.professorId = classroom.getProfessorId();
-
-        add(linkTo(methodOn(ClassroomController.class).deleteClassroom(id)).withRel("delete").withType("DELETE"));
-        add(linkTo(methodOn(ClassroomController.class).addStudent(id, UUID.randomUUID(), null)).withRel("add student").withType("POST"));
-        add(linkTo(methodOn(ClassroomController.class).removeStudent(id, UUID.randomUUID(), null)).withRel("remove student").withType("DELETE"));
+        this(
+                classroom.getId(),
+                classroom.getName(),
+                classroom.getDescription(),
+                classroom.getProfessorId());
     }
 }
