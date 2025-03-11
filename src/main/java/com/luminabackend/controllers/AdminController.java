@@ -15,6 +15,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -41,18 +44,32 @@ public class AdminController {
     @Autowired
     private AdminService service;
 
-    @Operation(summary = "Get a list of admins")
+    @Operation(summary = "Get all admins")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Returns a list of admins",
+                    description = "Returns a list with all admins",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = AdminGetDTO.class)) })
+    })
+    @GetMapping("/all")
+    public ResponseEntity<List<AdminGetDTO>> getAllAdmins() {
+        List<Admin> admins = service.getAllAdmins();
+        return ResponseEntity.ok(admins.stream().map(AdminGetDTO::new).toList());
+    }
+
+    @Operation(summary = "Get a paginated list of admins")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Returns a paginated list of admins",
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = AdminGetDTO.class)) })
     })
     @GetMapping
-    public ResponseEntity<List<AdminGetDTO>> getAllAdmins() {
-        List<Admin> admins = service.getAllAdmins();
-        return ResponseEntity.ok(admins.stream().map(AdminGetDTO::new).toList());
+    public ResponseEntity<Page<AdminGetDTO>> getPaginatedAdmins(Pageable page) {
+        Page<Admin> admins = service.getPaginatedAdmins(page);
+        return ResponseEntity.ok(admins.map(AdminGetDTO::new));
     }
 
     @Operation(summary = "Get a admin by its id")

@@ -9,6 +9,8 @@ import com.luminabackend.models.user.dto.user.UserPutDTO;
 import com.luminabackend.models.user.dto.user.UserSignupDTO;
 import com.luminabackend.repositories.admin.AdminRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +31,10 @@ public class AdminService {
 
     public List<Admin> getAllAdmins() {
         return repository.findAll();
+    }
+
+    public Page<Admin> getPaginatedAdmins(Pageable page){
+        return repository.findAll(page);
     }
 
     public Optional<Admin> getAdminById(UUID id) {
