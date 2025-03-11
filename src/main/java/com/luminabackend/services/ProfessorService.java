@@ -8,6 +8,8 @@ import com.luminabackend.models.user.dto.user.UserPutDTO;
 import com.luminabackend.models.user.dto.user.UserSignupDTO;
 import com.luminabackend.repositories.professor.ProfessorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +30,10 @@ public class ProfessorService {
 
     public List<Professor> getAllProfessors() {
         return repository.findAll();
+    }
+
+    public Page<Professor> getPaginatedProfessors(Pageable page) {
+        return repository.findAll(page);
     }
 
     public Optional<Professor> getProfessorById(UUID id) {

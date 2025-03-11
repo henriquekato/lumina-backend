@@ -15,6 +15,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -41,18 +43,32 @@ public class ProfessorController {
     @Autowired
     private ProfessorService service;
 
-    @Operation(summary = "Get a list of professors")
+    @Operation(summary = "Get all professors")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Returns a list of professors",
+                    description = "Returns a list with all professors",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ProfessorGetDTO.class)) })
+    })
+    @GetMapping("/all")
+    public ResponseEntity<List<ProfessorGetDTO>> getAllProfessors() {
+        List<Professor> professors = service.getAllProfessors();
+        return ResponseEntity.ok(professors.stream().map(ProfessorGetDTO::new).toList());
+    }
+
+    @Operation(summary = "Get a paginated list of professors")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Returns a paginated list of professors",
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ProfessorGetDTO.class)) })
     })
     @GetMapping
-    public ResponseEntity<List<ProfessorGetDTO>> getAllProfessors() {
-        List<Professor> professors = service.getAllProfessors();
-        return ResponseEntity.ok(professors.stream().map(ProfessorGetDTO::new).toList());
+    public ResponseEntity<Page<ProfessorGetDTO>> getPaginatedProfessors(Pageable page) {
+        Page<Professor> professors = service.getPaginatedProfessors(page);
+        return ResponseEntity.ok(professors.map(ProfessorGetDTO::new));
     }
 
     @Operation(summary = "Get a professor by its id")
