@@ -50,14 +50,14 @@ public class ClassroomService {
         return repository.findAllByStudentsIdsContains(userId);
     }
 
-    public Page<Classroom> getPaginatedClassrooms(Role role, UUID userId, Pageable page) {
-        if (role.equals(Role.ADMIN))
+    public Page<Classroom> getPaginatedClassrooms(PayloadDTO payload, Pageable page) {
+        if (payload.role().equals(Role.ADMIN))
             return repository.findAll(page);
 
-        if (role.equals(Role.PROFESSOR))
-            return repository.findAllByProfessorId(userId, page);
+        if (payload.role().equals(Role.PROFESSOR))
+            return repository.findAllByProfessorId(payload.id(), page);
 
-        return repository.findAllByStudentsIdsContains(userId, page);
+        return repository.findAllByStudentsIdsContains(payload.id(), page);
     }
 
     public Classroom getClassroomById(UUID id) {
@@ -115,6 +115,12 @@ public class ClassroomService {
         }
         if (classroomPutDTO.description() != null) {
             classroom.setDescription(classroomPutDTO.description().trim());
+        }
+        UUID professorId = classroomPutDTO.professorId();
+        if (professorId != null) {
+            if (!professorService.existsById(professorId))
+                throw new EntityNotFoundException("Professor not found");
+            classroom.setProfessorId(professorId);
         }
 
         return repository.save(classroom);

@@ -18,6 +18,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.gridfs.GridFsResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -81,12 +83,36 @@ public class MaterialController {
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
     })
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<List<Material>> getAllClassroomMaterials(
             @PathVariable UUID classroomId,
             @RequestHeader("Authorization") String authorizationHeader){
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
         return ResponseEntity.ok(materialService.getAllMaterials(classroomId, payloadDTO));
+    }
+
+    @Operation(summary = "Get a paginated list of materials from a classroom")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Returns a paginated list of materials",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = SubmissionGetDTO.class)) }),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid classroom id",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+    })
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
+    @GetMapping
+    public ResponseEntity<Page<Material>> getPaginatedClassroomMaterials(
+            @PathVariable UUID classroomId,
+            Pageable page,
+            @RequestHeader("Authorization") String authorizationHeader){
+        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+        return ResponseEntity.ok(materialService.getPaginatedClassroomMaterials(classroomId, payloadDTO, page));
     }
 
     @Operation(summary = "Create a new classroom material")

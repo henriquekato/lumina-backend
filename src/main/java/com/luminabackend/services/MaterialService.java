@@ -10,9 +10,10 @@ import com.luminabackend.utils.security.PayloadDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.mongodb.gridfs.GridFsResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
@@ -37,10 +38,14 @@ public class MaterialService {
     @Autowired
     private PermissionService permissionService;
 
-
     public List<Material> getAllMaterials(UUID classroomId, PayloadDTO payloadDTO) {
         checkAccess(classroomId, payloadDTO);
         return repository.findMaterialByClassroomId(classroomId);
+    }
+
+    public Page<Material> getPaginatedClassroomMaterials(UUID classroomId, PayloadDTO payloadDTO, Pageable page) {
+        checkAccess(classroomId, payloadDTO);
+        return repository.findMaterialByClassroomId(classroomId, page);
     }
 
     public Material getMaterialById(UUID id) {
