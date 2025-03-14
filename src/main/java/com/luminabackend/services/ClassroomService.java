@@ -8,7 +8,6 @@ import com.luminabackend.models.education.classroom.ClassroomPutDTO;
 import com.luminabackend.models.education.classroom.ClassroomWithRelationsDTO;
 import com.luminabackend.models.user.Professor;
 import com.luminabackend.models.user.Role;
-import com.luminabackend.models.user.Student;
 import com.luminabackend.models.user.dto.professor.ProfessorGetDTO;
 import com.luminabackend.models.user.dto.student.StudentGetDTO;
 import com.luminabackend.repositories.classroom.ClassroomRepository;
@@ -17,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -38,6 +36,9 @@ public class ClassroomService {
 
     @Autowired
     private ProfessorService professorService;
+
+    @Autowired
+    private MaterialService materialService;
 
     public List<Classroom> getFilteredClassrooms(Role role, UUID userId) {
         if (role.equals(Role.ADMIN))
@@ -126,7 +127,7 @@ public class ClassroomService {
 
         taskService.deleteAllByClassroomId(id);
 
-        // materials
+        materialService.deleteAllByClassroomId(id);
 
         repository.deleteById(id);
     }
