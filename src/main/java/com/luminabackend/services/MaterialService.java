@@ -2,20 +2,27 @@ package com.luminabackend.services;
 
 import com.luminabackend.exceptions.AccessDeniedException;
 import com.luminabackend.exceptions.EntityNotFoundException;
+import com.luminabackend.exceptions.ZipProcessingException;
 import com.luminabackend.models.education.classroom.Classroom;
 import com.luminabackend.models.education.material.Material;
 import com.luminabackend.repositories.material.MaterialRepository;
 import com.luminabackend.utils.security.PayloadDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.data.mongodb.gridfs.GridFsResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
+import java.util.zip.ZipOutputStream;
 
 @Service
 public class MaterialService {
@@ -45,6 +52,38 @@ public class MaterialService {
         Optional<Material> materialById = repository.findById(id);
         if (materialById.isEmpty()) throw new EntityNotFoundException("Material not found");
         return materialById.get();
+    }
+
+    public ByteArrayResource getAllMaterialsAsZip(UUID classroomId, PayloadDTO payloadDTO) throws IOException {
+        checkAccess(classroomId, payloadDTO);
+        List<Material> materials = getAllMaterials(classroomId, payloadDTO);
+
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+             ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)) {
+
+            materials.forEach(material -> {
+                if (material.getId() != null){
+                    GridFsResource gridFsResource = fileStorageService.getFile(material.getFileId());
+                    if (gridFsResource != null) {
+                        addFileToZip(gridFsResource, zipOutputStream);
+                    }
+                }
+            });
+
+            zipOutputStream.finish();
+            return new ByteArrayResource(outputStream.toByteArray());
+        }
+    }
+
+    private void addFileToZip(GridFsResource gridFsResource, ZipOutputStream zipOutputStream) {
+        try {
+            ZipEntry zipEntry = new ZipEntry(Objects.requireNonNull(gridFsResource.getFilename()));
+            zipOutputStream.putNextEntry(zipEntry);
+            zipOutputStream.write(gridFsResource.getInputStream().readAllBytes());
+            zipOutputStream.closeEntry();
+        } catch (IOException e) {
+            throw new ZipProcessingException("Failed to add file to zip");
+        }
     }
 
     public Material saveMaterial(
@@ -91,5 +130,4 @@ public class MaterialService {
         Classroom classroom = classroomService.getClassroomById(classroomId);
         permissionService.checkAccessToClassroom(payloadDTO, classroom);
     }
-
 }

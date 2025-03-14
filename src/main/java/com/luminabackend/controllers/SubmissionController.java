@@ -298,6 +298,36 @@ public class SubmissionController {
                 .body(new ByteArrayResource(file.getInputStream().readAllBytes()));
     }
 
+    @Operation(summary = "Get all task submissions files")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Returns the zip file",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = GridFsResource.class)) }),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid classroom id, task id",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) })
+    })
+    @PreAuthorize("hasRole('PROFESSOR')")
+    @GetMapping("/download")
+    public ResponseEntity<ByteArrayResource> downloadAllTaskSubmissionsFiles(
+            @PathVariable UUID classroomId,
+            @PathVariable UUID taskId,
+            @RequestHeader("Authorization") String authorizationHeader) throws IOException {
+        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+
+        ByteArrayResource zipFile = submissionService.getAllTaskSubmissionsFiles(classroomId, taskId, payloadDTO);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header("Content-Disposition", "attachment; filename=\"task-" + taskId + ".zip\"")
+                .body(zipFile);
+    }
+
     @Operation(summary = "Evaluate a task submission")
     @ApiResponses(value = {
             @ApiResponse(

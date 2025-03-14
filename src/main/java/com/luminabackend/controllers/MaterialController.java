@@ -239,4 +239,34 @@ public class MaterialController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
                 .body(new ByteArrayResource(file.getInputStream().readAllBytes()));
     }
+
+
+    @Operation(summary = "Get all classroom materials in a zip file")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Returns the zip file",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = GridFsResource.class)) }),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid classroom id",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) })
+    })
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
+    @GetMapping("/download")
+    public ResponseEntity<ByteArrayResource> downloadAllMaterialsFromClassroom(
+            @PathVariable UUID classroomId,
+            @RequestHeader("Authorization") String authorizationHeader
+    ) throws IOException {
+        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+        ByteArrayResource resource = materialService.getAllMaterialsAsZip(classroomId, payloadDTO);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=classroom-" + classroomId + "-materials.zip")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
+    }
 }
