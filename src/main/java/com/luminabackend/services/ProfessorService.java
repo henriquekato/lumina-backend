@@ -1,8 +1,10 @@
 package com.luminabackend.services;
 
+import com.luminabackend.exceptions.CannotDeleteActiveProfessorException;
 import com.luminabackend.exceptions.EmailAlreadyInUseException;
 import com.luminabackend.exceptions.EntityNotFoundException;
 import com.luminabackend.models.user.Professor;
+import com.luminabackend.models.user.Role;
 import com.luminabackend.models.user.User;
 import com.luminabackend.models.user.dto.user.UserPutDTO;
 import com.luminabackend.models.user.dto.user.UserSignupDTO;
@@ -27,6 +29,9 @@ public class ProfessorService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private ClassroomService classroomService;
 
     public List<Professor> getAllProfessors() {
         return repository.findAll();
@@ -74,6 +79,9 @@ public class ProfessorService {
 
     public void deleteById(UUID id) {
         if (!existsById(id)) throw new EntityNotFoundException("Professor not found");
+
+        if (!classroomService.getFilteredClassrooms(Role.PROFESSOR, id).isEmpty())
+            throw new CannotDeleteActiveProfessorException("Cannot delete professor because they are currently assigned to one or more active classrooms");
 
         repository.deleteById(id);
     }

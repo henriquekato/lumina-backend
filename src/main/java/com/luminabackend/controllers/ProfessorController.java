@@ -184,6 +184,12 @@ public class ProfessorController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
             @ApiResponse(
+                    responseCode = "400",
+                    description = "Cannot delete professor because they are currently assigned to one or more active classrooms",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+            @ApiResponse(
                     responseCode = "404",
                     description = "Professor not found",
                     content = { @Content(

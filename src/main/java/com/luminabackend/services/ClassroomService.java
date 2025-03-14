@@ -116,6 +116,12 @@ public class ClassroomService {
         if (classroomPutDTO.description() != null) {
             classroom.setDescription(classroomPutDTO.description().trim());
         }
+        UUID professorId = classroomPutDTO.professorId();
+        if (professorId != null) {
+            if (!professorService.existsById(professorId))
+                throw new EntityNotFoundException("Professor not found");
+            classroom.setProfessorId(professorId);
+        }
 
         return repository.save(classroom);
     }
