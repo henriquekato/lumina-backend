@@ -7,6 +7,8 @@ import com.luminabackend.models.education.material.Material;
 import com.luminabackend.repositories.material.MaterialRepository;
 import com.luminabackend.utils.security.PayloadDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,10 +31,14 @@ public class MaterialService {
     @Autowired
     private PermissionService permissionService;
 
-
     public List<Material> getAllMaterials(UUID classroomId, PayloadDTO payloadDTO) {
         checkAccess(classroomId, payloadDTO);
         return repository.findMaterialByClassroomId(classroomId);
+    }
+
+    public Page<Material> getPaginatedClassroomMaterials(UUID classroomId, PayloadDTO payloadDTO, Pageable page) {
+        checkAccess(classroomId, payloadDTO);
+        return repository.findMaterialByClassroomId(classroomId, page);
     }
 
     public Material getMaterialById(UUID id) {
