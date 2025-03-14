@@ -1,9 +1,6 @@
 package com.luminabackend.services;
 
-import com.luminabackend.exceptions.AccessDeniedException;
-import com.luminabackend.exceptions.EntityNotFoundException;
-import com.luminabackend.exceptions.TaskAlreadySubmittedException;
-import com.luminabackend.exceptions.TaskDueDateExpiredException;
+import com.luminabackend.exceptions.*;
 import com.luminabackend.models.education.classroom.Classroom;
 import com.luminabackend.models.education.submission.Submission;
 import com.luminabackend.models.education.submission.SubmissionAssessmentDTO;
@@ -13,14 +10,20 @@ import com.luminabackend.models.user.Role;
 import com.luminabackend.repositories.submission.SubmissionRepository;
 import com.luminabackend.utils.security.PayloadDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.data.mongodb.gridfs.GridFsResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Service
 public class SubmissionService {
@@ -56,6 +59,37 @@ public class SubmissionService {
         if (payloadDTO.role().equals(Role.STUDENT) && !submission.getStudentId().equals(payloadDTO.id()))
             throw new AccessDeniedException("You don't have permission to access this resource");
         return submission;
+    }
+
+    public ByteArrayResource getAllTaskSubmissionsFiles(UUID classroomId, UUID taskId, PayloadDTO payloadDTO) throws IOException {
+        List<Submission> submissions = getAllSubmissions(classroomId, taskId, payloadDTO);
+
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+             ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)) {
+
+            submissions.forEach(submission -> {
+                GridFsResource fileResource = fileStorageService.getFile(submission.getFileId());
+                if (fileResource != null) {
+                    addSubmissionToZip(submission, fileResource, zipOutputStream);
+                }
+            });
+
+            zipOutputStream.finish();
+            return new ByteArrayResource(outputStream.toByteArray());
+        }
+    }
+
+    private void addSubmissionToZip(Submission submission, GridFsResource gridFsResource, ZipOutputStream zipOutputStream) {
+        try {
+            String zipPath = submission.getStudentId() + "/" + gridFsResource.getFilename();
+
+            ZipEntry zipEntry = new ZipEntry(zipPath);
+            zipOutputStream.putNextEntry(zipEntry);
+            zipOutputStream.write(gridFsResource.getInputStream().readAllBytes());
+            zipOutputStream.closeEntry();
+        } catch (IOException e) {
+            throw new ZipProcessingException("Failed to add file to zip");
+        }
     }
 
     public Submission saveSubmission(UUID classroomId, UUID taskId, PayloadDTO payloadDTO, SubmissionPostDTO submissionPostDTO, MultipartFile file) throws IOException {
