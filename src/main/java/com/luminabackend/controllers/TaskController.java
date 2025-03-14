@@ -14,6 +14,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -68,13 +70,38 @@ public class TaskController {
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
     })
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<List<TaskGetDTO>> getAllClassroomTasks(
             @PathVariable UUID classroomId,
             @RequestHeader("Authorization") String authorizationHeader){
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
         List<TaskGetDTO> tasks = taskService.getAllTasks(classroomId, payloadDTO).stream().map(TaskGetDTO::new).toList();
         return ResponseEntity.ok(tasks);
+    }
+
+    @Operation(summary = "Get a paginated list of classroom tasks based on user access")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Returns a paginated list of classroom tasks",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = TaskGetDTO.class)) }),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid classroom id",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+    })
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
+    @GetMapping
+    public ResponseEntity<Page<TaskGetDTO>> getPaginatedClassroomTasks(
+            @PathVariable UUID classroomId,
+            Pageable page,
+            @RequestHeader("Authorization") String authorizationHeader){
+        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+        Page<Task> tasks = taskService.getPaginatedClassroomTasks(classroomId, payloadDTO, page);
+        return ResponseEntity.ok(tasks.map(TaskGetDTO::new));
     }
 
     @Operation(summary = "Get a task by its id based on user access")
