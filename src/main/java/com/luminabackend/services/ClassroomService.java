@@ -8,7 +8,6 @@ import com.luminabackend.models.education.classroom.ClassroomPutDTO;
 import com.luminabackend.models.education.classroom.ClassroomWithRelationsDTO;
 import com.luminabackend.models.user.Professor;
 import com.luminabackend.models.user.Role;
-import com.luminabackend.models.user.Student;
 import com.luminabackend.models.user.dto.professor.ProfessorGetDTO;
 import com.luminabackend.models.user.dto.student.StudentGetDTO;
 import com.luminabackend.repositories.classroom.ClassroomRepository;
@@ -114,6 +113,12 @@ public class ClassroomService {
         }
         if (classroomPutDTO.description() != null) {
             classroom.setDescription(classroomPutDTO.description().trim());
+        }
+        UUID professorId = classroomPutDTO.professorId();
+        if (professorId != null) {
+            if (!professorService.existsById(professorId))
+                throw new EntityNotFoundException("Professor not found");
+            classroom.setProfessorId(professorId);
         }
 
         return repository.save(classroom);
