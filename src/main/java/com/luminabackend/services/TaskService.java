@@ -4,11 +4,12 @@ import com.luminabackend.exceptions.EntityNotFoundException;
 import com.luminabackend.models.education.classroom.Classroom;
 import com.luminabackend.models.education.task.Task;
 import com.luminabackend.models.education.task.TaskCreateDTO;
-import com.luminabackend.models.education.task.TaskPostDTO;
 import com.luminabackend.models.education.task.TaskPutDTO;
 import com.luminabackend.repositories.task.TaskRepository;
 import com.luminabackend.utils.security.PayloadDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,6 +33,11 @@ public class TaskService {
     public List<Task> getAllTasks(UUID classroomId, PayloadDTO payloadDTO) {
         checkAccess(classroomId, payloadDTO);
         return repository.findAllByClassroomId(classroomId);
+    }
+
+    public Page<Task> getPaginatedClassroomTasks(UUID classroomId, PayloadDTO payloadDTO, Pageable page) {
+        checkAccess(classroomId, payloadDTO);
+        return repository.findAllByClassroomId(classroomId, page);
     }
 
     public Task getTaskById(UUID id) {

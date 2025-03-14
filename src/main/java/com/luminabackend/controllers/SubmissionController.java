@@ -17,6 +17,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.gridfs.GridFsResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -85,7 +87,7 @@ public class SubmissionController {
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
     })
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR')")
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<List<SubmissionGetDTO>> getAllTaskSubmissions(
             @PathVariable UUID classroomId,
             @PathVariable UUID taskId,
@@ -97,6 +99,33 @@ public class SubmissionController {
                 .map(SubmissionGetDTO::new)
                 .toList();
         return ResponseEntity.ok(submissions);
+    }
+
+    @Operation(summary = "Get a paginated list of submissions from a classroom task")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Returns a paginated list of submissions",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = SubmissionGetDTO.class)) }),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid classroom id or task id",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+    })
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR')")
+    @GetMapping
+    public ResponseEntity<Page<SubmissionGetDTO>> getPaginatedTaskSubmissions(
+            @PathVariable UUID classroomId,
+            @PathVariable UUID taskId,
+            Pageable page,
+            @RequestHeader("Authorization") String authorizationHeader){
+        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+
+        Page<Submission> submissions = submissionService.getPaginatedTaskSubmissions(classroomId, taskId, payloadDTO, page);
+        return ResponseEntity.ok(submissions.map(SubmissionGetDTO::new));
     }
 
     @Operation(summary = "Get a task submission")
