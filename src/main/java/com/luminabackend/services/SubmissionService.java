@@ -13,6 +13,8 @@ import com.luminabackend.models.user.Role;
 import com.luminabackend.repositories.submission.SubmissionRepository;
 import com.luminabackend.utils.security.PayloadDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -42,6 +44,11 @@ public class SubmissionService {
     public List<Submission> getAllSubmissions(UUID classroomId, UUID taskId, PayloadDTO payloadDTO) {
         checkAccess(classroomId, taskId, payloadDTO);
         return repository.findAllByTaskId(taskId);
+    }
+
+    public Page<Submission> getPaginatedTaskSubmissions(UUID classroomId, UUID taskId, PayloadDTO payloadDTO, Pageable page) {
+        checkAccess(classroomId, taskId, payloadDTO);
+        return repository.findAllByTaskId(taskId, page);
     }
 
     public Submission getSubmissionById(UUID id) {
