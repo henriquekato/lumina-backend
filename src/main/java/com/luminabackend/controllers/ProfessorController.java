@@ -1,22 +1,41 @@
 package com.luminabackend.controllers;
 
-import com.luminabackend.models.user.User;
-import com.luminabackend.models.user.dto.professor.ProfessorPostDTO;
-import com.luminabackend.models.user.dto.professor.ProfessorGetDTO;
+import com.luminabackend.exceptions.EntityNotFoundException;
 import com.luminabackend.models.user.Professor;
-import com.luminabackend.services.AccountService;
+import com.luminabackend.models.user.dto.professor.ProfessorGetDTO;
+import com.luminabackend.models.user.dto.user.UserPutDTO;
+import com.luminabackend.models.user.dto.user.UserSignupDTO;
 import com.luminabackend.services.ProfessorService;
+import com.luminabackend.utils.errors.GeneralErrorResponseDTO;
+import com.luminabackend.utils.errors.ValidationErrorResponseDTO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
+@ApiResponses(value = {
+        @ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized. Incorrect or invalid credentials",
+                content = { @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+})
 @RestController
 @PreAuthorize("hasRole('ADMIN')")
 @RequestMapping("/professor")
@@ -24,40 +43,155 @@ public class ProfessorController {
     @Autowired
     private ProfessorService service;
 
-    @Autowired
-    private AccountService accountService;
-
-    @GetMapping
+    @Operation(summary = "Get all professors")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Returns a list with all professors",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ProfessorGetDTO.class)) })
+    })
+    @GetMapping("/all")
     public ResponseEntity<List<ProfessorGetDTO>> getAllProfessors() {
         List<Professor> professors = service.getAllProfessors();
-        return professors.isEmpty() ?
-                ResponseEntity.noContent().build()
-                : ResponseEntity.ok(professors.stream().map(ProfessorGetDTO::new).toList());
+        return ResponseEntity.ok(professors.stream().map(ProfessorGetDTO::new).toList());
     }
 
+    @Operation(summary = "Get a paginated list of professors")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Returns a paginated list of professors",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ProfessorGetDTO.class)) })
+    })
+    @GetMapping
+    public ResponseEntity<Page<ProfessorGetDTO>> getPaginatedProfessors(Pageable page) {
+        Page<Professor> professors = service.getPaginatedProfessors(page);
+        return ResponseEntity.ok(professors.map(ProfessorGetDTO::new));
+    }
+
+    @Operation(summary = "Get a professor by its id")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Returns the specified professor",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ProfessorGetDTO.class)) }),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid professor id",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Professor not found",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+    })
     @GetMapping("/{id}")
     public ResponseEntity<ProfessorGetDTO> getProfessor(@PathVariable UUID id) {
         Optional<Professor> professorById = service.getProfessorById(id);
         return professorById.map(professor ->
                         ResponseEntity.ok(new ProfessorGetDTO(professor)))
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .orElseThrow(() -> new EntityNotFoundException(("Professor not found")));
     }
 
+    @Operation(summary = "Create a new professor")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Successfully create a professor",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ProfessorGetDTO.class)) }),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Fail on request body validation",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ValidationErrorResponseDTO.class)) }),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Email already in use",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+    })
     @PostMapping
-    public ResponseEntity<?> saveProfessor(@Valid @RequestBody ProfessorPostDTO professorPostDTO, UriComponentsBuilder uriBuilder) {
-        Optional<User> professorByEmail = accountService.getUserByEmail(professorPostDTO.email());
-
-        if (professorByEmail.isPresent()) return ResponseEntity.badRequest().body("This email address is already registered");
-
+    public ResponseEntity<ProfessorGetDTO> saveProfessor(@Valid @RequestBody UserSignupDTO professorPostDTO) {
         Professor newProfessor = service.save(professorPostDTO);
-        var uri = uriBuilder.path("/professor/{id}").buildAndExpand(newProfessor.getId()).toUri();
-        return ResponseEntity.created(uri).build();
+        return ResponseEntity
+                .created(linkTo(methodOn(ProfessorController.class)
+                        .getProfessor(newProfessor.getId()))
+                        .toUri())
+                .body(new ProfessorGetDTO(newProfessor));
     }
 
+    @Operation(summary = "Edit a professor by its id")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Successfully edit the professor",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ProfessorGetDTO.class)) }),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid professor id",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Fail on request body validation",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ValidationErrorResponseDTO.class)) }),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Professor not found",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Email already in use",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+    })
+    @PutMapping("/{id}")
+    public ResponseEntity<ProfessorGetDTO> editProfessor(
+            @PathVariable UUID id,
+            @Valid @RequestBody UserPutDTO userPutDTO) {
+        Professor professor = service.edit(id, userPutDTO);
+        return ResponseEntity.ok(new ProfessorGetDTO(professor));
+    }
+
+    @Operation(summary = "Delete a professor by its id")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "Successfully delete the professor"),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid professor id",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Professor not found",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+    })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProfessor(@PathVariable UUID id) {
-        if (!service.existsById(id)) return ResponseEntity.notFound().build();
-
         service.deleteById(id);
         return ResponseEntity.noContent().build();
     }

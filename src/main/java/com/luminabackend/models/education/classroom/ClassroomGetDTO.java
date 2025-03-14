@@ -2,7 +2,7 @@ package com.luminabackend.models.education.classroom;
 
 import java.util.UUID;
 
-public record ClassroomGetDTO(
+public record ClassroomGetDTO (
         UUID id,
         String name,
         String description,

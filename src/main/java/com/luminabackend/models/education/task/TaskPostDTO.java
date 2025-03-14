@@ -16,9 +16,6 @@ public record TaskPostDTO(
 
         @NotNull(message = "Due date can not be null")
         @FutureOrPresent(message = "Due date must be in the future or present")
-        LocalDateTime dueDate,
-
-        @NotNull(message = "Classroom ID can not be null")
-        UUID classroomId
+        LocalDateTime dueDate
 ){
 }

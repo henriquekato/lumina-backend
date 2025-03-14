@@ -30,7 +30,20 @@ public class SecurityConfigurations {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(req -> {
-                    req.requestMatchers(antMatcher("/login")).permitAll();
+                    req.requestMatchers(
+                            antMatcher("/login"),
+                            antMatcher("/v1/api/**"),
+                            antMatcher("/v2/api-docs"),
+                            antMatcher("/v3/api-docs"),
+                            antMatcher("/v3/api-docs/**"),
+                            antMatcher("/swagger-resources"),
+                            antMatcher("/swagger-resources/**"),
+                            antMatcher("/configuration/ui"),
+                            antMatcher("/configuration/security"),
+                            antMatcher("/swagger-ui/**"),
+                            antMatcher("/webjars/**"),
+                            antMatcher("/swagger-ui.html")
+                    ).permitAll();
                     req.anyRequest().authenticated();
                 })
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)

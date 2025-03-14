@@ -1,6 +1,7 @@
 package com.luminabackend.models.education.task;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -8,7 +9,9 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Document(collection = "tasks")
-@Getter @Setter
+@Getter
+@Setter
+@NoArgsConstructor
 public class Task {
     private UUID id;
     private String title;
@@ -16,15 +19,11 @@ public class Task {
     private LocalDateTime dueDate;
     private UUID classroomId;
 
-    public Task(){
+    public Task(TaskCreateDTO taskCreateDTO) {
         this.id = UUID.randomUUID();
-    }
-
-    public Task(TaskPostDTO taskPostDTO) {
-        this.id = UUID.randomUUID();
-        this.title = taskPostDTO.title();
-        this.description = taskPostDTO.description();
-        this.dueDate = taskPostDTO.dueDate();
-        this.classroomId = taskPostDTO.classroomId();
+        this.title = taskCreateDTO.title();
+        this.description = taskCreateDTO.description();
+        this.dueDate = taskCreateDTO.dueDate();
+        this.classroomId = taskCreateDTO.classroomId();
     }
 }

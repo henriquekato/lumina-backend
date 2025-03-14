@@ -19,7 +19,7 @@ public record SubmissionGetDTO(
                 submission.getStudentId(),
                 submission.getContent(),
                 submission.getFileId(),
-                LocalDateTime.now(),
+                submission.getSubmittedAt(),
                 submission.getGrade());
     }
 }

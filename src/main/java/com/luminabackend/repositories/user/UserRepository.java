@@ -18,4 +18,13 @@ public interface UserRepository extends MongoRepository<User, UUID> {
             "{ '$limit': 1 }"
     })
     Optional<User> findByEmail(String email);
+
+    @Aggregation(pipeline = {
+            "{ '$unionWith': { 'coll': 'students', 'pipeline': [] } }",
+            "{ '$unionWith': { 'coll': 'professors', 'pipeline': [] } }",
+            "{ '$unionWith': { 'coll': 'admin', 'pipeline': [] } }",
+            "{ '$match': { 'id': '?0' } }",
+            "{ '$limit': 1 }"
+    })
+    Optional<User> findByUUID(UUID id);
 }

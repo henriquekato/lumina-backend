@@ -5,6 +5,12 @@ import jakarta.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.Length;
 
 public record UserSignupDTO(
+        @NotBlank(message = "First name can not be null")
+        String firstName,
+
+        @NotBlank(message = "Last name can not be null")
+        String lastName,
+
         @Email(message = "Invalid email")
         @NotBlank(message = "Email can not be null")
         String email,

@@ -6,9 +6,11 @@ import java.util.UUID;
 
 public record AdminGetDTO(
         UUID id,
-        String email
+        String email,
+        String firstName,
+        String lastName
 ) {
     public AdminGetDTO(Admin admin){
-        this(admin.getId(), admin.getEmail());
+        this(admin.getId(), admin.getEmail(), admin.getFirstName(), admin.getLastName());
     }
 }
