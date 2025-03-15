@@ -1,7 +1,6 @@
 package com.luminabackend.services;
 
 import com.luminabackend.exceptions.EntityNotFoundException;
-import com.luminabackend.models.education.classroom.Classroom;
 import com.luminabackend.models.education.task.Task;
 import com.luminabackend.models.education.task.TaskCreateDTO;
 import com.luminabackend.models.education.task.TaskPutDTO;
@@ -20,9 +19,6 @@ import java.util.UUID;
 public class TaskService {
     @Autowired
     private TaskRepository repository;
-    
-    @Autowired
-    private ClassroomService classroomService;
 
     @Autowired
     private SubmissionService submissionService;
@@ -31,12 +27,12 @@ public class TaskService {
     private PermissionService permissionService;
 
     public List<Task> getAllTasks(UUID classroomId, PayloadDTO payloadDTO) {
-        checkAccess(classroomId, payloadDTO);
+        permissionService.checkAccessToClassroom(classroomId, payloadDTO);
         return repository.findAllByClassroomId(classroomId);
     }
 
     public Page<Task> getPaginatedClassroomTasks(UUID classroomId, PayloadDTO payloadDTO, Pageable page) {
-        checkAccess(classroomId, payloadDTO);
+        permissionService.checkAccessToClassroom(classroomId, payloadDTO);
         return repository.findAllByClassroomId(classroomId, page);
     }
 
@@ -47,7 +43,7 @@ public class TaskService {
     }
     
     public Task getTaskBasedOnUserPermission(UUID taskId, UUID classroomId, PayloadDTO payloadDTO){
-        checkAccess(classroomId, payloadDTO);
+        permissionService.checkAccessToClassroom(classroomId, payloadDTO);
         return getTaskById(taskId);
     }
 
@@ -56,7 +52,7 @@ public class TaskService {
     }
 
     public Task save(UUID classroomId, PayloadDTO payloadDTO, TaskCreateDTO taskCreateDTO) {
-        checkAccess(classroomId, payloadDTO);
+        permissionService.checkAccessToClassroom(classroomId, payloadDTO);
 
         Task task = new Task(taskCreateDTO);
         task.setTitle(task.getTitle().trim());
@@ -65,7 +61,7 @@ public class TaskService {
     }
 
     public Task edit(UUID taskId, UUID classroomId, PayloadDTO payloadDTO, TaskPutDTO taskPutDTO) {
-        checkAccess(classroomId, payloadDTO);
+        permissionService.checkAccessToClassroom(classroomId, payloadDTO);
 
         Task task = getTaskById(taskId);
         if (taskPutDTO.title() != null) {
@@ -82,7 +78,7 @@ public class TaskService {
     }
 
     public void deleteById(UUID taskId, UUID classroomId, PayloadDTO payloadDTO) {
-        checkAccess(classroomId, payloadDTO);
+        permissionService.checkAccessToClassroom(classroomId, payloadDTO);
 
         if (!existsById(taskId)) {
             throw new EntityNotFoundException("Task not found");
@@ -96,10 +92,5 @@ public class TaskService {
         List<Task> classroomTasks = repository.findAllByClassroomId(classroomId);
         classroomTasks.forEach(task -> submissionService.deleteAllByTaskId(task.getId()));
         repository.deleteAllById(classroomTasks.stream().map(Task::getId).toList());
-    }
-
-    private void checkAccess(UUID classroomId, PayloadDTO payloadDTO) {
-        Classroom classroom = classroomService.getClassroomById(classroomId);
-        permissionService.checkAccessToClassroom(payloadDTO, classroom);
     }
 }

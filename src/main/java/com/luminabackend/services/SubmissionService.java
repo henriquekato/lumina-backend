@@ -1,7 +1,6 @@
 package com.luminabackend.services;
 
 import com.luminabackend.exceptions.*;
-import com.luminabackend.models.education.classroom.Classroom;
 import com.luminabackend.models.education.submission.Submission;
 import com.luminabackend.models.education.submission.SubmissionAssessmentDTO;
 import com.luminabackend.models.education.submission.SubmissionPostDTO;
@@ -21,7 +20,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
@@ -36,21 +34,18 @@ public class SubmissionService {
     private FileStorageService fileStorageService;
 
     @Autowired
-    private ClassroomService classroomService;
-
-    @Autowired
     private TaskService taskService;
 
     @Autowired
     private PermissionService permissionService;
 
     public List<Submission> getAllSubmissions(UUID classroomId, UUID taskId, PayloadDTO payloadDTO) {
-        checkAccess(classroomId, taskId, payloadDTO);
+        permissionService.checkAccessToTask(classroomId, taskId, payloadDTO);
         return repository.findAllByTaskId(taskId);
     }
 
     public Page<Submission> getPaginatedTaskSubmissions(UUID classroomId, UUID taskId, PayloadDTO payloadDTO, Pageable page) {
-        checkAccess(classroomId, taskId, payloadDTO);
+        permissionService.checkAccessToTask(classroomId, taskId, payloadDTO);
         return repository.findAllByTaskId(taskId, page);
     }
 
@@ -61,10 +56,9 @@ public class SubmissionService {
     }
 
     public Submission getSubmissionBasedOnUserPermission(UUID submissionId, UUID classroomId, UUID taskId, PayloadDTO payloadDTO){
-        checkAccess(classroomId, taskId, payloadDTO);
+        permissionService.checkAccessToTask(classroomId, taskId, payloadDTO);
         Submission submission = getSubmissionById(submissionId);
-        if (payloadDTO.role().equals(Role.STUDENT) && !submission.getStudentId().equals(payloadDTO.id()))
-            throw new AccessDeniedException("You don't have permission to access this resource");
+        checkStudentAccessToSubmission(submission, payloadDTO);
         return submission;
     }
 
@@ -100,7 +94,7 @@ public class SubmissionService {
     }
 
     public Submission saveSubmission(UUID classroomId, UUID taskId, PayloadDTO payloadDTO, SubmissionPostDTO submissionPostDTO, MultipartFile file) throws IOException {
-        checkAccess(classroomId, taskId, payloadDTO);
+        permissionService.checkAccessToTask(classroomId, taskId, payloadDTO);
 
         Task task = taskService.getTaskById(taskId);
         if (task.getDueDate().isBefore(LocalDateTime.now()))
@@ -115,11 +109,10 @@ public class SubmissionService {
     }
 
     public void deleteById(UUID submissionId, UUID classroomId, UUID taskId, PayloadDTO payloadDTO) {
-        checkAccess(classroomId, taskId, payloadDTO);
+        permissionService.checkAccessToTask(classroomId, taskId, payloadDTO);
 
         Submission submission = getSubmissionById(submissionId);
-        if (payloadDTO.role().equals(Role.STUDENT) && !submission.getStudentId().equals(payloadDTO.id()))
-            throw new AccessDeniedException("This submission you are trying to delete is not yours");
+        checkStudentAccessToSubmission(submission, payloadDTO);
 
         Task task = taskService.getTaskById(taskId);
         if (task.getDueDate().isBefore(LocalDateTime.now()))
@@ -140,23 +133,20 @@ public class SubmissionService {
     }
 
     public Submission submissionAssessment(UUID submissionId, UUID classroomId, UUID taskId, PayloadDTO payloadDTO, SubmissionAssessmentDTO submissionAssessmentDTO) {
-        checkAccess(classroomId, taskId, payloadDTO);
+        permissionService.checkAccessToTask(classroomId, taskId, payloadDTO);
         Submission submission = getSubmissionById(submissionId);
         submission.setGrade(submissionAssessmentDTO.grade());
         return repository.save(submission);
     }
 
-    public void checkPermission(UUID classroomId, UUID taskId, UUID submissionId, PayloadDTO payloadDTO){
-        checkAccess(classroomId, taskId, payloadDTO);
+    public void checkAccessToSubmission(UUID classroomId, UUID taskId, UUID submissionId, PayloadDTO payloadDTO){
+        permissionService.checkAccessToTask(classroomId, taskId, payloadDTO);
         Submission submission = getSubmissionById(submissionId);
-        if (payloadDTO.role().equals(Role.STUDENT) && !submission.getStudentId().equals(payloadDTO.id()))
-            throw new AccessDeniedException("You don't have permission to access this resource");
+        checkStudentAccessToSubmission(submission, payloadDTO);
     }
 
-    private void checkAccess(UUID classroomId, UUID taskId, PayloadDTO payloadDTO) {
-        Classroom classroom = classroomService.getClassroomById(classroomId);
-        permissionService.checkAccessToClassroom(payloadDTO, classroom);
-        if(!taskService.existsById(taskId))
-            throw new EntityNotFoundException("Task not found");
+    private void checkStudentAccessToSubmission(Submission submission, PayloadDTO payloadDTO){
+        if (payloadDTO.role().equals(Role.STUDENT) && !submission.getStudentId().equals(payloadDTO.id()))
+            throw new AccessDeniedException("You don't have permission to access this resource");
     }
 }

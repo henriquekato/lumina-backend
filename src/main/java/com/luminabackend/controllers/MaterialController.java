@@ -230,7 +230,7 @@ public class MaterialController {
             @PathVariable String fileId,
             @RequestHeader("Authorization") String authorizationHeader) throws IOException {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        materialService.checkPermission(classroomId, materialId, payloadDTO);
+        materialService.checkAccessToMaterial(classroomId, materialId, payloadDTO);
 
         GridFsResource file = fileStorageService.getFile(fileId);
 
