@@ -3,7 +3,6 @@ package com.luminabackend.services;
 import com.luminabackend.exceptions.AccessDeniedException;
 import com.luminabackend.exceptions.EntityNotFoundException;
 import com.luminabackend.exceptions.ZipProcessingException;
-import com.luminabackend.models.education.classroom.Classroom;
 import com.luminabackend.models.education.material.Material;
 import com.luminabackend.repositories.material.MaterialRepository;
 import com.luminabackend.utils.security.PayloadDTO;
@@ -21,7 +20,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
 import java.util.zip.ZipOutputStream;
 
 @Service
@@ -33,18 +31,15 @@ public class MaterialService {
     private FileStorageService fileStorageService;
 
     @Autowired
-    private ClassroomService classroomService;
-
-    @Autowired
     private PermissionService permissionService;
 
     public List<Material> getAllMaterials(UUID classroomId, PayloadDTO payloadDTO) {
-        checkAccess(classroomId, payloadDTO);
+        permissionService.checkAccessToClassroom(classroomId, payloadDTO);
         return repository.findMaterialByClassroomId(classroomId);
     }
 
     public Page<Material> getPaginatedClassroomMaterials(UUID classroomId, PayloadDTO payloadDTO, Pageable page) {
-        checkAccess(classroomId, payloadDTO);
+        permissionService.checkAccessToClassroom(classroomId, payloadDTO);
         return repository.findMaterialByClassroomId(classroomId, page);
     }
 
@@ -55,7 +50,7 @@ public class MaterialService {
     }
 
     public ByteArrayResource getAllMaterialsAsZip(UUID classroomId, PayloadDTO payloadDTO) throws IOException {
-        checkAccess(classroomId, payloadDTO);
+        permissionService.checkAccessToClassroom(classroomId, payloadDTO);
         List<Material> materials = getAllMaterials(classroomId, payloadDTO);
 
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -93,7 +88,7 @@ public class MaterialService {
                                     String description,
                                     MultipartFile file) throws IOException {
 
-        checkAccess(classroomId, payloadDTO);
+        permissionService.checkAccessToClassroom(classroomId, payloadDTO);
 
         String fileId = fileStorageService.storeFile(file, classroomId);
         Material material = new Material(classroomId, payloadDTO.id(), title, description, fileId);
@@ -101,7 +96,7 @@ public class MaterialService {
     }
 
     public void deleteById(UUID materialId, UUID classroomId, PayloadDTO payloadDTO) {
-        checkAccess(classroomId, payloadDTO);
+        permissionService.checkAccessToClassroom(classroomId, payloadDTO);
 
         Material material = getMaterialById(materialId);
 
@@ -119,15 +114,10 @@ public class MaterialService {
         });
     }
 
-    public void checkPermission(UUID classroomId, UUID materialId, PayloadDTO payloadDTO){
-        checkAccess(classroomId, payloadDTO);
+    public void checkAccessToMaterial(UUID classroomId, UUID materialId, PayloadDTO payloadDTO){
+        permissionService.checkAccessToClassroom(classroomId, payloadDTO);
         Material material = getMaterialById(materialId);
         if (!material.getProfessorId().equals(payloadDTO.id()))
             throw new AccessDeniedException("You don't have permission to access this resource");
-    }
-
-    private void checkAccess(UUID classroomId, PayloadDTO payloadDTO) {
-        Classroom classroom = classroomService.getClassroomById(classroomId);
-        permissionService.checkAccessToClassroom(payloadDTO, classroom);
     }
 }

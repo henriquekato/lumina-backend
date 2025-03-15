@@ -68,7 +68,7 @@ public class ClassroomService {
 
     public Classroom getClassroomBasedOnUserPermission(UUID classroomId, PayloadDTO payloadDTO) {
         Classroom classroom = getClassroomById(classroomId);
-        permissionService.checkAccessToClassroom(payloadDTO, classroom);
+        permissionService.checkAccessToClassroom(classroomId, payloadDTO);
         return classroom;
     }
 
@@ -78,7 +78,7 @@ public class ClassroomService {
 
     public ClassroomWithRelationsDTO getClassroomWithRelations(UUID classroomId, PayloadDTO payloadDTO){
         Classroom classroom = getClassroomById(classroomId);
-        permissionService.checkAccessToClassroom(payloadDTO, classroom);
+        permissionService.checkAccessToClassroom(classroomId, payloadDTO);
 
         Optional<Professor> professorById = professorService.getProfessorById(classroom.getProfessorId());
         ProfessorGetDTO professor = professorById

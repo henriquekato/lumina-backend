@@ -288,7 +288,7 @@ public class SubmissionController {
             @RequestHeader("Authorization") String authorizationHeader) throws IOException {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
 
-        submissionService.checkPermission(classroomId, taskId, submissionId, payloadDTO);
+        submissionService.checkAccessToSubmission(classroomId, taskId, submissionId, payloadDTO);
 
         GridFsResource file = fileStorageService.getFile(fileId);
 
