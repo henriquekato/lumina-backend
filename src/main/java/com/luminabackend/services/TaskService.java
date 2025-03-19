@@ -1,6 +1,7 @@
 package com.luminabackend.services;
 
 import com.luminabackend.exceptions.EntityNotFoundException;
+import com.luminabackend.models.education.classroom.Classroom;
 import com.luminabackend.models.education.task.Task;
 import com.luminabackend.models.education.task.TaskCreateDTO;
 import com.luminabackend.models.education.task.TaskPutDTO;
@@ -26,13 +27,18 @@ public class TaskService {
     @Autowired
     private PermissionService permissionService;
 
+    @Autowired
+    private ClassroomService classroomService;
+
     public List<Task> getAllTasks(UUID classroomId, PayloadDTO payloadDTO) {
-        permissionService.checkAccessToClassroom(classroomId, payloadDTO);
+        Classroom classroom = classroomService.getClassroomById(classroomId);
+        permissionService.checkAccessToClassroom(classroom, payloadDTO);
         return repository.findAllByClassroomId(classroomId);
     }
 
     public Page<Task> getPaginatedClassroomTasks(UUID classroomId, PayloadDTO payloadDTO, Pageable page) {
-        permissionService.checkAccessToClassroom(classroomId, payloadDTO);
+        Classroom classroom = classroomService.getClassroomById(classroomId);
+        permissionService.checkAccessToClassroom(classroom, payloadDTO);
         return repository.findAllByClassroomId(classroomId, page);
     }
 
@@ -43,7 +49,8 @@ public class TaskService {
     }
     
     public Task getTaskBasedOnUserPermission(UUID taskId, UUID classroomId, PayloadDTO payloadDTO){
-        permissionService.checkAccessToClassroom(classroomId, payloadDTO);
+        Classroom classroom = classroomService.getClassroomById(classroomId);
+        permissionService.checkAccessToClassroom(classroom, payloadDTO);
         return getTaskById(taskId);
     }
 
@@ -52,7 +59,8 @@ public class TaskService {
     }
 
     public Task save(UUID classroomId, PayloadDTO payloadDTO, TaskCreateDTO taskCreateDTO) {
-        permissionService.checkAccessToClassroom(classroomId, payloadDTO);
+        Classroom classroom = classroomService.getClassroomById(classroomId);
+        permissionService.checkAccessToClassroom(classroom, payloadDTO);
 
         Task task = new Task(taskCreateDTO);
         task.setTitle(task.getTitle().trim());
@@ -61,7 +69,8 @@ public class TaskService {
     }
 
     public Task edit(UUID taskId, UUID classroomId, PayloadDTO payloadDTO, TaskPutDTO taskPutDTO) {
-        permissionService.checkAccessToClassroom(classroomId, payloadDTO);
+        Classroom classroom = classroomService.getClassroomById(classroomId);
+        permissionService.checkAccessToClassroom(classroom, payloadDTO);
 
         Task task = getTaskById(taskId);
         if (taskPutDTO.title() != null) {
@@ -78,7 +87,8 @@ public class TaskService {
     }
 
     public void deleteById(UUID taskId, UUID classroomId, PayloadDTO payloadDTO) {
-        permissionService.checkAccessToClassroom(classroomId, payloadDTO);
+        Classroom classroom = classroomService.getClassroomById(classroomId);
+        permissionService.checkAccessToClassroom(classroom, payloadDTO);
 
         if (!existsById(taskId)) {
             throw new EntityNotFoundException("Task not found");

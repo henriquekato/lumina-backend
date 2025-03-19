@@ -1,6 +1,7 @@
 package com.luminabackend.services;
 
 import com.luminabackend.exceptions.*;
+import com.luminabackend.models.education.classroom.Classroom;
 import com.luminabackend.models.education.submission.Submission;
 import com.luminabackend.models.education.submission.SubmissionAssessmentDTO;
 import com.luminabackend.models.education.submission.SubmissionPostDTO;
@@ -39,13 +40,18 @@ public class SubmissionService {
     @Autowired
     private PermissionService permissionService;
 
+    @Autowired
+    private ClassroomService classroomService;
+
     public List<Submission> getAllSubmissions(UUID classroomId, UUID taskId, PayloadDTO payloadDTO) {
-        permissionService.checkAccessToTask(classroomId, taskId, payloadDTO);
+        Classroom classroom = classroomService.getClassroomById(classroomId);
+        permissionService.checkAccessToTask(classroom, taskId, payloadDTO);
         return repository.findAllByTaskId(taskId);
     }
 
     public Page<Submission> getPaginatedTaskSubmissions(UUID classroomId, UUID taskId, PayloadDTO payloadDTO, Pageable page) {
-        permissionService.checkAccessToTask(classroomId, taskId, payloadDTO);
+        Classroom classroom = classroomService.getClassroomById(classroomId);
+        permissionService.checkAccessToTask(classroom, taskId, payloadDTO);
         return repository.findAllByTaskId(taskId, page);
     }
 
@@ -56,7 +62,8 @@ public class SubmissionService {
     }
 
     public Submission getSubmissionBasedOnUserPermission(UUID submissionId, UUID classroomId, UUID taskId, PayloadDTO payloadDTO){
-        permissionService.checkAccessToTask(classroomId, taskId, payloadDTO);
+        Classroom classroom = classroomService.getClassroomById(classroomId);
+        permissionService.checkAccessToTask(classroom, taskId, payloadDTO);
         Submission submission = getSubmissionById(submissionId);
         checkStudentAccessToSubmission(submission, payloadDTO);
         return submission;
@@ -94,7 +101,8 @@ public class SubmissionService {
     }
 
     public Submission saveSubmission(UUID classroomId, UUID taskId, PayloadDTO payloadDTO, SubmissionPostDTO submissionPostDTO, MultipartFile file) throws IOException {
-        permissionService.checkAccessToTask(classroomId, taskId, payloadDTO);
+        Classroom classroom = classroomService.getClassroomById(classroomId);
+        permissionService.checkAccessToTask(classroom, taskId, payloadDTO);
 
         Task task = taskService.getTaskById(taskId);
         if (task.getDueDate().isBefore(LocalDateTime.now()))
@@ -109,7 +117,8 @@ public class SubmissionService {
     }
 
     public void deleteById(UUID submissionId, UUID classroomId, UUID taskId, PayloadDTO payloadDTO) {
-        permissionService.checkAccessToTask(classroomId, taskId, payloadDTO);
+        Classroom classroom = classroomService.getClassroomById(classroomId);
+        permissionService.checkAccessToTask(classroom, taskId, payloadDTO);
 
         Submission submission = getSubmissionById(submissionId);
         checkStudentAccessToSubmission(submission, payloadDTO);
@@ -133,14 +142,16 @@ public class SubmissionService {
     }
 
     public Submission submissionAssessment(UUID submissionId, UUID classroomId, UUID taskId, PayloadDTO payloadDTO, SubmissionAssessmentDTO submissionAssessmentDTO) {
-        permissionService.checkAccessToTask(classroomId, taskId, payloadDTO);
+        Classroom classroom = classroomService.getClassroomById(classroomId);
+        permissionService.checkAccessToTask(classroom, taskId, payloadDTO);
         Submission submission = getSubmissionById(submissionId);
         submission.setGrade(submissionAssessmentDTO.grade());
         return repository.save(submission);
     }
 
     public void checkAccessToSubmission(UUID classroomId, UUID taskId, UUID submissionId, PayloadDTO payloadDTO){
-        permissionService.checkAccessToTask(classroomId, taskId, payloadDTO);
+        Classroom classroom = classroomService.getClassroomById(classroomId);
+        permissionService.checkAccessToTask(classroom, taskId, payloadDTO);
         Submission submission = getSubmissionById(submissionId);
         checkStudentAccessToSubmission(submission, payloadDTO);
     }

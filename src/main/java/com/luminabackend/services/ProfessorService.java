@@ -9,6 +9,7 @@ import com.luminabackend.models.user.User;
 import com.luminabackend.models.user.dto.user.UserPutDTO;
 import com.luminabackend.models.user.dto.user.UserSignupDTO;
 import com.luminabackend.repositories.professor.ProfessorRepository;
+import com.luminabackend.utils.security.PayloadDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -80,7 +81,7 @@ public class ProfessorService {
     public void deleteById(UUID id) {
         if (!existsById(id)) throw new EntityNotFoundException("Professor not found");
 
-        if (!classroomService.getFilteredClassrooms(Role.PROFESSOR, id).isEmpty())
+        if (!classroomService.getClassroomsBasedOnUserPermission(new PayloadDTO(id, null, null, null, Role.PROFESSOR)).isEmpty())
             throw new CannotDeleteActiveProfessorException("Cannot delete professor because they are currently assigned to one or more active classrooms");
 
         repository.deleteById(id);

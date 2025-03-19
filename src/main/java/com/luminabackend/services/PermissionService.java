@@ -13,9 +13,6 @@ import java.util.UUID;
 @Service
 public class PermissionService {
     @Autowired
-    private ClassroomService classroomService;
-
-    @Autowired
     private TaskService taskService;
 
     private void checkProfessorAccessToClassroom(UUID professorId, Classroom classroom){
@@ -28,14 +25,13 @@ public class PermissionService {
             throw new AccessDeniedException("You don't have permission to access this class");
     }
 
-    public void checkAccessToClassroom(UUID classroomId, PayloadDTO payloadDTO){
-        Classroom classroom = classroomService.getClassroomById(classroomId);
+    public void checkAccessToClassroom(Classroom classroom, PayloadDTO payloadDTO){
         if (payloadDTO.role().equals(Role.PROFESSOR)) checkProfessorAccessToClassroom(payloadDTO.id(), classroom);
         else if(payloadDTO.role().equals(Role.STUDENT)) checkStudentAccessToClassroom(payloadDTO.id(), classroom);
     }
 
-    public void checkAccessToTask(UUID classroomId, UUID taskId, PayloadDTO payloadDTO) {
-        checkAccessToClassroom(classroomId, payloadDTO);
+    public void checkAccessToTask(Classroom classroom, UUID taskId, PayloadDTO payloadDTO) {
+        checkAccessToClassroom(classroom, payloadDTO);
         if(!taskService.existsById(taskId))
             throw new EntityNotFoundException("Task not found");
     }
