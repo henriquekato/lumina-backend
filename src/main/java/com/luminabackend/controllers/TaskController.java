@@ -2,6 +2,7 @@ package com.luminabackend.controllers;
 
 import com.luminabackend.models.education.task.TaskGetDTO;
 import com.luminabackend.models.education.task.*;
+import com.luminabackend.models.user.dto.user.UserAccessDTO;
 import com.luminabackend.services.TaskService;
 import com.luminabackend.services.TokenService;
 import com.luminabackend.utils.errors.GeneralErrorResponseDTO;
@@ -75,7 +76,7 @@ public class TaskController {
             @PathVariable UUID classroomId,
             @RequestHeader("Authorization") String authorizationHeader){
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        List<TaskGetDTO> tasks = taskService.getAllTasks(classroomId, payloadDTO).stream().map(TaskGetDTO::new).toList();
+        List<TaskGetDTO> tasks = taskService.getAllTasks(classroomId, new UserAccessDTO(payloadDTO)).stream().map(TaskGetDTO::new).toList();
         return ResponseEntity.ok(tasks);
     }
 
@@ -100,7 +101,7 @@ public class TaskController {
             Pageable page,
             @RequestHeader("Authorization") String authorizationHeader){
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        Page<Task> tasks = taskService.getPaginatedClassroomTasks(classroomId, payloadDTO, page);
+        Page<Task> tasks = taskService.getPaginatedClassroomTasks(classroomId, new UserAccessDTO(payloadDTO), page);
         return ResponseEntity.ok(tasks.map(TaskGetDTO::new));
     }
 
@@ -131,7 +132,7 @@ public class TaskController {
             @PathVariable UUID taskId,
             @RequestHeader("Authorization") String authorizationHeader){
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        Task task = taskService.getTaskBasedOnUserPermission(taskId, classroomId, payloadDTO);
+        Task task = taskService.getTaskBasedOnUserPermission(taskId, classroomId, new UserAccessDTO(payloadDTO));
         return ResponseEntity.ok(new TaskGetDTO(task));
     }
 
@@ -163,7 +164,7 @@ public class TaskController {
             @RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
         TaskCreateDTO taskCreateDTO = new TaskCreateDTO(taskPostDTO, classroomId);
-        Task savedTask = taskService.save(classroomId, payloadDTO, taskCreateDTO);
+        Task savedTask = taskService.save(classroomId, new UserAccessDTO(payloadDTO), taskCreateDTO);
         return ResponseEntity
                 .created(linkTo(methodOn(TaskController.class)
                         .getClassroomTask(classroomId, savedTask.getId(), authorizationHeader))
@@ -205,7 +206,7 @@ public class TaskController {
             @Valid @RequestBody TaskPutDTO taskPutDTO,
             @RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        Task task = taskService.edit(taskId, classroomId, payloadDTO, taskPutDTO);
+        Task task = taskService.edit(taskId, classroomId, new UserAccessDTO(payloadDTO), taskPutDTO);
         return ResponseEntity.ok(new TaskGetDTO(task));
     }
 
@@ -234,7 +235,7 @@ public class TaskController {
             @PathVariable UUID taskId,
             @RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        taskService.deleteById(taskId, classroomId, payloadDTO);
+        taskService.deleteById(taskId, classroomId, new UserAccessDTO(payloadDTO));
         return ResponseEntity.noContent().build();
     }
 }

@@ -5,6 +5,7 @@ import com.luminabackend.models.education.material.Material;
 import com.luminabackend.models.education.material.MaterialGetDTO;
 import com.luminabackend.models.education.material.MaterialPostDTO;
 import com.luminabackend.models.education.submission.SubmissionGetDTO;
+import com.luminabackend.models.user.dto.user.UserAccessDTO;
 import com.luminabackend.services.FileStorageService;
 import com.luminabackend.services.MaterialService;
 import com.luminabackend.services.TokenService;
@@ -88,7 +89,7 @@ public class MaterialController {
             @PathVariable UUID classroomId,
             @RequestHeader("Authorization") String authorizationHeader){
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        return ResponseEntity.ok(materialService.getAllMaterials(classroomId, payloadDTO));
+        return ResponseEntity.ok(materialService.getAllMaterials(classroomId, new UserAccessDTO(payloadDTO)));
     }
 
     @Operation(summary = "Get a paginated list of materials from a classroom")
@@ -112,7 +113,7 @@ public class MaterialController {
             Pageable page,
             @RequestHeader("Authorization") String authorizationHeader){
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        return ResponseEntity.ok(materialService.getPaginatedClassroomMaterials(classroomId, payloadDTO, page));
+        return ResponseEntity.ok(materialService.getPaginatedClassroomMaterials(classroomId, new UserAccessDTO(payloadDTO), page));
     }
 
     @Operation(summary = "Create a new classroom material")
@@ -156,7 +157,7 @@ public class MaterialController {
 
         Material savedMaterial = materialService.saveMaterial(
                                 classroomId,
-                                payloadDTO,
+                                new UserAccessDTO(payloadDTO),
                                 materialPost.title(),
                                 materialPost.description(),
                                 file);
@@ -192,7 +193,7 @@ public class MaterialController {
             @PathVariable UUID materialId,
             @RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        materialService.deleteById(materialId, classroomId, payloadDTO);
+        materialService.deleteById(materialId, classroomId, new UserAccessDTO(payloadDTO));
         return ResponseEntity.noContent().build();
     }
 
@@ -230,7 +231,7 @@ public class MaterialController {
             @PathVariable String fileId,
             @RequestHeader("Authorization") String authorizationHeader) throws IOException {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        materialService.checkAccessToMaterial(classroomId, materialId, payloadDTO);
+        materialService.checkAccessToMaterial(classroomId, materialId, new UserAccessDTO(payloadDTO));
 
         GridFsResource file = fileStorageService.getFile(fileId);
 
@@ -262,7 +263,7 @@ public class MaterialController {
             @RequestHeader("Authorization") String authorizationHeader
     ) throws IOException {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        ByteArrayResource resource = materialService.getAllMaterialsAsZip(classroomId, payloadDTO);
+        ByteArrayResource resource = materialService.getAllMaterialsAsZip(classroomId, new UserAccessDTO(payloadDTO));
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=classroom-" + classroomId + "-materials.zip")

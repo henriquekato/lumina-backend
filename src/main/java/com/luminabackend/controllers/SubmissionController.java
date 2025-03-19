@@ -5,6 +5,7 @@ import com.luminabackend.models.education.submission.Submission;
 import com.luminabackend.models.education.submission.SubmissionAssessmentDTO;
 import com.luminabackend.models.education.submission.SubmissionGetDTO;
 import com.luminabackend.models.education.submission.SubmissionPostDTO;
+import com.luminabackend.models.user.dto.user.UserAccessDTO;
 import com.luminabackend.services.*;
 import com.luminabackend.utils.errors.GeneralErrorResponseDTO;
 import com.luminabackend.utils.errors.ValidationErrorResponseDTO;
@@ -94,7 +95,7 @@ public class SubmissionController {
             @RequestHeader("Authorization") String authorizationHeader){
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
 
-        List<SubmissionGetDTO> submissions = submissionService.getAllSubmissions(classroomId, taskId, payloadDTO)
+        List<SubmissionGetDTO> submissions = submissionService.getAllSubmissions(classroomId, taskId, new UserAccessDTO(payloadDTO))
                 .stream()
                 .map(SubmissionGetDTO::new)
                 .toList();
@@ -124,7 +125,7 @@ public class SubmissionController {
             @RequestHeader("Authorization") String authorizationHeader){
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
 
-        Page<Submission> submissions = submissionService.getPaginatedTaskSubmissions(classroomId, taskId, payloadDTO, page);
+        Page<Submission> submissions = submissionService.getPaginatedTaskSubmissions(classroomId, taskId, new UserAccessDTO(payloadDTO), page);
         return ResponseEntity.ok(submissions.map(SubmissionGetDTO::new));
     }
 
@@ -157,7 +158,7 @@ public class SubmissionController {
             @RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
 
-        Submission submission = submissionService.getSubmissionBasedOnUserPermission(submissionId, classroomId, taskId, payloadDTO);
+        Submission submission = submissionService.getSubmissionBasedOnUserPermission(submissionId, classroomId, taskId, new UserAccessDTO(payloadDTO));
         return ResponseEntity.ok(new SubmissionGetDTO(submission));
     }
 
@@ -207,7 +208,7 @@ public class SubmissionController {
             throw new MissingFileException("Missing submission file");
         }
 
-        Submission savedSubmission = submissionService.saveSubmission(classroomId, taskId, payloadDTO, submissionPostDTO, file);
+        Submission savedSubmission = submissionService.saveSubmission(classroomId, taskId, new UserAccessDTO(payloadDTO), submissionPostDTO, file);
         return ResponseEntity
                 .created(linkTo(methodOn(SubmissionController.class)
                         .getTaskSubmissionById(classroomId, taskId, savedSubmission.getId(), authorizationHeader))
@@ -248,7 +249,7 @@ public class SubmissionController {
             @RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
 
-        submissionService.deleteById(submissionId, classroomId, taskId, payloadDTO);
+        submissionService.deleteById(submissionId, classroomId, taskId, new UserAccessDTO(payloadDTO));
         return ResponseEntity.noContent().build();
     }
 
@@ -288,7 +289,7 @@ public class SubmissionController {
             @RequestHeader("Authorization") String authorizationHeader) throws IOException {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
 
-        submissionService.checkAccessToSubmission(classroomId, taskId, submissionId, payloadDTO);
+        submissionService.checkAccessToSubmission(classroomId, taskId, submissionId, new UserAccessDTO(payloadDTO));
 
         GridFsResource file = fileStorageService.getFile(fileId);
 
@@ -320,7 +321,7 @@ public class SubmissionController {
             @RequestHeader("Authorization") String authorizationHeader) throws IOException {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
 
-        ByteArrayResource zipFile = submissionService.getAllTaskSubmissionsFiles(classroomId, taskId, payloadDTO);
+        ByteArrayResource zipFile = submissionService.getAllTaskSubmissionsFiles(classroomId, taskId, new UserAccessDTO(payloadDTO));
 
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
@@ -363,7 +364,7 @@ public class SubmissionController {
             @Valid @RequestBody SubmissionAssessmentDTO submissionAssessmentDTO,
             @RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        Submission submission = submissionService.submissionAssessment(submissionId, classroomId, taskId, payloadDTO, submissionAssessmentDTO);
+        Submission submission = submissionService.submissionAssessment(submissionId, classroomId, taskId, new UserAccessDTO(payloadDTO), submissionAssessmentDTO);
         return ResponseEntity.ok(new SubmissionGetDTO(submission));
     }
 }

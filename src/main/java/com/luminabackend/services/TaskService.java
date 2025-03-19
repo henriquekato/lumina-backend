@@ -5,8 +5,8 @@ import com.luminabackend.models.education.classroom.Classroom;
 import com.luminabackend.models.education.task.Task;
 import com.luminabackend.models.education.task.TaskCreateDTO;
 import com.luminabackend.models.education.task.TaskPutDTO;
+import com.luminabackend.models.user.dto.user.UserAccessDTO;
 import com.luminabackend.repositories.task.TaskRepository;
-import com.luminabackend.utils.security.PayloadDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,15 +30,15 @@ public class TaskService {
     @Autowired
     private ClassroomService classroomService;
 
-    public List<Task> getAllTasks(UUID classroomId, PayloadDTO payloadDTO) {
+    public List<Task> getAllTasks(UUID classroomId, UserAccessDTO userAccessDTO) {
         Classroom classroom = classroomService.getClassroomById(classroomId);
-        permissionService.checkAccessToClassroom(classroom, payloadDTO);
+        permissionService.checkAccessToClassroom(classroom, userAccessDTO);
         return repository.findAllByClassroomId(classroomId);
     }
 
-    public Page<Task> getPaginatedClassroomTasks(UUID classroomId, PayloadDTO payloadDTO, Pageable page) {
+    public Page<Task> getPaginatedClassroomTasks(UUID classroomId, UserAccessDTO userAccessDTO, Pageable page) {
         Classroom classroom = classroomService.getClassroomById(classroomId);
-        permissionService.checkAccessToClassroom(classroom, payloadDTO);
+        permissionService.checkAccessToClassroom(classroom, userAccessDTO);
         return repository.findAllByClassroomId(classroomId, page);
     }
 
@@ -48,9 +48,9 @@ public class TaskService {
         return taskById.get();
     }
     
-    public Task getTaskBasedOnUserPermission(UUID taskId, UUID classroomId, PayloadDTO payloadDTO){
+    public Task getTaskBasedOnUserPermission(UUID taskId, UUID classroomId, UserAccessDTO userAccessDTO){
         Classroom classroom = classroomService.getClassroomById(classroomId);
-        permissionService.checkAccessToClassroom(classroom, payloadDTO);
+        permissionService.checkAccessToClassroom(classroom, userAccessDTO);
         return getTaskById(taskId);
     }
 
@@ -58,9 +58,9 @@ public class TaskService {
         return repository.existsById(id);
     }
 
-    public Task save(UUID classroomId, PayloadDTO payloadDTO, TaskCreateDTO taskCreateDTO) {
+    public Task save(UUID classroomId, UserAccessDTO userAccessDTO, TaskCreateDTO taskCreateDTO) {
         Classroom classroom = classroomService.getClassroomById(classroomId);
-        permissionService.checkAccessToClassroom(classroom, payloadDTO);
+        permissionService.checkAccessToClassroom(classroom, userAccessDTO);
 
         Task task = new Task(taskCreateDTO);
         task.setTitle(task.getTitle().trim());
@@ -68,9 +68,9 @@ public class TaskService {
         return repository.save(task);
     }
 
-    public Task edit(UUID taskId, UUID classroomId, PayloadDTO payloadDTO, TaskPutDTO taskPutDTO) {
+    public Task edit(UUID taskId, UUID classroomId, UserAccessDTO userAccessDTO, TaskPutDTO taskPutDTO) {
         Classroom classroom = classroomService.getClassroomById(classroomId);
-        permissionService.checkAccessToClassroom(classroom, payloadDTO);
+        permissionService.checkAccessToClassroom(classroom, userAccessDTO);
 
         Task task = getTaskById(taskId);
         if (taskPutDTO.title() != null) {
@@ -86,9 +86,9 @@ public class TaskService {
         return repository.save(task);
     }
 
-    public void deleteById(UUID taskId, UUID classroomId, PayloadDTO payloadDTO) {
+    public void deleteById(UUID taskId, UUID classroomId, UserAccessDTO userAccessDTO) {
         Classroom classroom = classroomService.getClassroomById(classroomId);
-        permissionService.checkAccessToClassroom(classroom, payloadDTO);
+        permissionService.checkAccessToClassroom(classroom, userAccessDTO);
 
         if (!existsById(taskId)) {
             throw new EntityNotFoundException("Task not found");
