@@ -6,9 +6,7 @@ import com.luminabackend.models.education.material.MaterialGetDTO;
 import com.luminabackend.models.education.material.MaterialPostDTO;
 import com.luminabackend.models.education.submission.SubmissionGetDTO;
 import com.luminabackend.models.user.dto.user.UserAccessDTO;
-import com.luminabackend.services.FileStorageService;
-import com.luminabackend.services.MaterialService;
-import com.luminabackend.services.TokenService;
+import com.luminabackend.services.*;
 import com.luminabackend.utils.errors.GeneralErrorResponseDTO;
 import com.luminabackend.utils.errors.ValidationErrorResponseDTO;
 import com.luminabackend.utils.security.PayloadDTO;
@@ -36,26 +34,25 @@ import java.util.UUID;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
-
 @ApiResponses(value = {
         @ApiResponse(
                 responseCode = "401",
                 description = "Unauthorized. Incorrect or invalid credentials",
-                content = { @Content(
+                content = {@Content(
                         mediaType = "application/json",
-                        schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+                        schema = @Schema(implementation = GeneralErrorResponseDTO.class))}),
         @ApiResponse(
                 responseCode = "403",
                 description = "Access denied to this resource",
-                content = { @Content(
+                content = {@Content(
                         mediaType = "application/json",
-                        schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+                        schema = @Schema(implementation = GeneralErrorResponseDTO.class))}),
         @ApiResponse(
                 responseCode = "404",
                 description = "Classroom not found",
-                content = { @Content(
+                content = {@Content(
                         mediaType = "application/json",
-                        schema = @Schema(implementation = GeneralErrorResponseDTO.class)) })
+                        schema = @Schema(implementation = GeneralErrorResponseDTO.class))})
 })
 @RestController
 @RequestMapping("/classroom/{classroomId}/material")
@@ -69,27 +66,36 @@ public class MaterialController {
     @Autowired
     private TokenService tokenService;
 
+    @Autowired
+    private PermissionService permissionService;
+
+    @Autowired
+    private ClassroomService classroomService;
+
     @Operation(summary = "Get a list of materials from a classroom")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
                     description = "Returns a list of materials",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = SubmissionGetDTO.class)) }),
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = SubmissionGetDTO.class))}),
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid classroom id",
-                    content = { @Content(
+                    content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class))}),
     })
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
     @GetMapping("/all")
     public ResponseEntity<List<Material>> getAllClassroomMaterials(
             @PathVariable UUID classroomId,
-            @RequestHeader("Authorization") String authorizationHeader){
+            @RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        return ResponseEntity.ok(materialService.getAllMaterials(classroomId, new UserAccessDTO(payloadDTO)));
+        permissionService.checkAccessToClassroomById(classroomId, new UserAccessDTO(payloadDTO));
+
+        List<Material> materials = materialService.getAllMaterials(classroomId);
+        return ResponseEntity.ok(materials);
     }
 
     @Operation(summary = "Get a paginated list of materials from a classroom")
@@ -97,23 +103,26 @@ public class MaterialController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Returns a paginated list of materials",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = SubmissionGetDTO.class)) }),
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = SubmissionGetDTO.class))}),
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid classroom id",
-                    content = { @Content(
+                    content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class))}),
     })
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
     @GetMapping
     public ResponseEntity<Page<Material>> getPaginatedClassroomMaterials(
             @PathVariable UUID classroomId,
             Pageable page,
-            @RequestHeader("Authorization") String authorizationHeader){
+            @RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        return ResponseEntity.ok(materialService.getPaginatedClassroomMaterials(classroomId, new UserAccessDTO(payloadDTO), page));
+        permissionService.checkAccessToClassroomById(classroomId, new UserAccessDTO(payloadDTO));
+
+        Page<Material> materials = materialService.getPaginatedClassroomMaterials(classroomId, page);
+        return ResponseEntity.ok(materials);
     }
 
     @Operation(summary = "Create a new classroom material")
@@ -121,26 +130,26 @@ public class MaterialController {
             @ApiResponse(
                     responseCode = "201",
                     description = "Successfully create a classroom material",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = SubmissionGetDTO.class)) }),
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = SubmissionGetDTO.class))}),
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid classroom id",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class))}),
-           @ApiResponse(
+            @ApiResponse(
                     responseCode = "400",
                     description = "Fail on request part validation",
-                    content = { @Content(
+                    content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ValidationErrorResponseDTO.class)) }),
+                            schema = @Schema(implementation = ValidationErrorResponseDTO.class))}),
             @ApiResponse(
                     responseCode = "409",
                     description = "Submission already sent to this task",
-                    content = { @Content(
+                    content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class))}),
     })
     @PreAuthorize("hasRole('PROFESSOR')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -150,17 +159,18 @@ public class MaterialController {
             @RequestPart("file") MultipartFile file,
             @RequestHeader("Authorization") String authorizationHeader) throws IOException {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+        permissionService.checkAccessToClassroomById(classroomId, new UserAccessDTO(payloadDTO));
 
         if (file == null || file.isEmpty()) {
             throw new MissingFileException("Missing material file");
         }
 
         Material savedMaterial = materialService.saveMaterial(
-                                classroomId,
-                                new UserAccessDTO(payloadDTO),
-                                materialPost.title(),
-                                materialPost.description(),
-                                file);
+                classroomId,
+                payloadDTO.id(),
+                materialPost.title(),
+                materialPost.description(),
+                file);
         return ResponseEntity
                 .created(linkTo(methodOn(MaterialController.class)
                         .getAllClassroomMaterials(classroomId, authorizationHeader))
@@ -176,15 +186,15 @@ public class MaterialController {
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid classroom id or material id",
-                    content = { @Content(
+                    content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class))}),
             @ApiResponse(
                     responseCode = "404",
                     description = "Classroom material not found",
-                    content = { @Content(
+                    content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class))}),
     })
     @PreAuthorize("hasRole('PROFESSOR')")
     @DeleteMapping("/{materialId}")
@@ -193,7 +203,9 @@ public class MaterialController {
             @PathVariable UUID materialId,
             @RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        materialService.deleteById(materialId, classroomId, new UserAccessDTO(payloadDTO));
+        permissionService.checkAccessToClassroomById(classroomId, new UserAccessDTO(payloadDTO));
+
+        materialService.deleteById(materialId);
         return ResponseEntity.noContent().build();
     }
 
@@ -202,26 +214,26 @@ public class MaterialController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Returns the material file",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = GridFsResource.class)) }),
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = GridFsResource.class))}),
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid classroom id, material id, or file id",
-                    content = { @Content(
+                    content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class))}),
             @ApiResponse(
                     responseCode = "404",
                     description = "Classroom material not found",
-                    content = { @Content(
+                    content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class))}),
             @ApiResponse(
                     responseCode = "404",
                     description = "File not found",
-                    content = { @Content(
+                    content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class))}),
     })
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
     @GetMapping("/{materialId}/file/{fileId}")
@@ -241,20 +253,19 @@ public class MaterialController {
                 .body(new ByteArrayResource(file.getInputStream().readAllBytes()));
     }
 
-
     @Operation(summary = "Get all classroom materials in a zip file")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
                     description = "Returns the zip file",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = GridFsResource.class)) }),
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = GridFsResource.class))}),
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid classroom id",
-                    content = { @Content(
+                    content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) })
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class))})
     })
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
     @GetMapping("/download")
@@ -263,7 +274,9 @@ public class MaterialController {
             @RequestHeader("Authorization") String authorizationHeader
     ) throws IOException {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        ByteArrayResource resource = materialService.getAllMaterialsAsZip(classroomId, new UserAccessDTO(payloadDTO));
+        permissionService.checkAccessToClassroomById(classroomId, new UserAccessDTO(payloadDTO));
+
+        ByteArrayResource resource = materialService.getAllMaterialsAsZip(classroomId);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=classroom-" + classroomId + "-materials.zip")
