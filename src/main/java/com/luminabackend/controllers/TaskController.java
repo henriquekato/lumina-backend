@@ -56,15 +56,6 @@ public class TaskController {
     @Autowired
     private TaskService taskService;
 
-    @Autowired
-    private TokenService tokenService;
-
-    @Autowired
-    private ClassroomService classroomService;
-
-    @Autowired
-    private PermissionService permissionService;
-
     @Operation(summary = "Get a list of classroom tasks based on user access")
     @ApiResponses(value = {
             @ApiResponse(
@@ -79,15 +70,11 @@ public class TaskController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
     })
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')) and @resourcePossession.verifyClassroomPossession(#authorizationHeader, #classroomId)")
     @GetMapping("/all")
     public ResponseEntity<List<TaskGetDTO>> getAllClassroomTasks(
             @PathVariable UUID classroomId,
             @RequestHeader("Authorization") String authorizationHeader){
-        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        Classroom classroom = classroomService.getClassroomById(classroomId);
-        permissionService.checkAccessToClassroom(classroom, new UserPermissionDTO(payloadDTO));
-
         List<TaskGetDTO> tasks = taskService.getAllTasksByClassroomId(classroomId)
                 .stream()
                 .map(TaskGetDTO::new)
@@ -109,16 +96,12 @@ public class TaskController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
     })
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')) and @resourcePossession.verifyClassroomPossession(#authorizationHeader, #classroomId)")
     @GetMapping
     public ResponseEntity<Page<TaskGetDTO>> getPaginatedClassroomTasks(
             @PathVariable UUID classroomId,
             Pageable page,
             @RequestHeader("Authorization") String authorizationHeader){
-        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        Classroom classroom = classroomService.getClassroomById(classroomId);
-        permissionService.checkAccessToClassroom(classroom, new UserPermissionDTO(payloadDTO));
-
         Page<Task> tasks = taskService.getPaginatedClassroomTasks(classroomId, page);
         return ResponseEntity.ok(tasks.map(TaskGetDTO::new));
     }
@@ -143,16 +126,12 @@ public class TaskController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
     })
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')) and @resourcePossession.verifyClassroomPossession(#authorizationHeader, #classroomId)")
     @GetMapping("/{taskId}")
     public ResponseEntity<TaskGetDTO> getClassroomTask(
             @PathVariable UUID classroomId,
             @PathVariable UUID taskId,
             @RequestHeader("Authorization") String authorizationHeader){
-        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        Classroom classroom = classroomService.getClassroomById(classroomId);
-        permissionService.checkAccessToClassroom(classroom, new UserPermissionDTO(payloadDTO));
-
         Task task = taskService.getTaskById(taskId);
         return ResponseEntity.ok(new TaskGetDTO(task));
     }
@@ -177,16 +156,12 @@ public class TaskController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ValidationErrorResponseDTO.class)) }),
     })
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR')")
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR')) and @resourcePossession.verifyClassroomPossession(#authorizationHeader, #classroomId)")
     @PostMapping
     public ResponseEntity<TaskGetDTO> createTask(
             @PathVariable UUID classroomId,
             @Valid @RequestBody TaskPostDTO taskPostDTO,
             @RequestHeader("Authorization") String authorizationHeader) {
-        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        Classroom classroom = classroomService.getClassroomById(classroomId);
-        permissionService.checkAccessToClassroom(classroom, new UserPermissionDTO(payloadDTO));
-
         TaskCreateDTO taskCreateDTO = new TaskCreateDTO(taskPostDTO, classroomId);
         Task savedTask = taskService.save(taskCreateDTO);
         return ResponseEntity
@@ -222,17 +197,13 @@ public class TaskController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
     })
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR')")
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR')) and @resourcePossession.verifyClassroomPossession(#authorizationHeader, #classroomId)")
     @PutMapping("/{taskId}")
     public ResponseEntity<TaskGetDTO> editTask(
             @PathVariable UUID classroomId,
             @PathVariable UUID taskId,
             @Valid @RequestBody TaskPutDTO taskPutDTO,
             @RequestHeader("Authorization") String authorizationHeader) {
-        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        Classroom classroom = classroomService.getClassroomById(classroomId);
-        permissionService.checkAccessToClassroom(classroom, new UserPermissionDTO(payloadDTO));
-
         Task task = taskService.edit(taskId, taskPutDTO);
         return ResponseEntity.ok(new TaskGetDTO(task));
     }
@@ -255,16 +226,12 @@ public class TaskController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
     })
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR')")
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR')) and @resourcePossession.verifyClassroomPossession(#authorizationHeader, #classroomId)")
     @DeleteMapping("/{taskId}")
     public ResponseEntity<Void> deleteTask(
             @PathVariable UUID classroomId,
             @PathVariable UUID taskId,
             @RequestHeader("Authorization") String authorizationHeader) {
-        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        Classroom classroom = classroomService.getClassroomById(classroomId);
-        permissionService.checkAccessToClassroom(classroom, new UserPermissionDTO(payloadDTO));
-
         taskService.deleteById(taskId);
         return ResponseEntity.noContent().build();
     }
