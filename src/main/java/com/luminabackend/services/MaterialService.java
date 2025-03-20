@@ -48,17 +48,16 @@ public class MaterialService {
     public ByteArrayResource getAllMaterialsAsZip(UUID classroomId) throws IOException {
         List<Material> materials = getAllMaterials(classroomId);
 
-        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream(); ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)) {
-
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+             ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)
+        ) {
             materials.forEach(material -> {
                 if (material.getId() != null) {
                     GridFsResource gridFsResource = fileStorageService.getFile(material.getFileId());
-                    if (gridFsResource != null) {
+                    if (gridFsResource != null)
                         addFileToZip(gridFsResource, zipOutputStream);
-                    }
                 }
             });
-
             zipOutputStream.finish();
             return new ByteArrayResource(outputStream.toByteArray());
         }
@@ -83,7 +82,6 @@ public class MaterialService {
 
     public void deleteById(UUID materialId) {
         Material material = getMaterialById(materialId);
-
         if (material.getFileId() != null) fileStorageService.deleteFile(material.getFileId());
         repository.deleteById(materialId);
     }

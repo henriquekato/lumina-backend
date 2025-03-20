@@ -1,39 +1,27 @@
-package com.luminabackend.controllers;
+package com.luminabackend.controllers.submission;
 
-import com.luminabackend.exceptions.MissingFileException;
-import com.luminabackend.models.education.submission.Submission;
 import com.luminabackend.models.education.submission.SubmissionAssessmentDTO;
 import com.luminabackend.models.education.submission.SubmissionGetDTO;
 import com.luminabackend.models.education.submission.SubmissionPostDTO;
-import com.luminabackend.models.user.dto.user.UserAccessDTO;
-import com.luminabackend.services.*;
 import com.luminabackend.utils.errors.GeneralErrorResponseDTO;
 import com.luminabackend.utils.errors.ValidationErrorResponseDTO;
-import com.luminabackend.utils.security.PayloadDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.gridfs.GridFsResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @ApiResponses(value = {
         @ApiResponse(
@@ -61,18 +49,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
                         mediaType = "application/json",
                         schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
 })
-@RestController
-@RequestMapping("/classroom/{classroomId}/task/{taskId}/submission")
-public class SubmissionController {
-    @Autowired
-    private SubmissionService submissionService;
-
-    @Autowired
-    private FileStorageService fileStorageService;
-
-    @Autowired
-    private TokenService tokenService;
-
+public interface SubmissionControllerDocumentation {
     @Operation(summary = "Get a list of submissions from a classroom task")
     @ApiResponses(value = {
             @ApiResponse(
@@ -87,20 +64,10 @@ public class SubmissionController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
     })
-    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR')) " +
-            "and @resourceAccess.verifyClassroomAccess(#authorizationHeader, #classroomId) " +
-            "and @taskExistance.verify(#taskId)")
-    @GetMapping("/all")
-    public ResponseEntity<List<SubmissionGetDTO>> getAllTaskSubmissions(
+    ResponseEntity<List<SubmissionGetDTO>> getAllTaskSubmissions(
             @PathVariable UUID classroomId,
             @PathVariable UUID taskId,
-            @RequestHeader("Authorization") String authorizationHeader){
-        List<SubmissionGetDTO> submissions = submissionService.getAllSubmissionsByTaskId(taskId)
-                .stream()
-                .map(SubmissionGetDTO::new)
-                .toList();
-        return ResponseEntity.ok(submissions);
-    }
+            @RequestHeader("Authorization") String authorizationHeader);
 
     @Operation(summary = "Get a paginated list of submissions from a classroom task")
     @ApiResponses(value = {
@@ -116,18 +83,11 @@ public class SubmissionController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
     })
-    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR')) " +
-            "and @resourceAccess.verifyClassroomAccess(#authorizationHeader, #classroomId) " +
-            "and @taskExistance.verify(#taskId)")
-    @GetMapping
-    public ResponseEntity<Page<SubmissionGetDTO>> getPaginatedTaskSubmissions(
+    ResponseEntity<Page<SubmissionGetDTO>> getPaginatedTaskSubmissions(
             @PathVariable UUID classroomId,
             @PathVariable UUID taskId,
             Pageable page,
-            @RequestHeader("Authorization") String authorizationHeader){
-        Page<Submission> submissions = submissionService.getPaginatedTaskSubmissions(taskId, page);
-        return ResponseEntity.ok(submissions.map(SubmissionGetDTO::new));
-    }
+            @RequestHeader("Authorization") String authorizationHeader);
 
     @Operation(summary = "Get a task submission")
     @ApiResponses(value = {
@@ -149,19 +109,11 @@ public class SubmissionController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
     })
-    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')) " +
-            "and @resourceAccess.verifyClassroomAccess(#authorizationHeader, #classroomId) " +
-            "and @taskExistance.verify(#taskId)")
-    @GetMapping("/{submissionId}")
-    public ResponseEntity<SubmissionGetDTO> getTaskSubmissionById(
+    ResponseEntity<SubmissionGetDTO> getTaskSubmissionById(
             @PathVariable UUID classroomId,
             @PathVariable UUID taskId,
             @PathVariable UUID submissionId,
-            @RequestHeader("Authorization") String authorizationHeader) {
-        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        Submission submission = submissionService.getSubmissionBasedOnUserAccess(submissionId, new UserAccessDTO(payloadDTO));
-        return ResponseEntity.ok(new SubmissionGetDTO(submission));
-    }
+            @RequestHeader("Authorization") String authorizationHeader);
 
     @Operation(summary = "Create a new task submission")
     @ApiResponses(value = {
@@ -195,29 +147,13 @@ public class SubmissionController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
     })
-    @PreAuthorize("hasRole('STUDENT') " +
-            "and @resourceAccess.verifyClassroomAccess(#authorizationHeader, #classroomId) " +
-            "and @taskExistance.verify(#taskId)")
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<SubmissionGetDTO> createSubmission(
+    ResponseEntity<SubmissionGetDTO> createSubmission(
             @PathVariable UUID classroomId,
             @PathVariable UUID taskId,
             @RequestPart("submission") SubmissionPostDTO submissionPostDTO,
             @RequestPart("file") MultipartFile file,
-            @RequestHeader("Authorization") String authorizationHeader) throws IOException {
-        if (file == null || file.isEmpty()) {
-            throw new MissingFileException("Missing submission file");
-        }
-
-        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        Submission savedSubmission = submissionService.saveSubmission(taskId, payloadDTO.id(), submissionPostDTO, file);
-
-        return ResponseEntity
-                .created(linkTo(methodOn(SubmissionController.class)
-                        .getTaskSubmissionById(classroomId, taskId, savedSubmission.getId(), authorizationHeader))
-                        .toUri())
-                .body(new SubmissionGetDTO(savedSubmission));
-    }
+            @RequestHeader("Authorization") String authorizationHeader
+    ) throws IOException;
 
     @Operation(summary = "Delete a task submission")
     @ApiResponses(value = {
@@ -243,19 +179,11 @@ public class SubmissionController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
     })
-    @PreAuthorize("hasRole('STUDENT') " +
-            "and @resourceAccess.verifyClassroomAccess(#authorizationHeader, #classroomId) " +
-            "and @taskExistance.verify(#taskId) " +
-            "and @resourceAccess.verifySubmissionAccess(#authorizationHeader, #submissionId)")
-    @DeleteMapping("/{submissionId}")
-    public ResponseEntity<Void> deleteSubmission(
+    ResponseEntity<Void> deleteSubmission(
             @PathVariable UUID classroomId,
             @PathVariable UUID taskId,
             @PathVariable UUID submissionId,
-            @RequestHeader("Authorization") String authorizationHeader) {
-        submissionService.deleteById(submissionId, taskId);
-        return ResponseEntity.noContent().build();
-    }
+            @RequestHeader("Authorization") String authorizationHeader);
 
     @Operation(summary = "Get a submission file")
     @ApiResponses(value = {
@@ -283,23 +211,13 @@ public class SubmissionController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
     })
-    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')) " +
-            "and @resourceAccess.verifyClassroomAccess(#authorizationHeader, #classroomId) " +
-            "and @taskExistance.verify(#taskId) " +
-            "and @resourceAccess.verifySubmissionAccess(#authorizationHeader, #submissionId)")
-    @GetMapping("/{submissionId}/file/{fileId}")
-    public ResponseEntity<ByteArrayResource> downloadSubmissionFile(
+    ResponseEntity<ByteArrayResource> downloadSubmissionFile(
             @PathVariable UUID classroomId,
             @PathVariable UUID taskId,
             @PathVariable UUID submissionId,
             @PathVariable String fileId,
-            @RequestHeader("Authorization") String authorizationHeader) throws IOException {
-        GridFsResource file = fileStorageService.getFile(fileId);
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(file.getContentType()))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
-                .body(new ByteArrayResource(file.getInputStream().readAllBytes()));
-    }
+            @RequestHeader("Authorization") String authorizationHeader
+    ) throws IOException;
 
     @Operation(summary = "Get all task submissions files")
     @ApiResponses(value = {
@@ -315,20 +233,11 @@ public class SubmissionController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) })
     })
-    @PreAuthorize("hasRole('PROFESSOR') " +
-            "and @resourceAccess.verifyClassroomAccess(#authorizationHeader, #classroomId) " +
-            "and @taskExistance.verify(#taskId)")
-    @GetMapping("/download")
-    public ResponseEntity<ByteArrayResource> downloadAllTaskSubmissionsFiles(
+    ResponseEntity<ByteArrayResource> downloadAllTaskSubmissionsFiles(
             @PathVariable UUID classroomId,
             @PathVariable UUID taskId,
-            @RequestHeader("Authorization") String authorizationHeader) throws IOException {
-        ByteArrayResource zipFile = submissionService.getAllTaskSubmissionsFiles(taskId);
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .header("Content-Disposition", "attachment; filename=\"task-" + taskId + ".zip\"")
-                .body(zipFile);
-    }
+            @RequestHeader("Authorization") String authorizationHeader
+    ) throws IOException;
 
     @Operation(summary = "Evaluate a task submission")
     @ApiResponses(value = {
@@ -356,17 +265,10 @@ public class SubmissionController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
     })
-    @PreAuthorize("hasRole('PROFESSOR') " +
-            "and @resourceAccess.verifyClassroomAccess(#authorizationHeader, #classroomId) " +
-            "and @taskExistance.verify(#taskId)")
-    @PutMapping("/{submissionId}")
-    public ResponseEntity<SubmissionGetDTO> submissionAssessment(
+    ResponseEntity<SubmissionGetDTO> submissionAssessment(
             @PathVariable UUID classroomId,
             @PathVariable UUID taskId,
             @PathVariable UUID submissionId,
             @Valid @RequestBody SubmissionAssessmentDTO submissionAssessmentDTO,
-            @RequestHeader("Authorization") String authorizationHeader) {
-        Submission submission = submissionService.submissionAssessment(submissionId, submissionAssessmentDTO);
-        return ResponseEntity.ok(new SubmissionGetDTO(submission));
-    }
+            @RequestHeader("Authorization") String authorizationHeader);
 }
