@@ -31,12 +31,6 @@ public class MaterialService {
     @Autowired
     private FileStorageService fileStorageService;
 
-    @Autowired
-    private PermissionService permissionService;
-
-    @Autowired
-    private ClassroomService classroomService;
-
     public List<Material> getAllMaterials(UUID classroomId) {
         return repository.findMaterialByClassroomId(classroomId);
     }
@@ -102,8 +96,7 @@ public class MaterialService {
         });
     }
 
-    public void checkAccessToMaterial(UUID classroomId, UUID materialId, UserPermissionDTO userPermissionDTO) {
-        permissionService.checkAccessToClassroomById(classroomId, userPermissionDTO);
+    public void checkAccessToMaterial(UUID materialId, UserPermissionDTO userPermissionDTO) {
         Material material = getMaterialById(materialId);
         if (!material.getProfessorId().equals(userPermissionDTO.id()))
             throw new AccessDeniedException("You don't have permission to access this resource");

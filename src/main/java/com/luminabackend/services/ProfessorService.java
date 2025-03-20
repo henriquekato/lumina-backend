@@ -81,7 +81,7 @@ public class ProfessorService {
     public void deleteById(UUID id) {
         if (!existsById(id)) throw new EntityNotFoundException("Professor not found");
 
-        if (!classroomService.getClassroomsBasedOnUserPermission(new UserPermissionDTO(id, Role.PROFESSOR)).isEmpty())
+        if (!classroomService.getClassroomsBasedOnUserPossession(new UserPermissionDTO(id, Role.PROFESSOR)).isEmpty())
             throw new CannotDeleteActiveProfessorException("Cannot delete professor because they are currently assigned to one or more active classrooms");
 
         repository.deleteById(id);

@@ -69,9 +69,6 @@ public class MaterialController {
     @Autowired
     private PermissionService permissionService;
 
-    @Autowired
-    private ClassroomService classroomService;
-
     @Operation(summary = "Get a list of materials from a classroom")
     @ApiResponses(value = {
             @ApiResponse(
@@ -86,14 +83,11 @@ public class MaterialController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class))}),
     })
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')) and @resourcePossession.verifyClassroomPossession(#authorizationHeader, #classroomId)")
     @GetMapping("/all")
     public ResponseEntity<List<Material>> getAllClassroomMaterials(
             @PathVariable UUID classroomId,
             @RequestHeader("Authorization") String authorizationHeader) {
-        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        permissionService.checkAccessToClassroomById(classroomId, new UserPermissionDTO(payloadDTO));
-
         List<Material> materials = materialService.getAllMaterials(classroomId);
         return ResponseEntity.ok(materials);
     }
@@ -112,15 +106,12 @@ public class MaterialController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class))}),
     })
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')) and @resourcePossession.verifyClassroomPossession(#authorizationHeader, #classroomId)")
     @GetMapping
     public ResponseEntity<Page<Material>> getPaginatedClassroomMaterials(
             @PathVariable UUID classroomId,
             Pageable page,
             @RequestHeader("Authorization") String authorizationHeader) {
-        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        permissionService.checkAccessToClassroomById(classroomId, new UserPermissionDTO(payloadDTO));
-
         Page<Material> materials = materialService.getPaginatedClassroomMaterials(classroomId, page);
         return ResponseEntity.ok(materials);
     }
@@ -151,7 +142,7 @@ public class MaterialController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class))}),
     })
-    @PreAuthorize("hasRole('PROFESSOR')")
+    @PreAuthorize("hasRole('PROFESSOR') and @resourcePossession.verifyClassroomPossession(#authorizationHeader, #classroomId)")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<MaterialGetDTO> createMaterial(
             @PathVariable UUID classroomId,
@@ -159,7 +150,6 @@ public class MaterialController {
             @RequestPart("file") MultipartFile file,
             @RequestHeader("Authorization") String authorizationHeader) throws IOException {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        permissionService.checkAccessToClassroomById(classroomId, new UserPermissionDTO(payloadDTO));
 
         if (file == null || file.isEmpty()) {
             throw new MissingFileException("Missing material file");
@@ -196,15 +186,12 @@ public class MaterialController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class))}),
     })
-    @PreAuthorize("hasRole('PROFESSOR')")
+    @PreAuthorize("hasRole('PROFESSOR') and @resourcePossession.verifyClassroomPossession(#authorizationHeader, #classroomId)")
     @DeleteMapping("/{materialId}")
     public ResponseEntity<Void> deleteMaterial(
             @PathVariable UUID classroomId,
             @PathVariable UUID materialId,
             @RequestHeader("Authorization") String authorizationHeader) {
-        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        permissionService.checkAccessToClassroomById(classroomId, new UserPermissionDTO(payloadDTO));
-
         materialService.deleteById(materialId);
         return ResponseEntity.noContent().build();
     }
@@ -243,7 +230,9 @@ public class MaterialController {
             @PathVariable String fileId,
             @RequestHeader("Authorization") String authorizationHeader) throws IOException {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        materialService.checkAccessToMaterial(classroomId, materialId, new UserPermissionDTO(payloadDTO));
+        UserPermissionDTO userPermissionDTO = new UserPermissionDTO(payloadDTO);
+        permissionService.checkAccessToClassroomById(classroomId, userPermissionDTO);
+        materialService.checkAccessToMaterial(materialId, userPermissionDTO);
 
         GridFsResource file = fileStorageService.getFile(fileId);
 
@@ -267,15 +256,12 @@ public class MaterialController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class))})
     })
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')) and @resourcePossession.verifyClassroomPossession(#authorizationHeader, #classroomId)")
     @GetMapping("/download")
     public ResponseEntity<ByteArrayResource> downloadAllMaterialsFromClassroom(
             @PathVariable UUID classroomId,
             @RequestHeader("Authorization") String authorizationHeader
     ) throws IOException {
-        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        permissionService.checkAccessToClassroomById(classroomId, new UserPermissionDTO(payloadDTO));
-
         ByteArrayResource resource = materialService.getAllMaterialsAsZip(classroomId);
 
         return ResponseEntity.ok()
