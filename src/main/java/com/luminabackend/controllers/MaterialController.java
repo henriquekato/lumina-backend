@@ -5,7 +5,7 @@ import com.luminabackend.models.education.material.Material;
 import com.luminabackend.models.education.material.MaterialGetDTO;
 import com.luminabackend.models.education.material.MaterialPostDTO;
 import com.luminabackend.models.education.submission.SubmissionGetDTO;
-import com.luminabackend.models.user.dto.user.UserPermissionDTO;
+import com.luminabackend.models.user.dto.user.UserAccessDTO;
 import com.luminabackend.services.*;
 import com.luminabackend.utils.errors.GeneralErrorResponseDTO;
 import com.luminabackend.utils.errors.ValidationErrorResponseDTO;
@@ -83,7 +83,7 @@ public class MaterialController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class))}),
     })
-    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')) and @resourcePossession.verifyClassroomPossession(#authorizationHeader, #classroomId)")
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')) and @resourceAccess.verifyClassroomAccess(#authorizationHeader, #classroomId)")
     @GetMapping("/all")
     public ResponseEntity<List<Material>> getAllClassroomMaterials(
             @PathVariable UUID classroomId,
@@ -106,7 +106,7 @@ public class MaterialController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class))}),
     })
-    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')) and @resourcePossession.verifyClassroomPossession(#authorizationHeader, #classroomId)")
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')) and @resourceAccess.verifyClassroomAccess(#authorizationHeader, #classroomId)")
     @GetMapping
     public ResponseEntity<Page<Material>> getPaginatedClassroomMaterials(
             @PathVariable UUID classroomId,
@@ -142,7 +142,7 @@ public class MaterialController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class))}),
     })
-    @PreAuthorize("hasRole('PROFESSOR') and @resourcePossession.verifyClassroomPossession(#authorizationHeader, #classroomId)")
+    @PreAuthorize("hasRole('PROFESSOR') and @resourceAccess.verifyClassroomAccess(#authorizationHeader, #classroomId)")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<MaterialGetDTO> createMaterial(
             @PathVariable UUID classroomId,
@@ -186,7 +186,7 @@ public class MaterialController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class))}),
     })
-    @PreAuthorize("hasRole('PROFESSOR') and @resourcePossession.verifyClassroomPossession(#authorizationHeader, #classroomId)")
+    @PreAuthorize("hasRole('PROFESSOR') and @resourceAccess.verifyClassroomAccess(#authorizationHeader, #classroomId)")
     @DeleteMapping("/{materialId}")
     public ResponseEntity<Void> deleteMaterial(
             @PathVariable UUID classroomId,
@@ -230,9 +230,9 @@ public class MaterialController {
             @PathVariable String fileId,
             @RequestHeader("Authorization") String authorizationHeader) throws IOException {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        UserPermissionDTO userPermissionDTO = new UserPermissionDTO(payloadDTO);
-        permissionService.checkAccessToClassroomById(classroomId, userPermissionDTO);
-        materialService.checkAccessToMaterial(materialId, userPermissionDTO);
+        UserAccessDTO userAccessDTO = new UserAccessDTO(payloadDTO);
+        permissionService.checkAccessToClassroomById(classroomId, userAccessDTO);
+        materialService.checkAccessToMaterial(materialId, userAccessDTO);
 
         GridFsResource file = fileStorageService.getFile(fileId);
 
@@ -256,7 +256,7 @@ public class MaterialController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class))})
     })
-    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')) and @resourcePossession.verifyClassroomPossession(#authorizationHeader, #classroomId)")
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')) and @resourceAccess.verifyClassroomAccess(#authorizationHeader, #classroomId)")
     @GetMapping("/download")
     public ResponseEntity<ByteArrayResource> downloadAllMaterialsFromClassroom(
             @PathVariable UUID classroomId,

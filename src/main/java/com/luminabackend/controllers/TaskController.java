@@ -1,16 +1,10 @@
 package com.luminabackend.controllers;
 
-import com.luminabackend.models.education.classroom.Classroom;
 import com.luminabackend.models.education.task.TaskGetDTO;
 import com.luminabackend.models.education.task.*;
-import com.luminabackend.models.user.dto.user.UserPermissionDTO;
-import com.luminabackend.services.ClassroomService;
-import com.luminabackend.services.PermissionService;
 import com.luminabackend.services.TaskService;
-import com.luminabackend.services.TokenService;
 import com.luminabackend.utils.errors.GeneralErrorResponseDTO;
 import com.luminabackend.utils.errors.ValidationErrorResponseDTO;
-import com.luminabackend.utils.security.PayloadDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -70,7 +64,7 @@ public class TaskController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
     })
-    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')) and @resourcePossession.verifyClassroomPossession(#authorizationHeader, #classroomId)")
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')) and @resourceAccess.verifyClassroomAccess(#authorizationHeader, #classroomId)")
     @GetMapping("/all")
     public ResponseEntity<List<TaskGetDTO>> getAllClassroomTasks(
             @PathVariable UUID classroomId,
@@ -96,7 +90,7 @@ public class TaskController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
     })
-    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')) and @resourcePossession.verifyClassroomPossession(#authorizationHeader, #classroomId)")
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')) and @resourceAccess.verifyClassroomAccess(#authorizationHeader, #classroomId)")
     @GetMapping
     public ResponseEntity<Page<TaskGetDTO>> getPaginatedClassroomTasks(
             @PathVariable UUID classroomId,
@@ -126,7 +120,7 @@ public class TaskController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
     })
-    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')) and @resourcePossession.verifyClassroomPossession(#authorizationHeader, #classroomId)")
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')) and @resourceAccess.verifyClassroomAccess(#authorizationHeader, #classroomId)")
     @GetMapping("/{taskId}")
     public ResponseEntity<TaskGetDTO> getClassroomTask(
             @PathVariable UUID classroomId,
@@ -156,7 +150,7 @@ public class TaskController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ValidationErrorResponseDTO.class)) }),
     })
-    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR')) and @resourcePossession.verifyClassroomPossession(#authorizationHeader, #classroomId)")
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR')) and @resourceAccess.verifyClassroomAccess(#authorizationHeader, #classroomId)")
     @PostMapping
     public ResponseEntity<TaskGetDTO> createTask(
             @PathVariable UUID classroomId,
@@ -197,7 +191,7 @@ public class TaskController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
     })
-    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR')) and @resourcePossession.verifyClassroomPossession(#authorizationHeader, #classroomId)")
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR')) and @resourceAccess.verifyClassroomAccess(#authorizationHeader, #classroomId)")
     @PutMapping("/{taskId}")
     public ResponseEntity<TaskGetDTO> editTask(
             @PathVariable UUID classroomId,
@@ -226,7 +220,7 @@ public class TaskController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
     })
-    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR')) and @resourcePossession.verifyClassroomPossession(#authorizationHeader, #classroomId)")
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR')) and @resourceAccess.verifyClassroomAccess(#authorizationHeader, #classroomId)")
     @DeleteMapping("/{taskId}")
     public ResponseEntity<Void> deleteTask(
             @PathVariable UUID classroomId,

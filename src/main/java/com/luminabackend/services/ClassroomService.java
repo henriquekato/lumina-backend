@@ -10,7 +10,7 @@ import com.luminabackend.models.user.Professor;
 import com.luminabackend.models.user.Role;
 import com.luminabackend.models.user.dto.professor.ProfessorGetDTO;
 import com.luminabackend.models.user.dto.student.StudentGetDTO;
-import com.luminabackend.models.user.dto.user.UserPermissionDTO;
+import com.luminabackend.models.user.dto.user.UserAccessDTO;
 import com.luminabackend.repositories.classroom.ClassroomRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -40,24 +40,24 @@ public class ClassroomService {
     @Autowired
     private MaterialService materialService;
 
-    public List<Classroom> getClassroomsBasedOnUserPossession(UserPermissionDTO userPermissionDTO) {
-        if (userPermissionDTO.role().equals(Role.ADMIN))
+    public List<Classroom> getClassroomsBasedOnUserAccess(UserAccessDTO userAccessDTO) {
+        if (userAccessDTO.role().equals(Role.ADMIN))
             return repository.findAll();
 
-        if (userPermissionDTO.role().equals(Role.PROFESSOR))
-            return repository.findAllByProfessorId(userPermissionDTO.id());
+        if (userAccessDTO.role().equals(Role.PROFESSOR))
+            return repository.findAllByProfessorId(userAccessDTO.id());
 
-        return repository.findAllByStudentsIdsContains(userPermissionDTO.id());
+        return repository.findAllByStudentsIdsContains(userAccessDTO.id());
     }
 
-    public Page<Classroom> getPaginatedClassroomsBasedOnUserPossession(UserPermissionDTO userPermissionDTO, Pageable page) {
-        if (userPermissionDTO.role().equals(Role.ADMIN))
+    public Page<Classroom> getPaginatedClassroomsBasedOnUserAccess(UserAccessDTO userAccessDTO, Pageable page) {
+        if (userAccessDTO.role().equals(Role.ADMIN))
             return repository.findAll(page);
 
-        if (userPermissionDTO.role().equals(Role.PROFESSOR))
-            return repository.findAllByProfessorId(userPermissionDTO.id(), page);
+        if (userAccessDTO.role().equals(Role.PROFESSOR))
+            return repository.findAllByProfessorId(userAccessDTO.id(), page);
 
-        return repository.findAllByStudentsIdsContains(userPermissionDTO.id(), page);
+        return repository.findAllByStudentsIdsContains(userAccessDTO.id(), page);
     }
 
     public Classroom getClassroomById(UUID classroomId) {
@@ -66,9 +66,9 @@ public class ClassroomService {
         return classroomById.get();
     }
 
-    public Classroom getClassroomBasedOnUserPermission(UUID classroomId, UserPermissionDTO userPermissionDTO) {
+    public Classroom getClassroomBasedOnUserPermission(UUID classroomId, UserAccessDTO userAccessDTO) {
         Classroom classroom = getClassroomById(classroomId);
-        permissionService.checkAccessToClassroom(classroom, userPermissionDTO);
+        permissionService.checkAccessToClassroom(classroom, userAccessDTO);
         return classroom;
     }
 

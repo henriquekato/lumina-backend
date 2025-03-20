@@ -5,7 +5,7 @@ import com.luminabackend.models.education.submission.Submission;
 import com.luminabackend.models.education.submission.SubmissionAssessmentDTO;
 import com.luminabackend.models.education.submission.SubmissionPostDTO;
 import com.luminabackend.models.education.task.Task;
-import com.luminabackend.models.user.dto.user.UserPermissionDTO;
+import com.luminabackend.models.user.dto.user.UserAccessDTO;
 import com.luminabackend.repositories.submission.SubmissionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -52,9 +52,9 @@ public class SubmissionService {
         return submissionById.get();
     }
 
-    public Submission getSubmissionBasedOnUserPermission(UUID submissionId, UserPermissionDTO userPermissionDTO){
+    public Submission getSubmissionBasedOnUserPermission(UUID submissionId, UserAccessDTO userAccessDTO){
         Submission submission = getSubmissionById(submissionId);
-        permissionService.checkStudentAccessToSubmission(submission, userPermissionDTO);
+        permissionService.checkStudentAccessToSubmission(submission, userAccessDTO);
         return submission;
     }
 

@@ -1,11 +1,10 @@
 package com.luminabackend.services;
 
 import com.luminabackend.exceptions.AccessDeniedException;
-import com.luminabackend.exceptions.EntityNotFoundException;
 import com.luminabackend.models.education.classroom.Classroom;
 import com.luminabackend.models.education.submission.Submission;
 import com.luminabackend.models.user.Role;
-import com.luminabackend.models.user.dto.user.UserPermissionDTO;
+import com.luminabackend.models.user.dto.user.UserAccessDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,25 +28,25 @@ public class PermissionService {
             throw new AccessDeniedException("You don't have permission to access this class");
     }
 
-    public void checkAccessToClassroomById(UUID classroomId, UserPermissionDTO userPermissionDTO){
+    public void checkAccessToClassroomById(UUID classroomId, UserAccessDTO userAccessDTO){
         Classroom classroom = classroomService.getClassroomById(classroomId);
-        if (userPermissionDTO.role().equals(Role.PROFESSOR)) checkProfessorAccessToClassroom(userPermissionDTO.id(), classroom);
-        else if(userPermissionDTO.role().equals(Role.STUDENT)) checkStudentAccessToClassroom(userPermissionDTO.id(), classroom);
+        if (userAccessDTO.role().equals(Role.PROFESSOR)) checkProfessorAccessToClassroom(userAccessDTO.id(), classroom);
+        else if(userAccessDTO.role().equals(Role.STUDENT)) checkStudentAccessToClassroom(userAccessDTO.id(), classroom);
     }
 
-    public void checkAccessToClassroom(Classroom classroom, UserPermissionDTO userPermissionDTO){
-        if (userPermissionDTO.role().equals(Role.PROFESSOR)) checkProfessorAccessToClassroom(userPermissionDTO.id(), classroom);
-        else if(userPermissionDTO.role().equals(Role.STUDENT)) checkStudentAccessToClassroom(userPermissionDTO.id(), classroom);
+    public void checkAccessToClassroom(Classroom classroom, UserAccessDTO userAccessDTO){
+        if (userAccessDTO.role().equals(Role.PROFESSOR)) checkProfessorAccessToClassroom(userAccessDTO.id(), classroom);
+        else if(userAccessDTO.role().equals(Role.STUDENT)) checkStudentAccessToClassroom(userAccessDTO.id(), classroom);
     }
 
-    public void checkStudentAccessToSubmission(Submission submission, UserPermissionDTO userPermissionDTO){
-        if (userPermissionDTO.role().equals(Role.STUDENT) && !submission.getStudentId().equals(userPermissionDTO.id()))
+    public void checkStudentAccessToSubmission(Submission submission, UserAccessDTO userAccessDTO){
+        if (userAccessDTO.role().equals(Role.STUDENT) && !submission.getStudentId().equals(userAccessDTO.id()))
             throw new AccessDeniedException("You don't have permission to access this resource");
     }
 
-    public void checkStudentAccessToSubmissionById(UUID submissionId, UserPermissionDTO userPermissionDTO){
+    public void checkStudentAccessToSubmissionById(UUID submissionId, UserAccessDTO userAccessDTO){
         Submission submission = submissionService.getSubmissionById(submissionId);
-        if (userPermissionDTO.role().equals(Role.STUDENT) && !submission.getStudentId().equals(userPermissionDTO.id()))
+        if (userAccessDTO.role().equals(Role.STUDENT) && !submission.getStudentId().equals(userAccessDTO.id()))
             throw new AccessDeniedException("You don't have permission to access this resource");
     }
 }
