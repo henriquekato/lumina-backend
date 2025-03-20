@@ -40,7 +40,7 @@ public class ClassroomService {
     @Autowired
     private MaterialService materialService;
 
-    public List<Classroom> getClassroomsBasedOnUserPermission(UserPermissionDTO userPermissionDTO) {
+    public List<Classroom> getClassroomsBasedOnUserPossession(UserPermissionDTO userPermissionDTO) {
         if (userPermissionDTO.role().equals(Role.ADMIN))
             return repository.findAll();
 
@@ -50,7 +50,7 @@ public class ClassroomService {
         return repository.findAllByStudentsIdsContains(userPermissionDTO.id());
     }
 
-    public Page<Classroom> getPaginatedClassroomsBasedOnUserPermission(UserPermissionDTO userPermissionDTO, Pageable page) {
+    public Page<Classroom> getPaginatedClassroomsBasedOnUserPossession(UserPermissionDTO userPermissionDTO, Pageable page) {
         if (userPermissionDTO.role().equals(Role.ADMIN))
             return repository.findAll(page);
 

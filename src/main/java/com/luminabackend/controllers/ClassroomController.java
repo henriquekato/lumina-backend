@@ -59,7 +59,7 @@ public class ClassroomController {
     @GetMapping("/all")
     public ResponseEntity<List<ClassroomGetDTO>> getAllClassrooms(@RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        List<Classroom> classrooms = classroomService.getClassroomsBasedOnUserPermission(new UserPermissionDTO(payloadDTO));
+        List<Classroom> classrooms = classroomService.getClassroomsBasedOnUserPossession(new UserPermissionDTO(payloadDTO));
         return ResponseEntity.ok(classrooms.stream().map(ClassroomGetDTO::new).toList());
     }
 
@@ -75,7 +75,7 @@ public class ClassroomController {
     @GetMapping
     public ResponseEntity<Page<ClassroomGetDTO>> getPaginatedClassrooms(Pageable page, @RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        Page<Classroom> classrooms = classroomService.getPaginatedClassroomsBasedOnUserPermission(new UserPermissionDTO(payloadDTO), page);
+        Page<Classroom> classrooms = classroomService.getPaginatedClassroomsBasedOnUserPossession(new UserPermissionDTO(payloadDTO), page);
         return ResponseEntity.ok(classrooms.map(ClassroomGetDTO::new));
     }
 
