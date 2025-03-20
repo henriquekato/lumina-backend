@@ -36,7 +36,7 @@ public class SubmissionService {
     private TaskService taskService;
 
     @Autowired
-    private PermissionService permissionService;
+    private AccessService accessService;
 
     public List<Submission> getAllSubmissionsByTaskId(UUID taskId) {
         return repository.findAllByTaskId(taskId);
@@ -52,9 +52,9 @@ public class SubmissionService {
         return submissionById.get();
     }
 
-    public Submission getSubmissionBasedOnUserPermission(UUID submissionId, UserAccessDTO userAccessDTO){
+    public Submission getSubmissionBasedOnUserAccess(UUID submissionId, UserAccessDTO userAccessDTO){
         Submission submission = getSubmissionById(submissionId);
-        permissionService.checkStudentAccessToSubmission(submission, userAccessDTO);
+        accessService.checkStudentAccessToSubmission(submission, userAccessDTO);
         return submission;
     }
 

@@ -29,7 +29,7 @@ public class ClassroomService {
     private TaskService taskService;
 
     @Autowired
-    private PermissionService permissionService;
+    private AccessService accessService;
 
     @Autowired
     private StudentService studentService;
@@ -66,9 +66,9 @@ public class ClassroomService {
         return classroomById.get();
     }
 
-    public Classroom getClassroomBasedOnUserPermission(UUID classroomId, UserAccessDTO userAccessDTO) {
+    public Classroom getClassroomBasedOnUserAccess(UUID classroomId, UserAccessDTO userAccessDTO) {
         Classroom classroom = getClassroomById(classroomId);
-        permissionService.checkAccessToClassroom(classroom, userAccessDTO);
+        accessService.checkAccessToClassroom(classroom, userAccessDTO);
         return classroom;
     }
 

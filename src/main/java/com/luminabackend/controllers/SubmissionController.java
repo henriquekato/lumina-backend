@@ -159,7 +159,7 @@ public class SubmissionController {
             @PathVariable UUID submissionId,
             @RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        Submission submission = submissionService.getSubmissionBasedOnUserPermission(submissionId, new UserAccessDTO(payloadDTO));
+        Submission submission = submissionService.getSubmissionBasedOnUserAccess(submissionId, new UserAccessDTO(payloadDTO));
         return ResponseEntity.ok(new SubmissionGetDTO(submission));
     }
 
@@ -324,7 +324,6 @@ public class SubmissionController {
             @PathVariable UUID taskId,
             @RequestHeader("Authorization") String authorizationHeader) throws IOException {
         ByteArrayResource zipFile = submissionService.getAllTaskSubmissionsFiles(taskId);
-
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .header("Content-Disposition", "attachment; filename=\"task-" + taskId + ".zip\"")

@@ -67,7 +67,7 @@ public class MaterialController {
     private TokenService tokenService;
 
     @Autowired
-    private PermissionService permissionService;
+    private AccessService accessService;
 
     @Operation(summary = "Get a list of materials from a classroom")
     @ApiResponses(value = {
@@ -149,12 +149,11 @@ public class MaterialController {
             @RequestPart("material") MaterialPostDTO materialPost,
             @RequestPart("file") MultipartFile file,
             @RequestHeader("Authorization") String authorizationHeader) throws IOException {
-        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-
         if (file == null || file.isEmpty()) {
             throw new MissingFileException("Missing material file");
         }
 
+        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
         Material savedMaterial = materialService.saveMaterial(
                 classroomId,
                 payloadDTO.id(),
@@ -222,7 +221,7 @@ public class MaterialController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class))}),
     })
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')) and @resourceAccess.verifyClassroomAccess(#authorizationHeader, #classroomId)")
     @GetMapping("/{materialId}/file/{fileId}")
     public ResponseEntity<ByteArrayResource> downloadMaterialFile(
             @PathVariable UUID classroomId,
@@ -230,12 +229,9 @@ public class MaterialController {
             @PathVariable String fileId,
             @RequestHeader("Authorization") String authorizationHeader) throws IOException {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        UserAccessDTO userAccessDTO = new UserAccessDTO(payloadDTO);
-        permissionService.checkAccessToClassroomById(classroomId, userAccessDTO);
-        materialService.checkAccessToMaterial(materialId, userAccessDTO);
+        materialService.checkAccessToMaterial(materialId, new UserAccessDTO(payloadDTO));
 
         GridFsResource file = fileStorageService.getFile(fileId);
-
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(file.getContentType()))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
@@ -263,7 +259,6 @@ public class MaterialController {
             @RequestHeader("Authorization") String authorizationHeader
     ) throws IOException {
         ByteArrayResource resource = materialService.getAllMaterialsAsZip(classroomId);
-
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=classroom-" + classroomId + "-materials.zip")
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
