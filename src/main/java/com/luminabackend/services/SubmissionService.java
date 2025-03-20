@@ -91,7 +91,7 @@ public class SubmissionService {
 
     public Submission saveSubmission(UUID taskId, UUID studentId, SubmissionPostDTO submissionPostDTO, MultipartFile file) throws IOException {
         Task task = taskService.getTaskById(taskId);
-        if (task.getDueDate().isBefore(LocalDateTime.now()))
+        if (task.isDueDateExpired())
             throw new TaskDueDateExpiredException("Task due date expired");
 
         if (repository.existsByStudentIdAndTaskId(studentId, taskId))
@@ -104,7 +104,7 @@ public class SubmissionService {
 
     public void deleteById(UUID submissionId, UUID taskId) {
         Task task = taskService.getTaskById(taskId);
-        if (task.getDueDate().isBefore(LocalDateTime.now())) {
+        if (task.isDueDateExpired()) {
             throw new TaskDueDateExpiredException("Task due date expired");
         }
 
