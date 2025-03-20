@@ -73,6 +73,12 @@ public class SubmissionController {
     @Autowired
     private TokenService tokenService;
 
+    @Autowired
+    private PermissionService permissionService;
+
+    @Autowired
+    private TaskService taskService;
+
     @Operation(summary = "Get a list of submissions from a classroom task")
     @ApiResponses(value = {
             @ApiResponse(
@@ -94,8 +100,10 @@ public class SubmissionController {
             @PathVariable UUID taskId,
             @RequestHeader("Authorization") String authorizationHeader){
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+        permissionService.checkAccessToClassroomById(classroomId, new UserPermissionDTO(payloadDTO));
+        taskService.checkTaskExistanceById(taskId);
 
-        List<SubmissionGetDTO> submissions = submissionService.getAllSubmissions(classroomId, taskId, new UserPermissionDTO(payloadDTO))
+        List<SubmissionGetDTO> submissions = submissionService.getAllSubmissionsByTaskId(taskId)
                 .stream()
                 .map(SubmissionGetDTO::new)
                 .toList();
@@ -124,8 +132,10 @@ public class SubmissionController {
             Pageable page,
             @RequestHeader("Authorization") String authorizationHeader){
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+        permissionService.checkAccessToClassroomById(classroomId, new UserPermissionDTO(payloadDTO));
+        taskService.checkTaskExistanceById(taskId);
 
-        Page<Submission> submissions = submissionService.getPaginatedTaskSubmissions(classroomId, taskId, new UserPermissionDTO(payloadDTO), page);
+        Page<Submission> submissions = submissionService.getPaginatedTaskSubmissions(taskId, page);
         return ResponseEntity.ok(submissions.map(SubmissionGetDTO::new));
     }
 
@@ -157,8 +167,11 @@ public class SubmissionController {
             @PathVariable UUID submissionId,
             @RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+        UserPermissionDTO userPermissionDTO = new UserPermissionDTO(payloadDTO);
+        permissionService.checkAccessToClassroomById(classroomId, new UserPermissionDTO(payloadDTO));
+        taskService.checkTaskExistanceById(taskId);
 
-        Submission submission = submissionService.getSubmissionBasedOnUserPermission(submissionId, classroomId, taskId, new UserPermissionDTO(payloadDTO));
+        Submission submission = submissionService.getSubmissionBasedOnUserPermission(submissionId, userPermissionDTO);
         return ResponseEntity.ok(new SubmissionGetDTO(submission));
     }
 
@@ -203,12 +216,14 @@ public class SubmissionController {
             @RequestPart("file") MultipartFile file,
             @RequestHeader("Authorization") String authorizationHeader) throws IOException {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+        permissionService.checkAccessToClassroomById(classroomId, new UserPermissionDTO(payloadDTO));
+        taskService.checkTaskExistanceById(taskId);
 
         if (file == null || file.isEmpty()) {
             throw new MissingFileException("Missing submission file");
         }
 
-        Submission savedSubmission = submissionService.saveSubmission(classroomId, taskId, new UserPermissionDTO(payloadDTO), submissionPostDTO, file);
+        Submission savedSubmission = submissionService.saveSubmission(taskId, payloadDTO.id(), submissionPostDTO, file);
         return ResponseEntity
                 .created(linkTo(methodOn(SubmissionController.class)
                         .getTaskSubmissionById(classroomId, taskId, savedSubmission.getId(), authorizationHeader))
@@ -248,8 +263,12 @@ public class SubmissionController {
             @PathVariable UUID submissionId,
             @RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+        UserPermissionDTO userPermissionDTO = new UserPermissionDTO(payloadDTO);
+        permissionService.checkAccessToClassroomById(classroomId, userPermissionDTO);
+        taskService.checkTaskExistanceById(taskId);
+        permissionService.checkStudentAccessToSubmissionById(submissionId, userPermissionDTO);
 
-        submissionService.deleteById(submissionId, classroomId, taskId, new UserPermissionDTO(payloadDTO));
+        submissionService.deleteById(submissionId, taskId);
         return ResponseEntity.noContent().build();
     }
 
@@ -288,8 +307,9 @@ public class SubmissionController {
             @PathVariable String fileId,
             @RequestHeader("Authorization") String authorizationHeader) throws IOException {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-
-        submissionService.checkAccessToSubmission(classroomId, taskId, submissionId, new UserPermissionDTO(payloadDTO));
+        permissionService.checkAccessToClassroomById(classroomId, new UserPermissionDTO(payloadDTO));
+        taskService.checkTaskExistanceById(taskId);
+        permissionService.checkStudentAccessToSubmissionById(submissionId, new UserPermissionDTO(payloadDTO));
 
         GridFsResource file = fileStorageService.getFile(fileId);
 
@@ -320,8 +340,10 @@ public class SubmissionController {
             @PathVariable UUID taskId,
             @RequestHeader("Authorization") String authorizationHeader) throws IOException {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+        permissionService.checkAccessToClassroomById(classroomId, new UserPermissionDTO(payloadDTO));
+        taskService.checkTaskExistanceById(taskId);
 
-        ByteArrayResource zipFile = submissionService.getAllTaskSubmissionsFiles(classroomId, taskId, new UserPermissionDTO(payloadDTO));
+        ByteArrayResource zipFile = submissionService.getAllTaskSubmissionsFiles(taskId);
 
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
@@ -364,7 +386,10 @@ public class SubmissionController {
             @Valid @RequestBody SubmissionAssessmentDTO submissionAssessmentDTO,
             @RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        Submission submission = submissionService.submissionAssessment(submissionId, classroomId, taskId, new UserPermissionDTO(payloadDTO), submissionAssessmentDTO);
+        permissionService.checkAccessToClassroomById(classroomId, new UserPermissionDTO(payloadDTO));
+        taskService.checkTaskExistanceById(taskId);
+
+        Submission submission = submissionService.submissionAssessment(submissionId, submissionAssessmentDTO);
         return ResponseEntity.ok(new SubmissionGetDTO(submission));
     }
 }
