@@ -4,8 +4,7 @@ import com.luminabackend.exceptions.AccessDeniedException;
 import com.luminabackend.exceptions.EntityNotFoundException;
 import com.luminabackend.models.education.classroom.Classroom;
 import com.luminabackend.models.user.Role;
-import com.luminabackend.models.user.dto.user.UserAccessDTO;
-import com.luminabackend.utils.security.PayloadDTO;
+import com.luminabackend.models.user.dto.user.UserPermissionDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,19 +28,19 @@ public class PermissionService {
             throw new AccessDeniedException("You don't have permission to access this class");
     }
 
-    public void checkAccessToClassroomById(UUID classroomId, UserAccessDTO userAccessDTO){
+    public void checkAccessToClassroomById(UUID classroomId, UserPermissionDTO userPermissionDTO){
         Classroom classroom = classroomService.getClassroomById(classroomId);
-        if (userAccessDTO.role().equals(Role.PROFESSOR)) checkProfessorAccessToClassroom(userAccessDTO.id(), classroom);
-        else if(userAccessDTO.role().equals(Role.STUDENT)) checkStudentAccessToClassroom(userAccessDTO.id(), classroom);
+        if (userPermissionDTO.role().equals(Role.PROFESSOR)) checkProfessorAccessToClassroom(userPermissionDTO.id(), classroom);
+        else if(userPermissionDTO.role().equals(Role.STUDENT)) checkStudentAccessToClassroom(userPermissionDTO.id(), classroom);
     }
 
-    public void checkAccessToClassroom(Classroom classroom, UserAccessDTO userAccessDTO){
-        if (userAccessDTO.role().equals(Role.PROFESSOR)) checkProfessorAccessToClassroom(userAccessDTO.id(), classroom);
-        else if(userAccessDTO.role().equals(Role.STUDENT)) checkStudentAccessToClassroom(userAccessDTO.id(), classroom);
+    public void checkAccessToClassroom(Classroom classroom, UserPermissionDTO userPermissionDTO){
+        if (userPermissionDTO.role().equals(Role.PROFESSOR)) checkProfessorAccessToClassroom(userPermissionDTO.id(), classroom);
+        else if(userPermissionDTO.role().equals(Role.STUDENT)) checkStudentAccessToClassroom(userPermissionDTO.id(), classroom);
     }
 
-    public void checkAccessToTask(Classroom classroom, UUID taskId, UserAccessDTO userAccessDTO) {
-        checkAccessToClassroom(classroom, userAccessDTO);
+    public void checkAccessToTask(Classroom classroom, UUID taskId, UserPermissionDTO userPermissionDTO) {
+        checkAccessToClassroom(classroom, userPermissionDTO);
         if(!taskService.existsById(taskId))
             throw new EntityNotFoundException("Task not found");
     }

@@ -4,7 +4,7 @@ import com.luminabackend.exceptions.AccessDeniedException;
 import com.luminabackend.exceptions.EntityNotFoundException;
 import com.luminabackend.exceptions.ZipProcessingException;
 import com.luminabackend.models.education.material.Material;
-import com.luminabackend.models.user.dto.user.UserAccessDTO;
+import com.luminabackend.models.user.dto.user.UserPermissionDTO;
 import com.luminabackend.repositories.material.MaterialRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -102,10 +102,10 @@ public class MaterialService {
         });
     }
 
-    public void checkAccessToMaterial(UUID classroomId, UUID materialId, UserAccessDTO userAccessDTO) {
-        permissionService.checkAccessToClassroomById(classroomId, userAccessDTO);
+    public void checkAccessToMaterial(UUID classroomId, UUID materialId, UserPermissionDTO userPermissionDTO) {
+        permissionService.checkAccessToClassroomById(classroomId, userPermissionDTO);
         Material material = getMaterialById(materialId);
-        if (!material.getProfessorId().equals(userAccessDTO.id()))
+        if (!material.getProfessorId().equals(userPermissionDTO.id()))
             throw new AccessDeniedException("You don't have permission to access this resource");
     }
 }

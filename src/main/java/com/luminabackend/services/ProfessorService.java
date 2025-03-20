@@ -6,11 +6,10 @@ import com.luminabackend.exceptions.EntityNotFoundException;
 import com.luminabackend.models.user.Professor;
 import com.luminabackend.models.user.Role;
 import com.luminabackend.models.user.User;
-import com.luminabackend.models.user.dto.user.UserAccessDTO;
+import com.luminabackend.models.user.dto.user.UserPermissionDTO;
 import com.luminabackend.models.user.dto.user.UserPutDTO;
 import com.luminabackend.models.user.dto.user.UserSignupDTO;
 import com.luminabackend.repositories.professor.ProfessorRepository;
-import com.luminabackend.utils.security.PayloadDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -82,7 +81,7 @@ public class ProfessorService {
     public void deleteById(UUID id) {
         if (!existsById(id)) throw new EntityNotFoundException("Professor not found");
 
-        if (!classroomService.getClassroomsBasedOnUserPermission(new UserAccessDTO(id, Role.PROFESSOR)).isEmpty())
+        if (!classroomService.getClassroomsBasedOnUserPermission(new UserPermissionDTO(id, Role.PROFESSOR)).isEmpty())
             throw new CannotDeleteActiveProfessorException("Cannot delete professor because they are currently assigned to one or more active classrooms");
 
         repository.deleteById(id);

@@ -1,8 +1,7 @@
 package com.luminabackend.controllers;
 
 import com.luminabackend.models.education.classroom.*;
-import com.luminabackend.models.user.User;
-import com.luminabackend.models.user.dto.user.UserAccessDTO;
+import com.luminabackend.models.user.dto.user.UserPermissionDTO;
 import com.luminabackend.services.ClassroomService;
 import com.luminabackend.services.PermissionService;
 import com.luminabackend.services.TokenService;
@@ -60,7 +59,7 @@ public class ClassroomController {
     @GetMapping("/all")
     public ResponseEntity<List<ClassroomGetDTO>> getAllClassrooms(@RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        List<Classroom> classrooms = classroomService.getClassroomsBasedOnUserPermission(new UserAccessDTO(payloadDTO));
+        List<Classroom> classrooms = classroomService.getClassroomsBasedOnUserPermission(new UserPermissionDTO(payloadDTO));
         return ResponseEntity.ok(classrooms.stream().map(ClassroomGetDTO::new).toList());
     }
 
@@ -76,7 +75,7 @@ public class ClassroomController {
     @GetMapping
     public ResponseEntity<Page<ClassroomGetDTO>> getPaginatedClassrooms(Pageable page, @RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        Page<Classroom> classrooms = classroomService.getPaginatedClassroomsBasedOnUserPermission(new UserAccessDTO(payloadDTO), page);
+        Page<Classroom> classrooms = classroomService.getPaginatedClassroomsBasedOnUserPermission(new UserPermissionDTO(payloadDTO), page);
         return ResponseEntity.ok(classrooms.map(ClassroomGetDTO::new));
     }
 
@@ -113,7 +112,7 @@ public class ClassroomController {
             @PathVariable UUID classroomId,
             @RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        Classroom classroom = classroomService.getClassroomBasedOnUserPermission(classroomId, new UserAccessDTO(payloadDTO));
+        Classroom classroom = classroomService.getClassroomBasedOnUserPermission(classroomId, new UserPermissionDTO(payloadDTO));
         return ResponseEntity.ok(new ClassroomGetDTO(classroom));
     }
 
@@ -151,7 +150,7 @@ public class ClassroomController {
         @RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
         Classroom classroom = classroomService.getClassroomById(classroomId);
-        permissionService.checkAccessToClassroom(classroom, new UserAccessDTO(payloadDTO));
+        permissionService.checkAccessToClassroom(classroom, new UserPermissionDTO(payloadDTO));
         ClassroomWithRelationsDTO fullClassroom = classroomService.getClassroomWithRelations(classroom);
         return ResponseEntity.ok(fullClassroom);
     }
@@ -288,7 +287,7 @@ public class ClassroomController {
             @PathVariable UUID studentId,
             @RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        Classroom classroom = classroomService.getClassroomBasedOnUserPermission(classroomId, new UserAccessDTO(payloadDTO));
+        Classroom classroom = classroomService.getClassroomBasedOnUserPermission(classroomId, new UserPermissionDTO(payloadDTO));
         classroomService.addStudentToClassroom(studentId, classroom);
         return ResponseEntity.ok().build();
     }
@@ -330,7 +329,7 @@ public class ClassroomController {
             @PathVariable UUID studentId,
             @RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        Classroom classroom = classroomService.getClassroomBasedOnUserPermission(classroomId, new UserAccessDTO(payloadDTO));
+        Classroom classroom = classroomService.getClassroomBasedOnUserPermission(classroomId, new UserPermissionDTO(payloadDTO));
         classroomService.removeStudentFromClassroom(studentId, classroom);
         return ResponseEntity.noContent().build();
     }

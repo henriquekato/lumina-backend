@@ -5,7 +5,7 @@ import com.luminabackend.models.education.material.Material;
 import com.luminabackend.models.education.material.MaterialGetDTO;
 import com.luminabackend.models.education.material.MaterialPostDTO;
 import com.luminabackend.models.education.submission.SubmissionGetDTO;
-import com.luminabackend.models.user.dto.user.UserAccessDTO;
+import com.luminabackend.models.user.dto.user.UserPermissionDTO;
 import com.luminabackend.services.*;
 import com.luminabackend.utils.errors.GeneralErrorResponseDTO;
 import com.luminabackend.utils.errors.ValidationErrorResponseDTO;
@@ -92,7 +92,7 @@ public class MaterialController {
             @PathVariable UUID classroomId,
             @RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        permissionService.checkAccessToClassroomById(classroomId, new UserAccessDTO(payloadDTO));
+        permissionService.checkAccessToClassroomById(classroomId, new UserPermissionDTO(payloadDTO));
 
         List<Material> materials = materialService.getAllMaterials(classroomId);
         return ResponseEntity.ok(materials);
@@ -119,7 +119,7 @@ public class MaterialController {
             Pageable page,
             @RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        permissionService.checkAccessToClassroomById(classroomId, new UserAccessDTO(payloadDTO));
+        permissionService.checkAccessToClassroomById(classroomId, new UserPermissionDTO(payloadDTO));
 
         Page<Material> materials = materialService.getPaginatedClassroomMaterials(classroomId, page);
         return ResponseEntity.ok(materials);
@@ -159,7 +159,7 @@ public class MaterialController {
             @RequestPart("file") MultipartFile file,
             @RequestHeader("Authorization") String authorizationHeader) throws IOException {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        permissionService.checkAccessToClassroomById(classroomId, new UserAccessDTO(payloadDTO));
+        permissionService.checkAccessToClassroomById(classroomId, new UserPermissionDTO(payloadDTO));
 
         if (file == null || file.isEmpty()) {
             throw new MissingFileException("Missing material file");
@@ -203,7 +203,7 @@ public class MaterialController {
             @PathVariable UUID materialId,
             @RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        permissionService.checkAccessToClassroomById(classroomId, new UserAccessDTO(payloadDTO));
+        permissionService.checkAccessToClassroomById(classroomId, new UserPermissionDTO(payloadDTO));
 
         materialService.deleteById(materialId);
         return ResponseEntity.noContent().build();
@@ -243,7 +243,7 @@ public class MaterialController {
             @PathVariable String fileId,
             @RequestHeader("Authorization") String authorizationHeader) throws IOException {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        materialService.checkAccessToMaterial(classroomId, materialId, new UserAccessDTO(payloadDTO));
+        materialService.checkAccessToMaterial(classroomId, materialId, new UserPermissionDTO(payloadDTO));
 
         GridFsResource file = fileStorageService.getFile(fileId);
 
@@ -274,7 +274,7 @@ public class MaterialController {
             @RequestHeader("Authorization") String authorizationHeader
     ) throws IOException {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        permissionService.checkAccessToClassroomById(classroomId, new UserAccessDTO(payloadDTO));
+        permissionService.checkAccessToClassroomById(classroomId, new UserPermissionDTO(payloadDTO));
 
         ByteArrayResource resource = materialService.getAllMaterialsAsZip(classroomId);
 
