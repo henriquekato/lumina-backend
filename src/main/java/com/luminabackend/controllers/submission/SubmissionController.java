@@ -1,10 +1,12 @@
 package com.luminabackend.controllers.submission;
 
 import com.luminabackend.exceptions.MissingFileException;
+import com.luminabackend.exceptions.TaskDueDateExpiredException;
 import com.luminabackend.models.education.submission.Submission;
 import com.luminabackend.models.education.submission.SubmissionAssessmentDTO;
 import com.luminabackend.models.education.submission.SubmissionGetDTO;
 import com.luminabackend.models.education.submission.SubmissionPostDTO;
+import com.luminabackend.models.education.task.Task;
 import com.luminabackend.models.user.dto.user.UserAccessDTO;
 import com.luminabackend.services.*;
 import com.luminabackend.utils.security.PayloadDTO;
@@ -39,6 +41,12 @@ public class SubmissionController implements SubmissionControllerDocumentation {
 
     @Autowired
     private TokenService tokenService;
+
+    @Autowired
+    private TaskService taskService;
+
+    @Autowired
+    private AccessService accessService;
 
     @Override
     @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR')) " +
@@ -81,7 +89,8 @@ public class SubmissionController implements SubmissionControllerDocumentation {
             @PathVariable UUID submissionId,
             @RequestHeader("Authorization") String authorizationHeader) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        Submission submission = submissionService.getSubmissionBasedOnUserAccess(submissionId, new UserAccessDTO(payloadDTO));
+        accessService.checkStudentAccessToSubmissionById(submissionId, new UserAccessDTO(payloadDTO));
+        Submission submission = submissionService.getSubmissionById(submissionId);
         return ResponseEntity.ok(new SubmissionGetDTO(submission));
     }
 
@@ -96,9 +105,10 @@ public class SubmissionController implements SubmissionControllerDocumentation {
             @RequestPart("submission") SubmissionPostDTO submissionPostDTO,
             @RequestPart("file") MultipartFile file,
             @RequestHeader("Authorization") String authorizationHeader) throws IOException {
-        if (file == null || file.isEmpty()) {
+        taskService.isDueDateExpired(taskId);
+
+        if (file == null || file.isEmpty())
             throw new MissingFileException("Missing submission file");
-        }
 
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
         Submission savedSubmission = submissionService.saveSubmission(taskId, payloadDTO.id(), submissionPostDTO, file);
@@ -121,7 +131,8 @@ public class SubmissionController implements SubmissionControllerDocumentation {
             @PathVariable UUID taskId,
             @PathVariable UUID submissionId,
             @RequestHeader("Authorization") String authorizationHeader) {
-        submissionService.deleteById(submissionId, taskId);
+        taskService.isDueDateExpired(taskId);
+        submissionService.deleteById(submissionId);
         return ResponseEntity.noContent().build();
     }
 

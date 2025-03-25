@@ -1,6 +1,7 @@
 package com.luminabackend.services;
 
 import com.luminabackend.exceptions.EntityNotFoundException;
+import com.luminabackend.exceptions.TaskDueDateExpiredException;
 import com.luminabackend.models.education.task.Task;
 import com.luminabackend.models.education.task.TaskCreateDTO;
 import com.luminabackend.models.education.task.TaskPutDTO;
@@ -40,7 +41,7 @@ public class TaskService {
         return repository.existsById(taskId);
     }
 
-    public void checkTaskExistanceById(UUID taskId){
+    public void checkTaskExistanceById(UUID taskId) {
         if (!existsById(taskId)) {
             throw new EntityNotFoundException("Task not found");
         }
@@ -75,9 +76,15 @@ public class TaskService {
         repository.deleteById(taskId);
     }
 
-    public void deleteAllByClassroomId(UUID classroomId){
+    public void deleteAllByClassroomId(UUID classroomId) {
         List<Task> classroomTasks = repository.findAllByClassroomId(classroomId);
         classroomTasks.forEach(task -> submissionService.deleteAllByTaskId(task.getId()));
         repository.deleteAllById(classroomTasks.stream().map(Task::getId).toList());
+    }
+
+    public void isDueDateExpired(UUID taskId) {
+        Task task = getTaskById(taskId);
+        if (task.isDueDateExpired())
+            throw new TaskDueDateExpiredException("Task due date expired");
     }
 }

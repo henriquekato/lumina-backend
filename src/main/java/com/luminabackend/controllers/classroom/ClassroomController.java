@@ -1,10 +1,9 @@
 package com.luminabackend.controllers.classroom;
 
+import com.luminabackend.exceptions.EntityNotFoundException;
 import com.luminabackend.models.education.classroom.*;
 import com.luminabackend.models.user.dto.user.UserAccessDTO;
-import com.luminabackend.services.ClassroomService;
-import com.luminabackend.services.AccessService;
-import com.luminabackend.services.TokenService;
+import com.luminabackend.services.*;
 import com.luminabackend.utils.security.PayloadDTO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +30,12 @@ public class ClassroomController implements ClassroomControllerDocumentation {
 
     @Autowired
     private AccessService accessService;
+
+    @Autowired
+    private ProfessorService professorService;
+
+    @Autowired
+    private GetClassroomWithRelationsService getClassroomWithRelationsService;
 
     @Override
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
@@ -60,7 +65,8 @@ public class ClassroomController implements ClassroomControllerDocumentation {
             @RequestHeader("Authorization") String authorizationHeader
     ) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        Classroom classroom = classroomService.getClassroomBasedOnUserAccess(classroomId, new UserAccessDTO(payloadDTO));
+        accessService.checkAccessToClassroomById(classroomId, new UserAccessDTO(payloadDTO));
+        Classroom classroom = classroomService.getClassroomById(classroomId);
         return ResponseEntity.ok(new ClassroomGetDTO(classroom));
     }
 
@@ -74,7 +80,7 @@ public class ClassroomController implements ClassroomControllerDocumentation {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
         Classroom classroom = classroomService.getClassroomById(classroomId);
         accessService.checkAccessToClassroom(classroom, new UserAccessDTO(payloadDTO));
-        ClassroomWithRelationsDTO fullClassroom = classroomService.getClassroomWithRelations(classroom);
+        ClassroomWithRelationsDTO fullClassroom = getClassroomWithRelationsService.getClassroomWithRelations(classroom);
         return ResponseEntity.ok(fullClassroom);
     }
 
@@ -100,6 +106,8 @@ public class ClassroomController implements ClassroomControllerDocumentation {
             @PathVariable UUID classroomId,
             @Valid @RequestBody ClassroomPutDTO classroomPutDTO
     ) {
+        if (classroomPutDTO.professorId() != null && !professorService.existsById(classroomPutDTO.professorId()))
+            throw new EntityNotFoundException("Professor not found");
         Classroom classroom = classroomService.edit(classroomId, classroomPutDTO);
         return ResponseEntity.ok(new ClassroomGetDTO(classroom));
     }
@@ -121,7 +129,8 @@ public class ClassroomController implements ClassroomControllerDocumentation {
             @RequestHeader("Authorization") String authorizationHeader
     ) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        Classroom classroom = classroomService.getClassroomBasedOnUserAccess(classroomId, new UserAccessDTO(payloadDTO));
+        accessService.checkAccessToClassroomById(classroomId, new UserAccessDTO(payloadDTO));
+        Classroom classroom = classroomService.getClassroomById(classroomId);
         classroomService.addStudentToClassroom(studentId, classroom);
         return ResponseEntity.ok().build();
     }
@@ -135,7 +144,8 @@ public class ClassroomController implements ClassroomControllerDocumentation {
             @RequestHeader("Authorization") String authorizationHeader
     ) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        Classroom classroom = classroomService.getClassroomBasedOnUserAccess(classroomId, new UserAccessDTO(payloadDTO));
+        accessService.checkAccessToClassroomById(classroomId, new UserAccessDTO(payloadDTO));
+        Classroom classroom = classroomService.getClassroomById(classroomId);
         classroomService.removeStudentFromClassroom(studentId, classroom);
         return ResponseEntity.noContent().build();
     }

@@ -29,15 +29,6 @@ public class ClassroomService {
     private TaskService taskService;
 
     @Autowired
-    private AccessService accessService;
-
-    @Autowired
-    private StudentService studentService;
-
-    @Autowired
-    private ProfessorService professorService;
-
-    @Autowired
     private MaterialService materialService;
 
     public List<Classroom> getClassroomsBasedOnUserAccess(UserAccessDTO userAccessDTO) {
@@ -66,29 +57,8 @@ public class ClassroomService {
         return classroomById.get();
     }
 
-    public Classroom getClassroomBasedOnUserAccess(UUID classroomId, UserAccessDTO userAccessDTO) {
-        Classroom classroom = getClassroomById(classroomId);
-        accessService.checkAccessToClassroom(classroom, userAccessDTO);
-        return classroom;
-    }
-
     public Optional<Classroom> getClassroomByName(String name) {
         return repository.findByName(name);
-    }
-
-    public ClassroomWithRelationsDTO getClassroomWithRelations(Classroom classroom){
-        Optional<Professor> professorById = professorService.getProfessorById(classroom.getProfessorId());
-        ProfessorGetDTO professor = professorById
-                .map(ProfessorGetDTO::new)
-                .orElseThrow(IllegalStateException::new);
-
-        List<StudentGetDTO> students = studentService
-                .getAllStudentsById(classroom.getStudentsIds())
-                .stream()
-                .map(StudentGetDTO::new)
-                .toList();
-
-        return new ClassroomWithRelationsDTO(classroom.getId(), professor, students);
     }
 
     public boolean existsById(UUID classroomId) {
@@ -114,11 +84,8 @@ public class ClassroomService {
             classroom.setDescription(classroomPutDTO.description().trim());
 
         UUID professorId = classroomPutDTO.professorId();
-        if (professorId != null) {
-            if (!professorService.existsById(professorId))
-                throw new EntityNotFoundException("Professor not found");
+        if (professorId != null)
             classroom.setProfessorId(professorId);
-        }
 
         return repository.save(classroom);
     }

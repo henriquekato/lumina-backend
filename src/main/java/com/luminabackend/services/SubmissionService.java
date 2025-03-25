@@ -32,12 +32,6 @@ public class SubmissionService {
     @Autowired
     private FileStorageService fileStorageService;
 
-    @Autowired
-    private TaskService taskService;
-
-    @Autowired
-    private AccessService accessService;
-
     public List<Submission> getAllSubmissionsByTaskId(UUID taskId) {
         return repository.findAllByTaskId(taskId);
     }
@@ -50,12 +44,6 @@ public class SubmissionService {
         Optional<Submission> submissionById = repository.findById(id);
         if (submissionById.isEmpty()) throw new EntityNotFoundException("Submission not found");
         return submissionById.get();
-    }
-
-    public Submission getSubmissionBasedOnUserAccess(UUID submissionId, UserAccessDTO userAccessDTO){
-        Submission submission = getSubmissionById(submissionId);
-        accessService.checkStudentAccessToSubmission(submission, userAccessDTO);
-        return submission;
     }
 
     public ByteArrayResource getAllTaskSubmissionsFiles(UUID taskId) throws IOException {
@@ -90,10 +78,6 @@ public class SubmissionService {
     }
 
     public Submission saveSubmission(UUID taskId, UUID studentId, SubmissionPostDTO submissionPostDTO, MultipartFile file) throws IOException {
-        Task task = taskService.getTaskById(taskId);
-        if (task.isDueDateExpired())
-            throw new TaskDueDateExpiredException("Task due date expired");
-
         if (repository.existsByStudentIdAndTaskId(studentId, taskId))
             throw new TaskAlreadySubmittedException("You have already submitted this task");
 
@@ -102,12 +86,7 @@ public class SubmissionService {
         return repository.save(submission);
     }
 
-    public void deleteById(UUID submissionId, UUID taskId) {
-        Task task = taskService.getTaskById(taskId);
-        if (task.isDueDateExpired()) {
-            throw new TaskDueDateExpiredException("Task due date expired");
-        }
-
+    public void deleteById(UUID submissionId) {
         Submission submission = getSubmissionById(submissionId);
         if (submission.getFileId() != null)
             fileStorageService.deleteFile(submission.getFileId());
