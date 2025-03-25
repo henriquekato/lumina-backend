@@ -1,6 +1,5 @@
 package com.luminabackend.controllers.classroom;
 
-import com.luminabackend.exceptions.EntityNotFoundException;
 import com.luminabackend.models.education.classroom.*;
 import com.luminabackend.models.user.dto.user.UserAccessDTO;
 import com.luminabackend.services.*;
@@ -32,9 +31,6 @@ public class ClassroomController implements ClassroomControllerDocumentation {
     private AccessService accessService;
 
     @Autowired
-    private ProfessorService professorService;
-
-    @Autowired
     private GetClassroomWithRelationsService getClassroomWithRelationsService;
 
     @Override
@@ -46,6 +42,7 @@ public class ClassroomController implements ClassroomControllerDocumentation {
         return ResponseEntity.ok(classrooms.stream().map(ClassroomGetDTO::new).toList());
     }
 
+    @Override
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
     @GetMapping
     public ResponseEntity<Page<ClassroomGetDTO>> getPaginatedClassrooms(
@@ -100,14 +97,12 @@ public class ClassroomController implements ClassroomControllerDocumentation {
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') and @professorExistance.verify(#classroomPutDTO)")
     @PutMapping("/{classroomId}")
     public ResponseEntity<ClassroomGetDTO> editClassroom(
             @PathVariable UUID classroomId,
             @Valid @RequestBody ClassroomPutDTO classroomPutDTO
     ) {
-        if (classroomPutDTO.professorId() != null && !professorService.existsById(classroomPutDTO.professorId()))
-            throw new EntityNotFoundException("Professor not found");
         Classroom classroom = classroomService.edit(classroomId, classroomPutDTO);
         return ResponseEntity.ok(new ClassroomGetDTO(classroom));
     }
