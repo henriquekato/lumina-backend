@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class GetClassroomWithRelationsService {
+public class ClassroomWithRelationsService {
     @Autowired
     private StudentService studentService;
 

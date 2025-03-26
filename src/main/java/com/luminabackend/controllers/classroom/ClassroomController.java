@@ -31,7 +31,7 @@ public class ClassroomController implements ClassroomControllerDocumentation {
     private AccessService accessService;
 
     @Autowired
-    private GetClassroomWithRelationsService getClassroomWithRelationsService;
+    private ClassroomWithRelationsService classroomWithRelationsService;
 
     @Override
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
@@ -77,7 +77,7 @@ public class ClassroomController implements ClassroomControllerDocumentation {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
         Classroom classroom = classroomService.getClassroomById(classroomId);
         accessService.checkAccessToClassroom(classroom, new UserAccessDTO(payloadDTO));
-        ClassroomWithRelationsDTO fullClassroom = getClassroomWithRelationsService.getClassroomWithRelations(classroom);
+        ClassroomWithRelationsDTO fullClassroom = classroomWithRelationsService.getClassroomWithRelations(classroom);
         return ResponseEntity.ok(fullClassroom);
     }
 
