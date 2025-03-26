@@ -4,13 +4,13 @@ import com.luminabackend.exceptions.EmailAlreadyInUseException;
 import com.luminabackend.exceptions.EntityNotFoundException;
 import com.luminabackend.models.user.Student;
 import com.luminabackend.models.user.User;
+import com.luminabackend.models.user.dto.user.UserNewDataDTO;
 import com.luminabackend.models.user.dto.user.UserPutDTO;
 import com.luminabackend.models.user.dto.user.UserSignupDTO;
 import com.luminabackend.repositories.student.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,10 +23,7 @@ public class StudentService {
     private StudentRepository repository;
 
     @Autowired
-    private AccountService accountService;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private UserService userService;
 
     @Autowired
     private ClassroomService classroomService;
@@ -56,17 +53,12 @@ public class StudentService {
     }
 
     public Student save(UserSignupDTO studentPostDTO) {
-        Optional<User> userByEmail = accountService.getUserByEmail(studentPostDTO.email());
-
+        Optional<User> userByEmail = userService.getUserByEmail(studentPostDTO.email());
         if (userByEmail.isPresent()) throw new EmailAlreadyInUseException();
 
-        String email = studentPostDTO.email().trim();
-        String password = studentPostDTO.password().trim();
-        String encodedPassword = passwordEncoder.encode(password);
-        String firstName = studentPostDTO.firstName().trim();
-        String lastName = studentPostDTO.lastName().trim();
+        UserNewDataDTO userNewDataDTO = userService.prepareUserDataToSave(studentPostDTO);
 
-        Student student = new Student(email, encodedPassword, firstName, lastName);
+        Student student = new Student(userNewDataDTO);
         return repository.save(student);
     }
 
@@ -75,7 +67,7 @@ public class StudentService {
         if (studentById.isEmpty()) throw new EntityNotFoundException("Student not found");
 
         Student student = studentById.get();
-        student = (Student) accountService.editUserData(student, userPutDTO);
+        student = (Student) userService.editUserData(student, userPutDTO);
         return repository.save(student);
     }
 

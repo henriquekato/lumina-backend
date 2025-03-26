@@ -5,13 +5,13 @@ import com.luminabackend.exceptions.EmailAlreadyInUseException;
 import com.luminabackend.exceptions.EntityNotFoundException;
 import com.luminabackend.models.user.Admin;
 import com.luminabackend.models.user.User;
+import com.luminabackend.models.user.dto.user.UserNewDataDTO;
 import com.luminabackend.models.user.dto.user.UserPutDTO;
 import com.luminabackend.models.user.dto.user.UserSignupDTO;
 import com.luminabackend.repositories.admin.AdminRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,10 +24,7 @@ public class AdminService {
     private AdminRepository repository;
 
     @Autowired
-    private AccountService accountService;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private UserService userService;
 
     public List<Admin> getAllAdmins() {
         return repository.findAll();
@@ -50,17 +47,12 @@ public class AdminService {
     }
 
     public Admin save(UserSignupDTO adminPostDTO){
-        Optional<User> userByEmail = accountService.getUserByEmail(adminPostDTO.email());
-
+        Optional<User> userByEmail = userService.getUserByEmail(adminPostDTO.email());
         if (userByEmail.isPresent()) throw new EmailAlreadyInUseException();
 
-        String email = adminPostDTO.email().trim();
-        String password = adminPostDTO.password().trim();
-        String encodedPassword = passwordEncoder.encode(password);
-        String firstName = adminPostDTO.firstName().trim();
-        String lastName = adminPostDTO.lastName().trim();
+        UserNewDataDTO userNewDataDTO = userService.prepareUserDataToSave(adminPostDTO);
 
-        Admin admin = new Admin(email, encodedPassword, firstName, lastName);
+        Admin admin = new Admin(userNewDataDTO);
         return repository.save(admin);
     }
 
@@ -69,7 +61,7 @@ public class AdminService {
         if(adminById.isEmpty()) throw new EntityNotFoundException("Admin not found");
 
         Admin admin = adminById.get();
-        admin = (Admin) accountService.editUserData(admin, userPutDTO);
+        admin = (Admin) userService.editUserData(admin, userPutDTO);
         return repository.save(admin);
     }
 
@@ -83,7 +75,7 @@ public class AdminService {
         repository.deleteById(id);
     }
 
-    public long count(){
+    long count(){
         return repository.count();
     }
 }

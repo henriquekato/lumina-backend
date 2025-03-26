@@ -1,5 +1,6 @@
 package com.luminabackend.models.user;
 
+import com.luminabackend.models.user.dto.user.UserNewDataDTO;
 import com.luminabackend.models.user.dto.user.UserSignupDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,6 +23,10 @@ public final class Admin extends User {
 
     public Admin(UserSignupDTO adminPostDTO){
         super(adminPostDTO.email(), adminPostDTO.password(), adminPostDTO.firstName(), adminPostDTO.lastName());
+    }
+
+    public Admin(UserNewDataDTO adminNewDataDTO){
+        super(adminNewDataDTO.email(), adminNewDataDTO.password(), adminNewDataDTO.firstName(), adminNewDataDTO.lastName());
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.luminabackend.models.user;
 
+import com.luminabackend.models.user.dto.user.UserNewDataDTO;
 import com.luminabackend.models.user.dto.user.UserSignupDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,6 +26,13 @@ public final class Student extends User {
                 studentPostDTO.password(),
                 studentPostDTO.firstName(),
                 studentPostDTO.lastName());
+    }
+
+    public Student(UserNewDataDTO studentNewDataDTO){
+        super(studentNewDataDTO.email(),
+                studentNewDataDTO.password(),
+                studentNewDataDTO.firstName(),
+                studentNewDataDTO.lastName());
     }
 
     @Override
