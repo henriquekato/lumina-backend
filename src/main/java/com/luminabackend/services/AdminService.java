@@ -47,8 +47,11 @@ public class AdminService {
     }
 
     public Admin save(UserSignupDTO adminPostDTO){
+        userService.validateUserSignupData(adminPostDTO);
+
         Optional<User> userByEmail = userService.getUserByEmail(adminPostDTO.email());
-        if (userByEmail.isPresent()) throw new EmailAlreadyInUseException();
+        if (userByEmail.isPresent())
+            throw new EmailAlreadyInUseException();
 
         UserNewDataDTO userNewDataDTO = userService.prepareUserDataToSave(adminPostDTO);
 
@@ -58,7 +61,8 @@ public class AdminService {
 
     public Admin edit(UUID id, UserPutDTO userPutDTO){
         Optional<Admin> adminById = getAdminById(id);
-        if(adminById.isEmpty()) throw new EntityNotFoundException("Admin not found");
+        if(adminById.isEmpty())
+            throw new EntityNotFoundException("Admin not found");
 
         Admin admin = adminById.get();
         admin = (Admin) userService.editUserData(admin, userPutDTO);
@@ -66,11 +70,11 @@ public class AdminService {
     }
 
     public void deleteById(UUID id) {
-        if (!existsById(id)) throw new EntityNotFoundException("Admin not found");
+        if (!existsById(id))
+            throw new EntityNotFoundException("Admin not found");
 
-        if (count() == 1) {
+        if (count() == 1)
             throw new CannotDeleteLastAdministratorException("The last administrator cannot be deleted");
-        }
 
         repository.deleteById(id);
     }

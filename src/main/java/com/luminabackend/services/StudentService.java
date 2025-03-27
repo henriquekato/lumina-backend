@@ -53,6 +53,8 @@ public class StudentService {
     }
 
     public Student save(UserSignupDTO studentPostDTO) {
+        userService.validateUserSignupData(studentPostDTO);
+
         Optional<User> userByEmail = userService.getUserByEmail(studentPostDTO.email());
         if (userByEmail.isPresent()) throw new EmailAlreadyInUseException();
 

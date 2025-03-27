@@ -52,6 +52,8 @@ public class ProfessorService {
     }
 
     public Professor save(UserSignupDTO professorPostDTO){
+        userService.validateUserSignupData(professorPostDTO);
+
         Optional<User> userByEmail = userService.getUserByEmail(professorPostDTO.email());
         if (userByEmail.isPresent()) throw new EmailAlreadyInUseException();
 

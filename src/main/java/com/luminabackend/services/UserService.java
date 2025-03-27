@@ -29,6 +29,14 @@ public class UserService {
         return repository.findByUUID(id);
     }
 
+    public void validateUserSignupData(UserSignupDTO userSignupDTO){
+        if (userSignupDTO == null) throw new IllegalArgumentException("User signup DTO is null");
+        if (userSignupDTO.email() == null || userSignupDTO.email().isBlank()) throw new IllegalArgumentException("Email is null or blank");
+        if (userSignupDTO.password() == null || userSignupDTO.password().isBlank()) throw new IllegalArgumentException("Password is null or blank");
+        if (userSignupDTO.firstName() == null || userSignupDTO.firstName().isBlank()) throw new IllegalArgumentException("First name is null or blank");
+        if (userSignupDTO.lastName() == null || userSignupDTO.lastName().isBlank()) throw new IllegalArgumentException("Last name is null or blank");
+    }
+
     public UserNewDataDTO prepareUserDataToSave(UserSignupDTO userSignupDTO){
         String email = userSignupDTO.email().trim();
         String password = userSignupDTO.password().trim();
