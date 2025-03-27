@@ -20,6 +20,14 @@ public sealed abstract class User implements UserDetails permits Student, Profes
     private String firstName;
     private String lastName;
 
+    User(UUID id, String email, String password, String firstName, String lastName) {
+        this.id = id;
+        this.email = email;
+        this.password = password;
+        this.firstName = firstName;
+        this.lastName = lastName;
+    }
+
     public User(String email, String password, String firstName, String lastName) {
         this.id = UUID.randomUUID();
         this.email = email;

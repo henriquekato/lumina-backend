@@ -47,20 +47,20 @@ public class UserService {
     }
 
     public User editUserData(User user, UserPutDTO userPutDTO){
-        String newEmail = userPutDTO.email();
-        if (newEmail != null) {
-            newEmail = newEmail.trim();
+        if (userPutDTO.email() != null && !userPutDTO.email().isBlank()) {
+            String newEmail = userPutDTO.email().trim();
             Optional<User> userByEmail = getUserByEmail(newEmail);
             if (userByEmail.isPresent()) throw new EmailAlreadyInUseException();
             user.setEmail(newEmail);
         }
-        if (userPutDTO.password() != null) {
-            user.setPassword(userPutDTO.password().trim());
+        if (userPutDTO.password() != null && !userPutDTO.password().isBlank()) {
+            String password = userPutDTO.password().trim();
+            user.setPassword(passwordEncoder.encode(password));
         }
-        if (userPutDTO.firstName() != null) {
+        if (userPutDTO.firstName() != null && !userPutDTO.firstName().isBlank()) {
             user.setFirstName(userPutDTO.firstName().trim());
         }
-        if (userPutDTO.lastName() != null) {
+        if (userPutDTO.lastName() != null && !userPutDTO.lastName().isBlank()) {
             user.setLastName(userPutDTO.lastName().trim());
         }
         return user;

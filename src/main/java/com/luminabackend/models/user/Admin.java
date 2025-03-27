@@ -11,12 +11,17 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 @Document(collection = "admin")
 @Getter
 @Setter
 @NoArgsConstructor
 public final class Admin extends User {
+    public Admin(UUID id, String email, String password, String firstName, String lastName) {
+        super(id, email, password, firstName, lastName);
+    }
+
     public Admin(String email, String password, String firstName, String lastName) {
         super(email, password, firstName, lastName);
     }
