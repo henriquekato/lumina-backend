@@ -57,10 +57,6 @@ public class ClassroomService {
         return classroomById.get();
     }
 
-    public Optional<Classroom> getClassroomByName(String name) {
-        return repository.findByName(name);
-    }
-
     public boolean existsById(UUID classroomId) {
         return repository.existsById(classroomId);
     }

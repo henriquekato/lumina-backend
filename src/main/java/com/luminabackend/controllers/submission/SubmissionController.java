@@ -51,7 +51,7 @@ public class SubmissionController implements SubmissionControllerDocumentation {
     @Override
     @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR')) " +
             "and @resourceAccess.verifyClassroomAccess(#authorizationHeader, #classroomId) " +
-            "and @taskExistance.verify(#taskId)")
+            "and @taskExistence.verify(#taskId)")
     @GetMapping("/all")
     public ResponseEntity<List<SubmissionGetDTO>> getAllTaskSubmissions(
             @PathVariable UUID classroomId,
@@ -67,7 +67,7 @@ public class SubmissionController implements SubmissionControllerDocumentation {
     @Override
     @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR')) " +
             "and @resourceAccess.verifyClassroomAccess(#authorizationHeader, #classroomId) " +
-            "and @taskExistance.verify(#taskId)")
+            "and @taskExistence.verify(#taskId)")
     @GetMapping
     public ResponseEntity<Page<SubmissionGetDTO>> getPaginatedTaskSubmissions(
             @PathVariable UUID classroomId,
@@ -81,7 +81,7 @@ public class SubmissionController implements SubmissionControllerDocumentation {
     @Override
     @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')) " +
             "and @resourceAccess.verifyClassroomAccess(#authorizationHeader, #classroomId) " +
-            "and @taskExistance.verify(#taskId)")
+            "and @taskExistence.verify(#taskId)")
     @GetMapping("/{submissionId}")
     public ResponseEntity<SubmissionGetDTO> getTaskSubmissionById(
             @PathVariable UUID classroomId,
@@ -97,7 +97,7 @@ public class SubmissionController implements SubmissionControllerDocumentation {
     @Override
     @PreAuthorize("hasRole('STUDENT') " +
             "and @resourceAccess.verifyClassroomAccess(#authorizationHeader, #classroomId) " +
-            "and @taskExistance.verify(#taskId)")
+            "and @taskExistence.verify(#taskId)")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<SubmissionGetDTO> createSubmission(
             @PathVariable UUID classroomId,
@@ -123,7 +123,7 @@ public class SubmissionController implements SubmissionControllerDocumentation {
     @Override
     @PreAuthorize("hasRole('STUDENT') " +
             "and @resourceAccess.verifyClassroomAccess(#authorizationHeader, #classroomId) " +
-            "and @taskExistance.verify(#taskId) " +
+            "and @taskExistence.verify(#taskId) " +
             "and @resourceAccess.verifySubmissionAccess(#authorizationHeader, #submissionId)")
     @DeleteMapping("/{submissionId}")
     public ResponseEntity<Void> deleteSubmission(
@@ -139,7 +139,7 @@ public class SubmissionController implements SubmissionControllerDocumentation {
     @Override
     @PreAuthorize("(hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')) " +
             "and @resourceAccess.verifyClassroomAccess(#authorizationHeader, #classroomId) " +
-            "and @taskExistance.verify(#taskId) " +
+            "and @taskExistence.verify(#taskId) " +
             "and @resourceAccess.verifySubmissionAccess(#authorizationHeader, #submissionId)")
     @GetMapping("/{submissionId}/file/{fileId}")
     public ResponseEntity<ByteArrayResource> downloadSubmissionFile(
@@ -158,7 +158,7 @@ public class SubmissionController implements SubmissionControllerDocumentation {
     @Override
     @PreAuthorize("hasRole('PROFESSOR') " +
             "and @resourceAccess.verifyClassroomAccess(#authorizationHeader, #classroomId) " +
-            "and @taskExistance.verify(#taskId)")
+            "and @taskExistence.verify(#taskId)")
     @GetMapping("/download")
     public ResponseEntity<ByteArrayResource> downloadAllTaskSubmissionsFiles(
             @PathVariable UUID classroomId,
@@ -174,7 +174,7 @@ public class SubmissionController implements SubmissionControllerDocumentation {
     @Override
     @PreAuthorize("hasRole('PROFESSOR') " +
             "and @resourceAccess.verifyClassroomAccess(#authorizationHeader, #classroomId) " +
-            "and @taskExistance.verify(#taskId)")
+            "and @taskExistence.verify(#taskId)")
     @PutMapping("/{submissionId}")
     public ResponseEntity<SubmissionGetDTO> submissionAssessment(
             @PathVariable UUID classroomId,

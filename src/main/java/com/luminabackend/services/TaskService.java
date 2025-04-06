@@ -41,7 +41,7 @@ public class TaskService {
         return repository.existsById(taskId);
     }
 
-    public void checkTaskExistanceById(UUID taskId) {
+    public void checkTaskExistenceById(UUID taskId) {
         if (!existsById(taskId)) {
             throw new EntityNotFoundException("Task not found");
         }
@@ -70,7 +70,7 @@ public class TaskService {
     }
 
     public void deleteById(UUID taskId) {
-        checkTaskExistanceById(taskId);
+        checkTaskExistenceById(taskId);
 
         submissionService.deleteAllByTaskId(taskId);
         repository.deleteById(taskId);

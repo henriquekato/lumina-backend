@@ -6,13 +6,13 @@ import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
-@Component("taskExistance")
+@Component("taskExistence")
 public class TaskExistenceMiddleware {
     @Autowired
     private TaskService taskService;
 
     public boolean verify(UUID taskId){
-        taskService.checkTaskExistanceById(taskId);
+        taskService.checkTaskExistenceById(taskId);
         return true;
     }
 }

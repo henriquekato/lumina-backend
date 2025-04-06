@@ -97,7 +97,7 @@ public class ClassroomController implements ClassroomControllerDocumentation {
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN') and @professorExistance.verify(#classroomPutDTO)")
+    @PreAuthorize("hasRole('ADMIN') and @professorExistence.verify(#classroomPutDTO)")
     @PutMapping("/{classroomId}")
     public ResponseEntity<ClassroomGetDTO> editClassroom(
             @PathVariable UUID classroomId,

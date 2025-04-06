@@ -6,8 +6,8 @@ import com.luminabackend.services.ProfessorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-@Component("professorExistance")
-public class ProfessorExistanceMiddleware {
+@Component("professorExistence")
+public class ProfessorExistenceMiddleware {
     @Autowired
     private ProfessorService professorService;
 
