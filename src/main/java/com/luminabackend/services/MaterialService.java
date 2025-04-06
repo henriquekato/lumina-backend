@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.gridfs.GridFsResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
@@ -74,18 +75,21 @@ public class MaterialService {
         }
     }
 
+    @Transactional
     public Material saveMaterial(UUID classroomId, UUID professorId, String title, String description, MultipartFile file) throws IOException {
         String fileId = fileStorageService.storeFile(file, classroomId);
         Material material = new Material(classroomId, professorId, title, description, fileId);
         return repository.save(material);
     }
 
+    @Transactional
     public void deleteById(UUID materialId) {
         Material material = getMaterialById(materialId);
         if (material.getFileId() != null) fileStorageService.deleteFile(material.getFileId());
         repository.deleteById(materialId);
     }
 
+    @Transactional
     public void deleteAllByClassroomId(UUID classroomId) {
         List<Material> materialByClassroomId = repository.findMaterialByClassroomId(classroomId);
         materialByClassroomId.forEach(material -> {

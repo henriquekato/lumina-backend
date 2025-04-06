@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -69,6 +70,7 @@ public class TaskService {
         return repository.save(task);
     }
 
+    @Transactional
     public void deleteById(UUID taskId) {
         checkTaskExistenceById(taskId);
 
@@ -76,6 +78,7 @@ public class TaskService {
         repository.deleteById(taskId);
     }
 
+    @Transactional
     public void deleteAllByClassroomId(UUID classroomId) {
         List<Task> classroomTasks = repository.findAllByClassroomId(classroomId);
         classroomTasks.forEach(task -> submissionService.deleteAllByTaskId(task.getId()));
