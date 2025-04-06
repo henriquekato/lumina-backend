@@ -44,10 +44,6 @@ public class StudentService {
         return repository.findById(id);
     }
 
-    public Optional<Student> getStudentByEmail(String email){
-        return repository.findByEmail(email);
-    }
-
     public boolean existsById(UUID id) {
         return repository.existsById(id);
     }

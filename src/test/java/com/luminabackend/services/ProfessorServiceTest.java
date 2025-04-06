@@ -90,22 +90,6 @@ class ProfessorServiceTest {
 
     @Tag("UnitTest")
     @Test
-    @DisplayName("should return optional professor by email")
-    void shouldReturnOptionalProfessorByEmail() {
-        when(professorRepository.findByEmail(professor.getEmail())).thenReturn(Optional.of(professor));
-        assertThat(sut.getProfessorByEmail(professor.getEmail())).isEqualTo(Optional.of(professor));
-    }
-
-    @Tag("UnitTest")
-    @Test
-    @DisplayName("should return empty when professor email does not exist")
-    void shouldReturnEmptyWhenProfessorEmailDoesNotExist() {
-        when(professorRepository.findByEmail(professor.getEmail())).thenReturn(Optional.empty());
-        assertThat(sut.getProfessorByEmail(professor.getEmail())).isEqualTo(Optional.empty());
-    }
-
-    @Tag("UnitTest")
-    @Test
     @DisplayName("should professor exist")
     void shouldProfessorExist() {
         when(professorRepository.existsById(professor.getId())).thenReturn(true);

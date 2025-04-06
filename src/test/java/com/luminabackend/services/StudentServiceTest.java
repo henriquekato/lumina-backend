@@ -87,22 +87,6 @@ class StudentServiceTest {
 
     @Tag("UnitTest")
     @Test
-    @DisplayName("should return optional student by email")
-    void shouldReturnOptionalStudentByEmail() {
-        when(studentRepository.findByEmail(student.getEmail())).thenReturn(Optional.of(student));
-        assertThat(sut.getStudentByEmail(student.getEmail())).isEqualTo(Optional.of(student));
-    }
-
-    @Tag("UnitTest")
-    @Test
-    @DisplayName("should return empty when student email does not exist")
-    void shouldReturnEmptyWhenStudentEmailDoesNotExist() {
-        when(studentRepository.findByEmail(student.getEmail())).thenReturn(Optional.empty());
-        assertThat(sut.getStudentByEmail(student.getEmail())).isEqualTo(Optional.empty());
-    }
-
-    @Tag("UnitTest")
-    @Test
     @DisplayName("should student exist")
     void shouldStudentExist() {
         when(studentRepository.existsById(student.getId())).thenReturn(true);

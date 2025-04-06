@@ -43,10 +43,6 @@ public class ProfessorService {
         return repository.findById(id);
     }
 
-    public Optional<Professor> getProfessorByEmail(String email){
-        return repository.findByEmail(email);
-    }
-
     public boolean existsById(UUID id) {
         return repository.existsById(id);
     }

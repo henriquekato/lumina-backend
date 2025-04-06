@@ -85,22 +85,6 @@ class AdminServiceTest {
 
     @Tag("UnitTest")
     @Test
-    @DisplayName("should return optional admin by email")
-    void shouldReturnOptionalAdminByEmail() {
-        when(adminRepository.findByEmail(admin.getEmail())).thenReturn(Optional.of(admin));
-        assertThat(sut.getAdminByEmail(admin.getEmail())).isEqualTo(Optional.of(admin));
-    }
-
-    @Tag("UnitTest")
-    @Test
-    @DisplayName("should return empty when admin email does not exist")
-    void shouldReturnEmptyWhenAdminEmailDoesNotExist() {
-        when(adminRepository.findByEmail(admin.getEmail())).thenReturn(Optional.empty());
-        assertThat(sut.getAdminByEmail(admin.getEmail())).isEqualTo(Optional.empty());
-    }
-
-    @Tag("UnitTest")
-    @Test
     @DisplayName("should admin exist")
     void shouldAdminExist() {
         when(adminRepository.existsById(admin.getId())).thenReturn(true);
