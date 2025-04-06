@@ -30,8 +30,7 @@ public class AccessService {
 
     public void checkAccessToClassroomById(UUID classroomId, UserAccessDTO userAccessDTO){
         Classroom classroom = classroomService.getClassroomById(classroomId);
-        if (userAccessDTO.role().equals(Role.PROFESSOR)) checkProfessorAccessToClassroom(userAccessDTO.id(), classroom);
-        else if(userAccessDTO.role().equals(Role.STUDENT)) checkStudentAccessToClassroom(userAccessDTO.id(), classroom);
+        checkAccessToClassroom(classroom, userAccessDTO);
     }
 
     public void checkAccessToClassroom(Classroom classroom, UserAccessDTO userAccessDTO){
@@ -39,13 +38,12 @@ public class AccessService {
         else if(userAccessDTO.role().equals(Role.STUDENT)) checkStudentAccessToClassroom(userAccessDTO.id(), classroom);
     }
 
-    public void checkStudentAccessToSubmission(Submission submission, UserAccessDTO userAccessDTO){
-        if (userAccessDTO.role().equals(Role.STUDENT) && !submission.getStudentId().equals(userAccessDTO.id()))
-            throw new AccessDeniedException("You don't have permission to access this resource");
-    }
-
     public void checkStudentAccessToSubmissionById(UUID submissionId, UserAccessDTO userAccessDTO){
         Submission submission = submissionService.getSubmissionById(submissionId);
+        checkStudentAccessToSubmission(submission, userAccessDTO);
+    }
+
+    public void checkStudentAccessToSubmission(Submission submission, UserAccessDTO userAccessDTO){
         if (userAccessDTO.role().equals(Role.STUDENT) && !submission.getStudentId().equals(userAccessDTO.id()))
             throw new AccessDeniedException("You don't have permission to access this resource");
     }
