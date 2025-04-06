@@ -146,7 +146,7 @@ class AdminServiceTest {
     @Tag("UnitTest")
     @Test
     @DisplayName("should edit admin")
-    void shouldEditUser() {
+    void shouldEditAdmin() {
         UserPutDTO userPutDTO = new UserPutDTO("johndoe@mail", null, null, null);
         Admin editedAdmin = new Admin("johndoe@mail", "9fds4hfa", "John", "Doe");
 
@@ -159,8 +159,8 @@ class AdminServiceTest {
 
     @Tag("UnitTest")
     @Test
-    @DisplayName("should fail to edit admin when user does not exist")
-    void shouldFailToEditUserWhenUserDoesNotExist() {
+    @DisplayName("should fail to edit admin when admin does not exist")
+    void shouldFailToEditAdminWhenAdminDoesNotExist() {
         UserPutDTO userPutDTO = new UserPutDTO(admin.getFirstName(), admin.getLastName(), admin.getEmail(), admin.getPassword());
 
         when(sut.getAdminById(admin.getId())).thenReturn(Optional.empty());
@@ -171,7 +171,7 @@ class AdminServiceTest {
     @Tag("UnitTest")
     @Test
     @DisplayName("should delete admin by id")
-    void shouldDeleteUserById() {
+    void shouldDeleteAdminById() {
         when(sut.existsById(admin.getId())).thenReturn(true);
         when(sut.count()).thenReturn(2L);
 
@@ -181,8 +181,8 @@ class AdminServiceTest {
 
     @Tag("UnitTest")
     @Test
-    @DisplayName("should fail to delete admin when user does not exist")
-    void shouldFailToDeleteUserWhenUserDoesNotExist() {
+    @DisplayName("should fail to delete admin when admin does not exist")
+    void shouldFailToDeleteAdminWhenAdminDoesNotExist() {
         when(sut.existsById(admin.getId())).thenReturn(false);
         assertThatThrownBy(() -> sut.deleteById(admin.getId())).isInstanceOf(EntityNotFoundException.class);
     }
