@@ -102,4 +102,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<GeneralErrorResponseDTO> handleTaskAlreadySubmittedException(TaskAlreadySubmittedException e){
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new GeneralErrorResponseDTO(e.getMessage()));
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<GeneralErrorResponseDTO> handleIllegalArgumentException(IllegalArgumentException e){
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new GeneralErrorResponseDTO(e.getMessage()));
+    }
 }

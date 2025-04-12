@@ -1,6 +1,5 @@
 package com.luminabackend.models.education.classroom;
 
-
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
@@ -20,11 +19,6 @@ public class Classroom {
     private String description;
     private UUID professorId;
     private List<UUID> studentsIds;
-
-    public Classroom() {
-        this.id = UUID.randomUUID();
-        this.studentsIds = new ArrayList<>();
-    }
 
     public Classroom(ClassroomPostDTO classroomPostDTO){
         this.id = UUID.randomUUID();

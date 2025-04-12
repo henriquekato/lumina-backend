@@ -10,12 +10,14 @@ import com.luminabackend.models.user.Professor;
 import com.luminabackend.models.user.Role;
 import com.luminabackend.models.user.dto.professor.ProfessorGetDTO;
 import com.luminabackend.models.user.dto.student.StudentGetDTO;
+import com.luminabackend.models.user.dto.user.UserAccessDTO;
 import com.luminabackend.repositories.classroom.ClassroomRepository;
-import com.luminabackend.utils.security.PayloadDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,73 +31,36 @@ public class ClassroomService {
     private TaskService taskService;
 
     @Autowired
-    private PermissionService permissionService;
-
-    @Autowired
-    private StudentService studentService;
-
-    @Autowired
-    private ProfessorService professorService;
-
-    @Autowired
     private MaterialService materialService;
 
-    public List<Classroom> getFilteredClassrooms(Role role, UUID userId) {
-        if (role.equals(Role.ADMIN))
+    public List<Classroom> getClassroomsBasedOnUserAccess(UserAccessDTO userAccessDTO) {
+        if (userAccessDTO.role().equals(Role.ADMIN))
             return repository.findAll();
 
-        if (role.equals(Role.PROFESSOR))
-            return repository.findAllByProfessorId(userId);
+        if (userAccessDTO.role().equals(Role.PROFESSOR))
+            return repository.findAllByProfessorId(userAccessDTO.id());
 
-        return repository.findAllByStudentsIdsContains(userId);
+        return repository.findAllByStudentsIdsContains(userAccessDTO.id());
     }
 
-    public Page<Classroom> getPaginatedClassrooms(PayloadDTO payload, Pageable page) {
-        if (payload.role().equals(Role.ADMIN))
+    public Page<Classroom> getPaginatedClassroomsBasedOnUserAccess(UserAccessDTO userAccessDTO, Pageable page) {
+        if (userAccessDTO.role().equals(Role.ADMIN))
             return repository.findAll(page);
 
-        if (payload.role().equals(Role.PROFESSOR))
-            return repository.findAllByProfessorId(payload.id(), page);
+        if (userAccessDTO.role().equals(Role.PROFESSOR))
+            return repository.findAllByProfessorId(userAccessDTO.id(), page);
 
-        return repository.findAllByStudentsIdsContains(payload.id(), page);
+        return repository.findAllByStudentsIdsContains(userAccessDTO.id(), page);
     }
 
-    public Classroom getClassroomById(UUID id) {
-        Optional<Classroom> classroomById = repository.findById(id);
+    public Classroom getClassroomById(UUID classroomId) {
+        Optional<Classroom> classroomById = repository.findById(classroomId);
         if (classroomById.isEmpty()) throw new EntityNotFoundException("Classroom not found");
         return classroomById.get();
     }
 
-    public Classroom getClassroomBasedOnUserPermission(UUID classroomId, PayloadDTO payloadDTO) {
-        Classroom classroom = getClassroomById(classroomId);
-        permissionService.checkAccessToClassroom(classroomId, payloadDTO);
-        return classroom;
-    }
-
-    public Optional<Classroom> getClassroomByName(String name) {
-        return repository.findByName(name);
-    }
-
-    public ClassroomWithRelationsDTO getClassroomWithRelations(UUID classroomId, PayloadDTO payloadDTO){
-        Classroom classroom = getClassroomById(classroomId);
-        permissionService.checkAccessToClassroom(classroomId, payloadDTO);
-
-        Optional<Professor> professorById = professorService.getProfessorById(classroom.getProfessorId());
-        ProfessorGetDTO professor = professorById
-                .map(ProfessorGetDTO::new)
-                .orElseGet(() -> null);
-
-        List<StudentGetDTO> students = studentService
-                .getAllStudentsById(classroom.getStudentsIds())
-                .stream()
-                .map(StudentGetDTO::new)
-                .toList();
-
-        return new ClassroomWithRelationsDTO(classroomId, professor, students);
-    }
-
-    public boolean existsById(UUID id) {
-        return repository.existsById(id);
+    public boolean existsById(UUID classroomId) {
+        return repository.existsById(classroomId);
     }
 
     public Classroom save(ClassroomPostDTO classroomPostDTO) {
@@ -107,50 +72,43 @@ public class ClassroomService {
         return repository.save(classroom);
     }
 
-    public Classroom edit(UUID id, ClassroomPutDTO classroomPutDTO) {
-        Classroom classroom = getClassroomById(id);
+    public Classroom edit(UUID classroomId, ClassroomPutDTO classroomPutDTO) {
+        Classroom classroom = getClassroomById(classroomId);
 
-        if (classroomPutDTO.name() != null) {
+        if (classroomPutDTO.name() != null)
             classroom.setName(classroomPutDTO.name().trim());
-        }
-        if (classroomPutDTO.description() != null) {
+
+        if (classroomPutDTO.description() != null)
             classroom.setDescription(classroomPutDTO.description().trim());
-        }
+
         UUID professorId = classroomPutDTO.professorId();
-        if (professorId != null) {
-            if (!professorService.existsById(professorId))
-                throw new EntityNotFoundException("Professor not found");
+        if (professorId != null)
             classroom.setProfessorId(professorId);
-        }
 
         return repository.save(classroom);
     }
 
-    public void deleteById(UUID id) {
-        if (!existsById(id)) {
+    @Transactional
+    public void deleteById(UUID classroomId) {
+        if (!existsById(classroomId))
             throw new EntityNotFoundException("Classroom not found");
-        }
 
-        taskService.deleteAllByClassroomId(id);
+        taskService.deleteAllByClassroomId(classroomId);
 
-        materialService.deleteAllByClassroomId(id);
+        materialService.deleteAllByClassroomId(classroomId);
 
-        repository.deleteById(id);
+        repository.deleteById(classroomId);
     }
 
-    public Classroom addStudentToClassroom(UUID studentId, UUID classroomId, PayloadDTO payloadDTO) {
-        Classroom classroom = getClassroomBasedOnUserPermission(classroomId, payloadDTO);
-
+    public void addStudentToClassroom(UUID studentId, Classroom classroom) {
         if (classroom.containsStudent(studentId))
             throw new StudentAlreadyInClassroomException("The student you are trying to add is already in this class");
 
         classroom.addStudent(studentId);
-        return repository.save(classroom);
+        repository.save(classroom);
     }
 
-    public void removeStudentFromClassroom(UUID studentId, UUID classroomId, PayloadDTO payloadDTO) {
-        Classroom classroom = getClassroomBasedOnUserPermission(classroomId, payloadDTO);
-
+    public void removeStudentFromClassroom(UUID studentId, Classroom classroom) {
         if (!classroom.containsStudent(studentId))
             throw new EntityNotFoundException("The student you are trying to remove is not in this class");
 

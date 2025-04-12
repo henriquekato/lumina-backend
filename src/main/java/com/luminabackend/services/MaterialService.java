@@ -4,15 +4,17 @@ import com.luminabackend.exceptions.AccessDeniedException;
 import com.luminabackend.exceptions.EntityNotFoundException;
 import com.luminabackend.exceptions.ZipProcessingException;
 import com.luminabackend.models.education.material.Material;
+import com.luminabackend.models.user.dto.user.UserAccessDTO;
 import com.luminabackend.repositories.material.MaterialRepository;
-import com.luminabackend.utils.security.PayloadDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.data.mongodb.gridfs.GridFsResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.gridfs.GridFsResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
@@ -30,16 +32,11 @@ public class MaterialService {
     @Autowired
     private FileStorageService fileStorageService;
 
-    @Autowired
-    private PermissionService permissionService;
-
-    public List<Material> getAllMaterials(UUID classroomId, PayloadDTO payloadDTO) {
-        permissionService.checkAccessToClassroom(classroomId, payloadDTO);
+    public List<Material> getAllMaterials(UUID classroomId) {
         return repository.findMaterialByClassroomId(classroomId);
     }
 
-    public Page<Material> getPaginatedClassroomMaterials(UUID classroomId, PayloadDTO payloadDTO, Pageable page) {
-        permissionService.checkAccessToClassroom(classroomId, payloadDTO);
+    public Page<Material> getPaginatedClassroomMaterials(UUID classroomId, Pageable page) {
         return repository.findMaterialByClassroomId(classroomId, page);
     }
 
@@ -49,22 +46,19 @@ public class MaterialService {
         return materialById.get();
     }
 
-    public ByteArrayResource getAllMaterialsAsZip(UUID classroomId, PayloadDTO payloadDTO) throws IOException {
-        permissionService.checkAccessToClassroom(classroomId, payloadDTO);
-        List<Material> materials = getAllMaterials(classroomId, payloadDTO);
+    public ByteArrayResource getAllMaterialsAsZip(UUID classroomId) throws IOException {
+        List<Material> materials = getAllMaterials(classroomId);
 
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-             ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)) {
-
+             ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)
+        ) {
             materials.forEach(material -> {
-                if (material.getId() != null){
+                if (material.getId() != null) {
                     GridFsResource gridFsResource = fileStorageService.getFile(material.getFileId());
-                    if (gridFsResource != null) {
+                    if (gridFsResource != null)
                         addFileToZip(gridFsResource, zipOutputStream);
-                    }
                 }
             });
-
             zipOutputStream.finish();
             return new ByteArrayResource(outputStream.toByteArray());
         }
@@ -81,43 +75,26 @@ public class MaterialService {
         }
     }
 
-    public Material saveMaterial(
-                                    UUID classroomId,
-                                    PayloadDTO payloadDTO,
-                                    String title,
-                                    String description,
-                                    MultipartFile file) throws IOException {
-
-        permissionService.checkAccessToClassroom(classroomId, payloadDTO);
-
+    @Transactional
+    public Material saveMaterial(UUID classroomId, UUID professorId, String title, String description, MultipartFile file) throws IOException {
         String fileId = fileStorageService.storeFile(file, classroomId);
-        Material material = new Material(classroomId, payloadDTO.id(), title, description, fileId);
+        Material material = new Material(classroomId, professorId, title, description, fileId);
         return repository.save(material);
     }
 
-    public void deleteById(UUID materialId, UUID classroomId, PayloadDTO payloadDTO) {
-        permissionService.checkAccessToClassroom(classroomId, payloadDTO);
-
+    @Transactional
+    public void deleteById(UUID materialId) {
         Material material = getMaterialById(materialId);
-
-        if (material.getFileId() != null)
-            fileStorageService.deleteFile(material.getFileId());
+        if (material.getFileId() != null) fileStorageService.deleteFile(material.getFileId());
         repository.deleteById(materialId);
     }
 
+    @Transactional
     public void deleteAllByClassroomId(UUID classroomId) {
         List<Material> materialByClassroomId = repository.findMaterialByClassroomId(classroomId);
         materialByClassroomId.forEach(material -> {
-            if (material.getFileId() != null)
-                fileStorageService.deleteFile(material.getFileId());
+            if (material.getFileId() != null) fileStorageService.deleteFile(material.getFileId());
             repository.deleteById(material.getId());
         });
-    }
-
-    public void checkAccessToMaterial(UUID classroomId, UUID materialId, PayloadDTO payloadDTO){
-        permissionService.checkAccessToClassroom(classroomId, payloadDTO);
-        Material material = getMaterialById(materialId);
-        if (!material.getProfessorId().equals(payloadDTO.id()))
-            throw new AccessDeniedException("You don't have permission to access this resource");
     }
 }
