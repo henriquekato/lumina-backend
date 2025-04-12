@@ -111,7 +111,7 @@ public class SubmissionController implements SubmissionControllerDocumentation {
             throw new MissingFileException("Missing submission file");
 
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        Submission savedSubmission = submissionService.saveSubmission(taskId, payloadDTO.id(), submissionPostDTO, file);
+        Submission savedSubmission = submissionService.save(taskId, payloadDTO.id(), submissionPostDTO, file);
 
         return ResponseEntity
                 .created(linkTo(methodOn(SubmissionController.class)

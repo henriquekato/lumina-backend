@@ -79,7 +79,7 @@ public class SubmissionService {
     }
 
     @Transactional
-    public Submission saveSubmission(UUID taskId, UUID studentId, SubmissionPostDTO submissionPostDTO, MultipartFile file) throws IOException {
+    public Submission save(UUID taskId, UUID studentId, SubmissionPostDTO submissionPostDTO, MultipartFile file) throws IOException {
         if (repository.existsByStudentIdAndTaskId(studentId, taskId))
             throw new TaskAlreadySubmittedException("You have already submitted this task");
 
