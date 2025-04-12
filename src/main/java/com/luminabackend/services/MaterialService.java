@@ -97,10 +97,4 @@ public class MaterialService {
             repository.deleteById(material.getId());
         });
     }
-
-    public void checkAccessToMaterial(UUID materialId, UserAccessDTO userAccessDTO) {
-        Material material = getMaterialById(materialId);
-        if (!material.getProfessorId().equals(userAccessDTO.id()))
-            throw new AccessDeniedException("You don't have permission to access this resource");
-    }
 }
