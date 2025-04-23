@@ -1,6 +1,7 @@
 package com.luminabackend.models.education.classroom;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -12,6 +13,7 @@ import java.util.UUID;
 @Document(collection = "classrooms")
 @Getter
 @Setter
+@NoArgsConstructor
 public class Classroom {
     @Id
     private UUID id;
