@@ -1,11 +1,8 @@
-package com.luminabackend.controllers;
+package com.luminabackend.controllers.student;
 
-import com.luminabackend.exceptions.EntityNotFoundException;
-import com.luminabackend.models.user.Student;
 import com.luminabackend.models.user.dto.student.StudentGetDTO;
 import com.luminabackend.models.user.dto.user.UserPutDTO;
 import com.luminabackend.models.user.dto.user.UserSignupDTO;
-import com.luminabackend.services.StudentService;
 import com.luminabackend.utils.errors.GeneralErrorResponseDTO;
 import com.luminabackend.utils.errors.ValidationErrorResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,19 +11,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @ApiResponses(value = {
         @ApiResponse(
@@ -36,13 +27,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
                         mediaType = "application/json",
                         schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
 })
-@RestController
-@PreAuthorize("hasRole('ADMIN')")
-@RequestMapping("/student")
-public class StudentController {
-    @Autowired
-    private StudentService service;
-
+public interface StudentControllerDocumentation {
     @Operation(summary = "Get all students")
     @ApiResponses(value = {
             @ApiResponse(
@@ -51,11 +36,7 @@ public class StudentController {
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = StudentGetDTO.class)) })
     })
-    @GetMapping("/all")
-    public ResponseEntity<List<StudentGetDTO>> getAllStudents() {
-        List<Student> students = service.getAllStudents();
-        return ResponseEntity.ok(students.stream().map(StudentGetDTO::new).toList());
-    }
+    ResponseEntity<List<StudentGetDTO>> getAllStudents();
 
     @Operation(summary = "Get a paginated list of students")
     @ApiResponses(value = {
@@ -65,11 +46,7 @@ public class StudentController {
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = StudentGetDTO.class)) })
     })
-    @GetMapping
-    public ResponseEntity<Page<StudentGetDTO>> getPaginatedStudents(Pageable page) {
-        Page<Student> students = service.getPaginatedStudents(page);
-        return ResponseEntity.ok(students.map(StudentGetDTO::new));
-    }
+    ResponseEntity<Page<StudentGetDTO>> getPaginatedStudents(Pageable page);
 
     @Operation(summary = "Get a student by its id")
     @ApiResponses(value = {
@@ -92,13 +69,7 @@ public class StudentController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
     })
-    @GetMapping("/{id}")
-    public ResponseEntity<StudentGetDTO> getStudent(@PathVariable UUID id) {
-        Optional<Student> studentById = service.getStudentById(id);
-        return studentById.map(student ->
-                        ResponseEntity.ok(new StudentGetDTO(student)))
-                .orElseThrow(() -> new EntityNotFoundException("Student not found"));
-    }
+    ResponseEntity<StudentGetDTO> getStudent(@PathVariable UUID id);
 
     @Operation(summary = "Create a new student")
     @ApiResponses(value = {
@@ -121,15 +92,7 @@ public class StudentController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
     })
-    @PostMapping
-    public ResponseEntity<StudentGetDTO> saveStudent(@Valid @RequestBody UserSignupDTO studentPostDTO) {
-        Student newStudent = service.save(studentPostDTO);
-        return ResponseEntity
-                .created(linkTo(methodOn(StudentController.class)
-                        .getStudent(newStudent.getId()))
-                        .toUri())
-                .body(new StudentGetDTO(newStudent));
-    }
+    ResponseEntity<StudentGetDTO> saveStudent(@Valid @RequestBody UserSignupDTO studentPostDTO);
 
     @Operation(summary = "Edit a student by its id")
     @ApiResponses(value = {
@@ -164,13 +127,9 @@ public class StudentController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
     })
-    @PutMapping("/{id}")
-    public ResponseEntity<StudentGetDTO> editStudent(
+    ResponseEntity<StudentGetDTO> editStudent(
             @PathVariable UUID id,
-            @Valid @RequestBody UserPutDTO userPutDTO) {
-        Student student = service.edit(id, userPutDTO);
-        return ResponseEntity.ok(new StudentGetDTO(student));
-    }
+            @Valid @RequestBody UserPutDTO userPutDTO);
 
     @Operation(summary = "Delete a student by its id")
     @ApiResponses(value = {
@@ -190,9 +149,5 @@ public class StudentController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
     })
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteStudent(@PathVariable UUID id) {
-        service.deleteById(id);
-        return ResponseEntity.noContent().build();
-    }
+    ResponseEntity<Void> deleteStudent(@PathVariable UUID id);
 }

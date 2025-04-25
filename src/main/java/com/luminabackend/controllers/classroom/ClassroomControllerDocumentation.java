@@ -1,18 +1,17 @@
-package com.luminabackend.controllers;
+package com.luminabackend.controllers.classroom;
 
-import com.luminabackend.models.education.classroom.*;
-import com.luminabackend.services.ClassroomService;
-import com.luminabackend.services.TokenService;
+import com.luminabackend.models.education.classroom.ClassroomGetDTO;
+import com.luminabackend.models.education.classroom.ClassroomPostDTO;
+import com.luminabackend.models.education.classroom.ClassroomPutDTO;
+import com.luminabackend.models.education.classroom.ClassroomWithRelationsDTO;
 import com.luminabackend.utils.errors.GeneralErrorResponseDTO;
 import com.luminabackend.utils.errors.ValidationErrorResponseDTO;
-import com.luminabackend.utils.security.PayloadDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -22,9 +21,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
-
 @ApiResponses(value = {
         @ApiResponse(
                 responseCode = "401",
@@ -33,15 +29,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
                         mediaType = "application/json",
                         schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
 })
-@RestController
-@RequestMapping("/classroom")
-public class ClassroomController {
-    @Autowired
-    private ClassroomService classroomService;
-
-    @Autowired
-    private TokenService tokenService;
-
+public interface ClassroomControllerDocumentation {
     @Operation(summary = "Get a list of all classrooms based on user access")
     @ApiResponses(value = {
             @ApiResponse(
@@ -50,13 +38,7 @@ public class ClassroomController {
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ClassroomGetDTO.class)) })
     })
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
-    @GetMapping("/all")
-    public ResponseEntity<List<ClassroomGetDTO>> getAllClassrooms(@RequestHeader("Authorization") String authorizationHeader) {
-        PayloadDTO payload = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        List<Classroom> filteredClassrooms = classroomService.getFilteredClassrooms(payload.role(), payload.id());
-        return ResponseEntity.ok(filteredClassrooms.stream().map(ClassroomGetDTO::new).toList());
-    }
+    ResponseEntity<List<ClassroomGetDTO>> getAllClassrooms(@RequestHeader("Authorization") String authorizationHeader);
 
     @Operation(summary = "Get a paginated list of classrooms based on user access")
     @ApiResponses(value = {
@@ -66,13 +48,7 @@ public class ClassroomController {
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ClassroomGetDTO.class)) })
     })
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
-    @GetMapping
-    public ResponseEntity<Page<ClassroomGetDTO>> getPaginatedClassrooms(Pageable page, @RequestHeader("Authorization") String authorizationHeader) {
-        PayloadDTO payload = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        Page<Classroom> filteredClassrooms = classroomService.getPaginatedClassrooms(payload, page);
-        return ResponseEntity.ok(filteredClassrooms.map(ClassroomGetDTO::new));
-    }
+    ResponseEntity<Page<ClassroomGetDTO>> getPaginatedClassrooms(Pageable page, @RequestHeader("Authorization") String authorizationHeader);
 
     @Operation(summary = "Get a classroom by its id based on user access")
     @ApiResponses(value = {
@@ -101,15 +77,9 @@ public class ClassroomController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
     })
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
-    @GetMapping("/{classroomId}")
-    public ResponseEntity<ClassroomGetDTO> getClassroom(
+    ResponseEntity<ClassroomGetDTO> getClassroom(
             @PathVariable UUID classroomId,
-            @RequestHeader("Authorization") String authorizationHeader) {
-        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        Classroom classroom = classroomService.getClassroomBasedOnUserPermission(classroomId, payloadDTO);
-        return ResponseEntity.ok(new ClassroomGetDTO(classroom));
-    }
+            @RequestHeader("Authorization") String authorizationHeader);
 
     @Operation(summary = "Get the classroom professor and a list of its students")
     @ApiResponses(value = {
@@ -138,15 +108,9 @@ public class ClassroomController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
     })
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
-    @GetMapping("/{classroomId}/members")
-    public ResponseEntity<ClassroomWithRelationsDTO> getClassroomWithRelations(
-        @PathVariable UUID classroomId,
-        @RequestHeader("Authorization") String authorizationHeader) {
-        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        ClassroomWithRelationsDTO classroom = classroomService.getClassroomWithRelations(classroomId, payloadDTO);
-        return ResponseEntity.ok(classroom);
-    }
+    ResponseEntity<ClassroomWithRelationsDTO> getClassroomWithRelations(
+            @PathVariable UUID classroomId,
+            @RequestHeader("Authorization") String authorizationHeader);
 
     @Operation(summary = "Create a new classroom")
     @ApiResponses(value = {
@@ -162,18 +126,9 @@ public class ClassroomController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ValidationErrorResponseDTO.class)) }),
     })
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping
-    public ResponseEntity<ClassroomGetDTO> saveClassroom(
+    ResponseEntity<ClassroomGetDTO> saveClassroom(
             @Valid @RequestBody ClassroomPostDTO classroomPostDTO,
-            @RequestHeader("Authorization") String authorizationHeader) {
-        Classroom savedClassroom = classroomService.save(classroomPostDTO);
-        return ResponseEntity
-                .created(linkTo(methodOn(ClassroomController.class)
-                        .getClassroom(savedClassroom.getId(), authorizationHeader))
-                        .toUri())
-                .body(new ClassroomGetDTO(savedClassroom));
-    }
+            @RequestHeader("Authorization") String authorizationHeader);
 
     @Operation(summary = "Edit a classroom by its id")
     @ApiResponses(value = {
@@ -201,14 +156,9 @@ public class ClassroomController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
     })
-    @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/{classroomId}")
-    public ResponseEntity<ClassroomGetDTO> editClassroom(
+    ResponseEntity<ClassroomGetDTO> editClassroom(
             @PathVariable UUID classroomId,
-            @Valid @RequestBody ClassroomPutDTO classroomPutDTO) {
-        Classroom classroom = classroomService.edit(classroomId, classroomPutDTO);
-        return ResponseEntity.ok(new ClassroomGetDTO(classroom));
-    }
+            @Valid @RequestBody ClassroomPutDTO classroomPutDTO);
 
     @Operation(summary = "Delete a classroom and its dependencies by classroom id")
     @ApiResponses(value = {
@@ -228,12 +178,7 @@ public class ClassroomController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
     })
-    @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/{classroomId}")
-    public ResponseEntity<Void> deleteClassroom(@PathVariable UUID classroomId) {
-        classroomService.deleteById(classroomId);
-        return ResponseEntity.noContent().build();
-    }
+    ResponseEntity<Void> deleteClassroom(@PathVariable UUID classroomId);
 
     @Operation(summary = "Add a student to a classroom")
     @ApiResponses(value = {
@@ -273,16 +218,10 @@ public class ClassroomController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
     })
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR')")
-    @PostMapping("/{classroomId}/student/{studentId}")
-    public ResponseEntity<ClassroomGetDTO> addStudent(
+    ResponseEntity<Void> addStudent(
             @PathVariable UUID classroomId,
             @PathVariable UUID studentId,
-            @RequestHeader("Authorization") String authorizationHeader) {
-        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        Classroom classroom = classroomService.addStudentToClassroom(studentId, classroomId, payloadDTO);
-        return ResponseEntity.ok(new ClassroomGetDTO(classroom));
-    }
+            @RequestHeader("Authorization") String authorizationHeader);
 
     @Operation(summary = "Remove a student from classroom")
     @ApiResponses(value = {
@@ -319,9 +258,5 @@ public class ClassroomController {
     public ResponseEntity<Void> removeStudent(
             @PathVariable UUID classroomId,
             @PathVariable UUID studentId,
-            @RequestHeader("Authorization") String authorizationHeader) {
-        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        classroomService.removeStudentFromClassroom(studentId, classroomId, payloadDTO);
-        return ResponseEntity.noContent().build();
-    }
+            @RequestHeader("Authorization") String authorizationHeader);
 }

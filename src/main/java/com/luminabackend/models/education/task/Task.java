@@ -26,4 +26,8 @@ public class Task {
         this.dueDate = taskCreateDTO.dueDate();
         this.classroomId = taskCreateDTO.classroomId();
     }
+
+    public boolean isDueDateExpired(){
+        return dueDate.isBefore(LocalDateTime.now());
+    }
 }

@@ -6,13 +6,14 @@ import com.luminabackend.exceptions.EntityNotFoundException;
 import com.luminabackend.models.user.Professor;
 import com.luminabackend.models.user.Role;
 import com.luminabackend.models.user.User;
+import com.luminabackend.models.user.dto.user.UserAccessDTO;
+import com.luminabackend.models.user.dto.user.UserNewDataDTO;
 import com.luminabackend.models.user.dto.user.UserPutDTO;
 import com.luminabackend.models.user.dto.user.UserSignupDTO;
 import com.luminabackend.repositories.professor.ProfessorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,10 +26,7 @@ public class ProfessorService {
     private ProfessorRepository repository;
 
     @Autowired
-    private AccountService accountService;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private UserService userService;
 
     @Autowired
     private ClassroomService classroomService;
@@ -45,26 +43,19 @@ public class ProfessorService {
         return repository.findById(id);
     }
 
-    public Optional<Professor> getProfessorByEmail(String email){
-        return repository.findByEmail(email);
-    }
-
     public boolean existsById(UUID id) {
         return repository.existsById(id);
     }
 
     public Professor save(UserSignupDTO professorPostDTO){
-        Optional<User> userByEmail = accountService.getUserByEmail(professorPostDTO.email());
+        userService.validateUserSignupData(professorPostDTO);
 
+        Optional<User> userByEmail = userService.getUserByEmail(professorPostDTO.email());
         if (userByEmail.isPresent()) throw new EmailAlreadyInUseException();
 
-        String email = professorPostDTO.email().trim();
-        String password = professorPostDTO.password().trim();
-        String encodedPassword = passwordEncoder.encode(password);
-        String firstName = professorPostDTO.firstName().trim();
-        String lastName = professorPostDTO.lastName().trim();
+        UserNewDataDTO userNewDataDTO = userService.prepareUserDataToSave(professorPostDTO);
 
-        Professor professor = new Professor(email, encodedPassword, firstName, lastName);
+        Professor professor = new Professor(userNewDataDTO);
         return repository.save(professor);
     }
 
@@ -73,14 +64,14 @@ public class ProfessorService {
         if(professorById.isEmpty()) throw new EntityNotFoundException("Professor not found");
 
         Professor professor = professorById.get();
-        professor = (Professor) accountService.editUserData(professor, userPutDTO);
+        professor = (Professor) userService.editUserData(professor, userPutDTO);
         return repository.save(professor);
     }
 
     public void deleteById(UUID id) {
         if (!existsById(id)) throw new EntityNotFoundException("Professor not found");
 
-        if (!classroomService.getFilteredClassrooms(Role.PROFESSOR, id).isEmpty())
+        if (!classroomService.getClassroomsBasedOnUserAccess(new UserAccessDTO(id, Role.PROFESSOR)).isEmpty())
             throw new CannotDeleteActiveProfessorException("Cannot delete professor because they are currently assigned to one or more active classrooms");
 
         repository.deleteById(id);

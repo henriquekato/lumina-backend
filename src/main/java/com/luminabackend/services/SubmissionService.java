@@ -5,15 +5,15 @@ import com.luminabackend.models.education.submission.Submission;
 import com.luminabackend.models.education.submission.SubmissionAssessmentDTO;
 import com.luminabackend.models.education.submission.SubmissionPostDTO;
 import com.luminabackend.models.education.task.Task;
-import com.luminabackend.models.user.Role;
+import com.luminabackend.models.user.dto.user.UserAccessDTO;
 import com.luminabackend.repositories.submission.SubmissionRepository;
-import com.luminabackend.utils.security.PayloadDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.mongodb.gridfs.GridFsResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
@@ -33,19 +33,11 @@ public class SubmissionService {
     @Autowired
     private FileStorageService fileStorageService;
 
-    @Autowired
-    private TaskService taskService;
-
-    @Autowired
-    private PermissionService permissionService;
-
-    public List<Submission> getAllSubmissions(UUID classroomId, UUID taskId, PayloadDTO payloadDTO) {
-        permissionService.checkAccessToTask(classroomId, taskId, payloadDTO);
+    public List<Submission> getAllSubmissionsByTaskId(UUID taskId) {
         return repository.findAllByTaskId(taskId);
     }
 
-    public Page<Submission> getPaginatedTaskSubmissions(UUID classroomId, UUID taskId, PayloadDTO payloadDTO, Pageable page) {
-        permissionService.checkAccessToTask(classroomId, taskId, payloadDTO);
+    public Page<Submission> getPaginatedTaskSubmissions(UUID taskId, Pageable page) {
         return repository.findAllByTaskId(taskId, page);
     }
 
@@ -55,15 +47,8 @@ public class SubmissionService {
         return submissionById.get();
     }
 
-    public Submission getSubmissionBasedOnUserPermission(UUID submissionId, UUID classroomId, UUID taskId, PayloadDTO payloadDTO){
-        permissionService.checkAccessToTask(classroomId, taskId, payloadDTO);
-        Submission submission = getSubmissionById(submissionId);
-        checkStudentAccessToSubmission(submission, payloadDTO);
-        return submission;
-    }
-
-    public ByteArrayResource getAllTaskSubmissionsFiles(UUID classroomId, UUID taskId, PayloadDTO payloadDTO) throws IOException {
-        List<Submission> submissions = getAllSubmissions(classroomId, taskId, payloadDTO);
+    public ByteArrayResource getAllTaskSubmissionsFiles(UUID taskId) throws IOException {
+        List<Submission> submissions = getAllSubmissionsByTaskId(taskId);
 
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
              ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)) {
@@ -93,36 +78,25 @@ public class SubmissionService {
         }
     }
 
-    public Submission saveSubmission(UUID classroomId, UUID taskId, PayloadDTO payloadDTO, SubmissionPostDTO submissionPostDTO, MultipartFile file) throws IOException {
-        permissionService.checkAccessToTask(classroomId, taskId, payloadDTO);
-
-        Task task = taskService.getTaskById(taskId);
-        if (task.getDueDate().isBefore(LocalDateTime.now()))
-            throw new TaskDueDateExpiredException("Task due date expired");
-
-        if (repository.existsByStudentIdAndTaskId(payloadDTO.id(), taskId))
+    @Transactional
+    public Submission save(UUID taskId, UUID studentId, SubmissionPostDTO submissionPostDTO, MultipartFile file) throws IOException {
+        if (repository.existsByStudentIdAndTaskId(studentId, taskId))
             throw new TaskAlreadySubmittedException("You have already submitted this task");
 
         String fileId = fileStorageService.storeFile(file, taskId);
-        Submission submission = new Submission(submissionPostDTO, taskId, payloadDTO.id(), fileId);
+        Submission submission = new Submission(submissionPostDTO, taskId, studentId, fileId);
         return repository.save(submission);
     }
 
-    public void deleteById(UUID submissionId, UUID classroomId, UUID taskId, PayloadDTO payloadDTO) {
-        permissionService.checkAccessToTask(classroomId, taskId, payloadDTO);
-
+    @Transactional
+    public void deleteById(UUID submissionId) {
         Submission submission = getSubmissionById(submissionId);
-        checkStudentAccessToSubmission(submission, payloadDTO);
-
-        Task task = taskService.getTaskById(taskId);
-        if (task.getDueDate().isBefore(LocalDateTime.now()))
-            throw new TaskDueDateExpiredException("Task due date expired");
-
         if (submission.getFileId() != null)
             fileStorageService.deleteFile(submission.getFileId());
         repository.deleteById(submissionId);
     }
 
+    @Transactional
     public void deleteAllByTaskId(UUID taskId) {
         repository.findAllByTaskId(taskId).forEach(s -> {
               if (s.getFileId() != null) {
@@ -132,21 +106,10 @@ public class SubmissionService {
           });
     }
 
-    public Submission submissionAssessment(UUID submissionId, UUID classroomId, UUID taskId, PayloadDTO payloadDTO, SubmissionAssessmentDTO submissionAssessmentDTO) {
-        permissionService.checkAccessToTask(classroomId, taskId, payloadDTO);
+    @Transactional
+    public Submission submissionAssessment(UUID submissionId, SubmissionAssessmentDTO submissionAssessmentDTO) {
         Submission submission = getSubmissionById(submissionId);
         submission.setGrade(submissionAssessmentDTO.grade());
         return repository.save(submission);
-    }
-
-    public void checkAccessToSubmission(UUID classroomId, UUID taskId, UUID submissionId, PayloadDTO payloadDTO){
-        permissionService.checkAccessToTask(classroomId, taskId, payloadDTO);
-        Submission submission = getSubmissionById(submissionId);
-        checkStudentAccessToSubmission(submission, payloadDTO);
-    }
-
-    private void checkStudentAccessToSubmission(Submission submission, PayloadDTO payloadDTO){
-        if (payloadDTO.role().equals(Role.STUDENT) && !submission.getStudentId().equals(payloadDTO.id()))
-            throw new AccessDeniedException("You don't have permission to access this resource");
     }
 }
