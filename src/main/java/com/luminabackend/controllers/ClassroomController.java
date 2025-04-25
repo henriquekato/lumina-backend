@@ -58,6 +58,22 @@ public class ClassroomController {
         return ResponseEntity.ok(filteredClassrooms.stream().map(ClassroomGetDTO::new).toList());
     }
 
+    @Operation(summary = "Get a list of all frontend classrooms based on user access")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Returns a list of all frontend classrooms",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ClassroomGetDTO.class)) })
+    })
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
+    @GetMapping("/frontend")
+    public ResponseEntity<List<ClassroomFrontendDTO>> getFrontendClassrooms(@RequestHeader("Authorization") String authorizationHeader) {
+        PayloadDTO payload = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+        List<Classroom> filteredClassrooms = classroomService.getFilteredClassrooms(payload.role(), payload.id());
+        return ResponseEntity.ok(filteredClassrooms.stream().map(classroom -> classroomService.convertToFrontendDTO(classroom)).toList());
+    }
+
     @Operation(summary = "Get a paginated list of classrooms based on user access")
     @ApiResponses(value = {
             @ApiResponse(

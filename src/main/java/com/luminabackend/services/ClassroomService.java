@@ -2,10 +2,7 @@ package com.luminabackend.services;
 
 import com.luminabackend.exceptions.EntityNotFoundException;
 import com.luminabackend.exceptions.StudentAlreadyInClassroomException;
-import com.luminabackend.models.education.classroom.Classroom;
-import com.luminabackend.models.education.classroom.ClassroomPostDTO;
-import com.luminabackend.models.education.classroom.ClassroomPutDTO;
-import com.luminabackend.models.education.classroom.ClassroomWithRelationsDTO;
+import com.luminabackend.models.education.classroom.*;
 import com.luminabackend.models.user.Professor;
 import com.luminabackend.models.user.Role;
 import com.luminabackend.models.user.dto.professor.ProfessorGetDTO;
@@ -161,5 +158,25 @@ public class ClassroomService {
 
     public void removeStudentFromAllClassrooms(UUID studentId){
         repository.pullStudentFromAllClassrooms(studentId);
+    }
+
+    public ClassroomFrontendDTO convertToFrontendDTO(Classroom classroom) {
+        String professorName = "";
+
+        if (classroom.getProfessorId() != null) {
+            Optional<Professor> professorOpt = professorService.getProfessorById(classroom.getProfessorId());
+            if (professorOpt.isPresent()) {
+                Professor professor = professorOpt.get();
+                professorName = professor.getFirstName() + " " + professor.getLastName();
+            }
+        }
+
+        return new ClassroomFrontendDTO(
+                classroom.getId(),
+                classroom.getName(),
+                ClassroomFrontendDTO.generateTag(classroom.getName()),
+                classroom.getStudentsIds().size(),
+                professorName
+        );
     }
 }
