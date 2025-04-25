@@ -59,7 +59,7 @@ public class AdminController implements AdminControllerDocumentation {
     public ResponseEntity<AdminGetDTO> getAdmin(@PathVariable UUID id) {
         Optional<Admin> adminById = service.getAdminById(id);
         return adminById.map(admin ->
-                ResponseEntity.ok(new AdminGetDTO(admin)))
+                        ResponseEntity.ok(new AdminGetDTO(admin)))
                 .orElseThrow(() -> new EntityNotFoundException("Admin not found"));
     }
 
@@ -91,14 +91,20 @@ public class AdminController implements AdminControllerDocumentation {
     }
 
     @GetMapping("/users")
-    public ResponseEntity<List<UserGetDTO>> getAllUsers(){
-        List<Student> students = studentService.getAllStudents();
-        List<Professor> professors = professorService.getAllProfessors();
-        List<Admin> admins = service.getAllAdmins();
+    public ResponseEntity<List<UserGetDTO>> getAllUsers(@RequestParam List<String> role) {
         List<UserGetDTO> users = new ArrayList<>();
-        users.addAll(students.stream().map(student -> new UserGetDTO(student, "student")).toList());
-        users.addAll(professors.stream().map(professor -> new UserGetDTO(professor, "professor")).toList());
-        users.addAll(admins.stream().map(admin -> new UserGetDTO(admin, "admin")).toList());
+        if (role.contains("student")) {
+            List<Student> students = studentService.getAllStudents();
+            users.addAll(students.stream().map(student -> new UserGetDTO(student, "student")).toList());
+        }
+        if (role.contains("professor")) {
+            List<Professor> professors = professorService.getAllProfessors();
+            users.addAll(professors.stream().map(professor -> new UserGetDTO(professor, "professor")).toList());
+        }
+        if (role.contains("admin")){
+            List<Admin> admins = service.getAllAdmins();
+            users.addAll(admins.stream().map(admin -> new UserGetDTO(admin, "admin")).toList());
+        }
         return ResponseEntity.ok(users);
     }
 }

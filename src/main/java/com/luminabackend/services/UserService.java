@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -47,7 +48,7 @@ public class UserService {
     }
 
     public User editUserData(User user, UserPutDTO userPutDTO){
-        if (userPutDTO.email() != null && !userPutDTO.email().isBlank()) {
+        if (userPutDTO.email() != null && !userPutDTO.email().isBlank() && !Objects.equals(user.getEmail(), userPutDTO.email())) {
             String newEmail = userPutDTO.email().trim();
             Optional<User> userByEmail = getUserByEmail(newEmail);
             if (userByEmail.isPresent()) throw new EmailAlreadyInUseException();
