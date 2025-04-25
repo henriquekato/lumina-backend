@@ -2,10 +2,15 @@ package com.luminabackend.controllers.admin;
 
 import com.luminabackend.exceptions.EntityNotFoundException;
 import com.luminabackend.models.user.Admin;
+import com.luminabackend.models.user.Professor;
+import com.luminabackend.models.user.Student;
 import com.luminabackend.models.user.dto.admin.AdminGetDTO;
+import com.luminabackend.models.user.dto.user.UserGetDTO;
 import com.luminabackend.models.user.dto.user.UserPutDTO;
 import com.luminabackend.models.user.dto.user.UserSignupDTO;
 import com.luminabackend.services.AdminService;
+import com.luminabackend.services.ProfessorService;
+import com.luminabackend.services.StudentService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -14,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,6 +33,12 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class AdminController implements AdminControllerDocumentation {
     @Autowired
     private AdminService service;
+
+    @Autowired
+    private StudentService studentService;
+
+    @Autowired
+    private ProfessorService professorService;
 
     @Override
     @GetMapping("/all")
@@ -76,5 +88,17 @@ public class AdminController implements AdminControllerDocumentation {
     public ResponseEntity<Void> deleteAdmin(@PathVariable UUID id) {
         service.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<List<UserGetDTO>> getAllUsers(){
+        List<Student> students = studentService.getAllStudents();
+        List<Professor> professors = professorService.getAllProfessors();
+        List<Admin> admins = service.getAllAdmins();
+        List<UserGetDTO> users = new ArrayList<>();
+        users.addAll(students.stream().map(student -> new UserGetDTO(student, "student")).toList());
+        users.addAll(professors.stream().map(professor -> new UserGetDTO(professor, "professor")).toList());
+        users.addAll(admins.stream().map(admin -> new UserGetDTO(admin, "admin")).toList());
+        return ResponseEntity.ok(users);
     }
 }
