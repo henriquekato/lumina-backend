@@ -1,6 +1,9 @@
 package com.luminabackend.models.education.material;
 
+import com.luminabackend.models.education.file.FileInfo;
+
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 public record MaterialGetDTO (
@@ -8,7 +11,7 @@ public record MaterialGetDTO (
         UUID classroomId,
         String title,
         String description,
-        String fileId,
+        List<FileInfo> files,
         LocalDateTime publicationDate
 ){
     public MaterialGetDTO(Material material){
@@ -17,7 +20,7 @@ public record MaterialGetDTO (
                 material.getClassroomId(),
                 material.getTitle(),
                 material.getDescription(),
-                material.getFileId(),
+                material.getFiles(),
                 material.getPublicationDate()
         );
     }

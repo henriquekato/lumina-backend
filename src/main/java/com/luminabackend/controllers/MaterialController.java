@@ -28,7 +28,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 
@@ -146,11 +149,11 @@ public class MaterialController {
     public ResponseEntity<MaterialGetDTO> createMaterial(
             @PathVariable UUID classroomId,
             @RequestPart("material") MaterialPostDTO materialPost,
-            @RequestPart("file") MultipartFile file,
+            @RequestPart("files") List<MultipartFile> files,
             @RequestHeader("Authorization") String authorizationHeader) throws IOException {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
 
-        if (file == null || file.isEmpty()) {
+        if (files == null || files.isEmpty()) {
             throw new MissingFileException("Missing material file");
         }
 
@@ -159,12 +162,81 @@ public class MaterialController {
                                 payloadDTO,
                                 materialPost.title(),
                                 materialPost.description(),
-                                file);
+                                files);
         return ResponseEntity
                 .created(linkTo(methodOn(MaterialController.class)
                         .getAllClassroomMaterials(classroomId, authorizationHeader))
                         .toUri())
                 .body(new MaterialGetDTO(savedMaterial));
+    }
+
+    @Operation(summary = "Add a file to an existing material")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Successfully added the file to the material",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = MaterialGetDTO.class)) }),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid classroom id or material id",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Material not found",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+    })
+    @PreAuthorize("hasRole('PROFESSOR')")
+    @PostMapping(value = "/{materialId}/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<MaterialGetDTO> addFileToMaterial(
+            @PathVariable UUID classroomId,
+            @PathVariable UUID materialId,
+            @RequestPart("file") MultipartFile file,
+            @RequestHeader("Authorization") String authorizationHeader) throws IOException {
+        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+
+        if (file == null || file.isEmpty()) {
+            throw new MissingFileException("Missing file");
+        }
+
+        Material updatedMaterial = materialService.addFileToMaterial(materialId, classroomId, payloadDTO, file);
+        return ResponseEntity.ok(new MaterialGetDTO(updatedMaterial));
+    }
+
+    @Operation(summary = "Delete a file from a material")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Successfully removed the file from the material",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = MaterialGetDTO.class)) }),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid classroom id, material id, or file id",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Material or file not found",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
+    })
+    @PreAuthorize("hasRole('PROFESSOR')")
+    @DeleteMapping("/{materialId}/file/{fileId}")
+    public ResponseEntity<MaterialGetDTO> removeFileFromMaterial(
+            @PathVariable UUID classroomId,
+            @PathVariable UUID materialId,
+            @PathVariable String fileId,
+            @RequestHeader("Authorization") String authorizationHeader) throws FileNotFoundException {
+        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+        Material updatedMaterial = materialService.removeFileFromMaterial(materialId, classroomId, payloadDTO, fileId);
+        return ResponseEntity.ok(new MaterialGetDTO(updatedMaterial));
     }
 
     @Operation(summary = "Delete a classroom material")
@@ -234,12 +306,21 @@ public class MaterialController {
 
         GridFsResource file = fileStorageService.getFile(fileId);
 
+        String filename = file.getFilename();
+        String encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8)
+                .replace("+", "%20");
+
+        String contentDisposition = String.format(
+                "attachment; filename=\"%s\"; filename*=UTF-8''%s",
+                encodedFilename.replaceAll("[^\\x00-\\x7F]", "_"),
+                encodedFilename
+        );
+
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(file.getContentType()))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
                 .body(new ByteArrayResource(file.getInputStream().readAllBytes()));
     }
-
 
     @Operation(summary = "Get all classroom materials in a zip file")
     @ApiResponses(value = {

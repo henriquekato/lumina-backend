@@ -3,6 +3,7 @@ package com.luminabackend.services;
 import com.luminabackend.exceptions.AccessDeniedException;
 import com.luminabackend.exceptions.EntityNotFoundException;
 import com.luminabackend.exceptions.ZipProcessingException;
+import com.luminabackend.models.education.file.FileInfo;
 import com.luminabackend.models.education.material.Material;
 import com.luminabackend.repositories.material.MaterialRepository;
 import com.luminabackend.utils.security.PayloadDTO;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
@@ -57,11 +59,13 @@ public class MaterialService {
              ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)) {
 
             materials.forEach(material -> {
-                if (material.getId() != null){
-                    GridFsResource gridFsResource = fileStorageService.getFile(material.getFileId());
-                    if (gridFsResource != null) {
-                        addFileToZip(gridFsResource, zipOutputStream);
-                    }
+                if (material.getId() != null && material.getFiles() != null){
+                    material.getFiles().forEach(file -> {
+                        GridFsResource gridFsResource = fileStorageService.getFile(file.getId());
+                        if (gridFsResource != null) {
+                            addFileToZip(gridFsResource, zipOutputStream);
+                        }
+                    });
                 }
             });
 
@@ -82,17 +86,53 @@ public class MaterialService {
     }
 
     public Material saveMaterial(
-                                    UUID classroomId,
-                                    PayloadDTO payloadDTO,
-                                    String title,
-                                    String description,
-                                    MultipartFile file) throws IOException {
+            UUID classroomId,
+            PayloadDTO payloadDTO,
+            String title,
+            String description,
+            List<MultipartFile> files) throws IOException {
 
         permissionService.checkAccessToClassroom(classroomId, payloadDTO);
 
-        String fileId = fileStorageService.storeFile(file, classroomId);
-        Material material = new Material(classroomId, payloadDTO.id(), title, description, fileId);
+        Material material = new Material(classroomId, payloadDTO.id(), title, description);
+        if (files != null && !files.isEmpty()) {
+            for (MultipartFile file : files) {
+                String fileId = fileStorageService.storeFile(file, classroomId);
+                material.addFile(new FileInfo(fileId, file.getOriginalFilename()));
+            }
+        }
         return repository.save(material);
+    }
+
+    public Material addFileToMaterial(UUID materialId, UUID classroomId,
+                                      PayloadDTO payloadDTO, MultipartFile file) throws IOException {
+        permissionService.checkAccessToClassroom(classroomId, payloadDTO);
+
+        Material material = getMaterialById(materialId);
+
+        String fileId = fileStorageService.storeFile(file, classroomId);
+        material.addFile(new FileInfo(fileId, file.getOriginalFilename()));
+
+        return repository.save(material);
+    }
+
+    public Material removeFileFromMaterial(UUID materialId, UUID classroomId,
+                                           PayloadDTO payloadDTO, String fileId) throws FileNotFoundException {
+        permissionService.checkAccessToClassroom(classroomId, payloadDTO);
+
+        Material material = getMaterialById(materialId);
+
+        Optional<FileInfo> fileToRemove = material.getFiles().stream()
+                .filter(f -> f.getId().equals(fileId))
+                .findFirst();
+
+        if (fileToRemove.isPresent()) {
+            fileStorageService.deleteFile(fileId);
+            material.removeFile(fileToRemove.get());
+            return repository.save(material);
+        } else {
+            throw new FileNotFoundException("File not found in this material");
+        }
     }
 
     public void deleteById(UUID materialId, UUID classroomId, PayloadDTO payloadDTO) {
@@ -100,21 +140,25 @@ public class MaterialService {
 
         Material material = getMaterialById(materialId);
 
-        if (material.getFileId() != null)
-            fileStorageService.deleteFile(material.getFileId());
+        if (material.getFiles() != null && !material.getFiles().isEmpty()) {
+            material.getFiles().forEach(file -> fileStorageService.deleteFile(file.getId()));
+        }
         repository.deleteById(materialId);
     }
 
     public void deleteAllByClassroomId(UUID classroomId) {
         List<Material> materialByClassroomId = repository.findMaterialByClassroomId(classroomId);
         materialByClassroomId.forEach(material -> {
-            if (material.getFileId() != null)
-                fileStorageService.deleteFile(material.getFileId());
+            if (material.getFiles() != null && !material.getFiles().isEmpty()) {
+                material.getFiles().forEach(file ->
+                        fileStorageService.deleteFile(file.getId())
+                );
+            }
             repository.deleteById(material.getId());
         });
     }
 
-    public void checkAccessToMaterial(UUID classroomId, UUID materialId, PayloadDTO payloadDTO){
+    public void checkAccessToMaterial(UUID classroomId, UUID materialId, PayloadDTO payloadDTO) {
         permissionService.checkAccessToClassroom(classroomId, payloadDTO);
         Material material = getMaterialById(materialId);
         if (!material.getProfessorId().equals(payloadDTO.id()))
