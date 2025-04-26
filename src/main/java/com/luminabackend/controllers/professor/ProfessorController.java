@@ -34,7 +34,7 @@ public class ProfessorController implements ProfessorControllerDocumentation {
     @Autowired
     private TokenService tokenService;
 
-    @PreAuthorize("hasRole('PROFESSOR') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('STUDENT') or hasRole('PROFESSOR') or hasRole('ADMIN')")
     @Override
     @GetMapping("/all")
     public ResponseEntity<List<ProfessorGetDTO>> getAllProfessors() {
