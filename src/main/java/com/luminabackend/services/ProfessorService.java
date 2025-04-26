@@ -3,6 +3,8 @@ package com.luminabackend.services;
 import com.luminabackend.exceptions.CannotDeleteActiveProfessorException;
 import com.luminabackend.exceptions.EmailAlreadyInUseException;
 import com.luminabackend.exceptions.EntityNotFoundException;
+import com.luminabackend.models.education.classroom.Classroom;
+import com.luminabackend.models.education.task.Task;
 import com.luminabackend.models.user.Professor;
 import com.luminabackend.models.user.Role;
 import com.luminabackend.models.user.User;
@@ -30,6 +32,9 @@ public class ProfessorService {
 
     @Autowired
     private ClassroomService classroomService;
+
+    @Autowired
+    private TaskService taskService;
 
     public List<Professor> getAllProfessors() {
         return repository.findAll();
@@ -79,5 +84,11 @@ public class ProfessorService {
             throw new CannotDeleteActiveProfessorException("Cannot delete professor because they are currently assigned to one or more active classrooms");
 
         repository.deleteById(id);
+    }
+
+    public List<Task> getProfessorTasks(UUID professorId){
+        if (!existsById(professorId)) throw new EntityNotFoundException("Professor not found");
+        List<Classroom> classrooms = classroomService.getClassroomsBasedOnUserAccess(new UserAccessDTO(professorId, Role.PROFESSOR));
+        return taskService.getAllTasksByClassroomIdIn(classrooms.stream().map(Classroom::getId).toList());
     }
 }

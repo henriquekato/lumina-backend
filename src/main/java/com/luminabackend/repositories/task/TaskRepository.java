@@ -11,4 +11,5 @@ import java.util.UUID;
 public interface TaskRepository extends MongoRepository<Task, UUID> {
     List<Task> findAllByClassroomId(UUID classroomId);
     Page<Task> findAllByClassroomId(UUID classroomId, Pageable page);
+    List<Task> findAllByClassroomIdIn(List<UUID> classroomsIds);
 }

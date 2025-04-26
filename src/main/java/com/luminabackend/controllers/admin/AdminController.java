@@ -1,6 +1,7 @@
 package com.luminabackend.controllers.admin;
 
 import com.luminabackend.exceptions.EntityNotFoundException;
+import com.luminabackend.models.education.task.TaskGetDTO;
 import com.luminabackend.models.user.Admin;
 import com.luminabackend.models.user.Professor;
 import com.luminabackend.models.user.Student;
@@ -11,6 +12,7 @@ import com.luminabackend.models.user.dto.user.UserSignupDTO;
 import com.luminabackend.services.AdminService;
 import com.luminabackend.services.ProfessorService;
 import com.luminabackend.services.StudentService;
+import com.luminabackend.services.TaskService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -39,6 +41,9 @@ public class AdminController implements AdminControllerDocumentation {
 
     @Autowired
     private ProfessorService professorService;
+
+    @Autowired
+    private TaskService taskService;
 
     @Override
     @GetMapping("/all")
@@ -106,5 +111,14 @@ public class AdminController implements AdminControllerDocumentation {
             users.addAll(admins.stream().map(admin -> new UserGetDTO(admin, "admin")).toList());
         }
         return ResponseEntity.ok(users);
+    }
+
+    @GetMapping("/tasks")
+    public ResponseEntity<List<TaskGetDTO>> getAllTasks(){
+        List<TaskGetDTO> tasks = taskService.getAllTasks()
+                .stream()
+                .map(TaskGetDTO::new)
+                .toList();
+        return ResponseEntity.ok(tasks);
     }
 }

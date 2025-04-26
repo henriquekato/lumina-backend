@@ -1,12 +1,15 @@
 package com.luminabackend.controllers.student;
 
 import com.luminabackend.exceptions.EntityNotFoundException;
+import com.luminabackend.models.education.task.TaskGetDTO;
 import com.luminabackend.models.user.Student;
 import com.luminabackend.models.user.dto.professor.ProfessorGetDTO;
 import com.luminabackend.models.user.dto.student.StudentGetDTO;
 import com.luminabackend.models.user.dto.user.UserPutDTO;
 import com.luminabackend.models.user.dto.user.UserSignupDTO;
 import com.luminabackend.services.StudentService;
+import com.luminabackend.services.TokenService;
+import com.luminabackend.utils.security.PayloadDTO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -28,6 +31,9 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class StudentController implements StudentControllerDocumentation {
     @Autowired
     private StudentService service;
+
+    @Autowired
+    private TokenService tokenService;
 
     @Override
     @GetMapping("/all")
@@ -85,6 +91,16 @@ public class StudentController implements StudentControllerDocumentation {
             @PathVariable UUID studentId
     ) {
         List<ProfessorGetDTO> list = service.getStudentProfessors(studentId).stream().map(ProfessorGetDTO::new).toList();
+        return ResponseEntity.ok(list);
+    }
+
+    @PreAuthorize("hasRole('STUDENT') or hasRole('ADMIN')")
+    @GetMapping("/tasks")
+    public ResponseEntity<List<TaskGetDTO>> getStudentTasks(
+            @RequestHeader("Authorization") String authorizationHeader
+    ) {
+        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+        List<TaskGetDTO> list = service.getStudentTasks(payloadDTO.id()).stream().map(TaskGetDTO::new).toList();
         return ResponseEntity.ok(list);
     }
 }

@@ -90,4 +90,12 @@ public class TaskService {
         if (task.isDueDateExpired())
             throw new TaskDueDateExpiredException("Task due date expired");
     }
+
+    public List<Task> getAllTasks(){
+        return repository.findAll();
+    }
+
+    public List<Task> getAllTasksByClassroomIdIn(List<UUID> classroomsIds){
+        return repository.findAllByClassroomIdIn(classroomsIds);
+    }
 }

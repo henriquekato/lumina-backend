@@ -3,6 +3,7 @@ package com.luminabackend.services;
 import com.luminabackend.exceptions.EmailAlreadyInUseException;
 import com.luminabackend.exceptions.EntityNotFoundException;
 import com.luminabackend.models.education.classroom.Classroom;
+import com.luminabackend.models.education.task.Task;
 import com.luminabackend.models.user.Professor;
 import com.luminabackend.models.user.Role;
 import com.luminabackend.models.user.Student;
@@ -35,6 +36,9 @@ public class StudentService {
 
     @Autowired
     private ProfessorService professorService;
+
+    @Autowired
+    private TaskService taskService;
 
     public List<Student> getAllStudents() {
         return repository.findAll();
@@ -92,5 +96,11 @@ public class StudentService {
         List<Classroom> classrooms = classroomService.getClassroomsBasedOnUserAccess(new UserAccessDTO(studentId, Role.STUDENT));
         List<UUID> professorsIds = classrooms.stream().map(Classroom::getProfessorId).toList();
         return professorService.getProfessorsByIds(professorsIds);
+    }
+
+    public List<Task> getStudentTasks(UUID studentId){
+        if (!existsById(studentId)) throw new EntityNotFoundException("Student not found");
+        List<Classroom> classrooms = classroomService.getClassroomsBasedOnUserAccess(new UserAccessDTO(studentId, Role.STUDENT));
+        return taskService.getAllTasksByClassroomIdIn(classrooms.stream().map(Classroom::getId).toList());
     }
 }
