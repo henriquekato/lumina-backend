@@ -43,6 +43,10 @@ public class ProfessorService {
         return repository.findById(id);
     }
 
+    public List<Professor> getProfessorsByIds(List<UUID> ids){
+        return repository.findAllById(ids);
+    }
+
     public boolean existsById(UUID id) {
         return repository.existsById(id);
     }

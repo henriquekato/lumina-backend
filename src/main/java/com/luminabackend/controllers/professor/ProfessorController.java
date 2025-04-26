@@ -28,6 +28,7 @@ public class ProfessorController implements ProfessorControllerDocumentation {
     @Autowired
     private ProfessorService service;
 
+    @PreAuthorize("hasRole('PROFESSOR') or hasRole('ADMIN')")
     @Override
     @GetMapping("/all")
     public ResponseEntity<List<ProfessorGetDTO>> getAllProfessors() {
@@ -35,6 +36,7 @@ public class ProfessorController implements ProfessorControllerDocumentation {
         return ResponseEntity.ok(professors.stream().map(ProfessorGetDTO::new).toList());
     }
 
+    @PreAuthorize("hasRole('PROFESSOR') or hasRole('ADMIN')")
     @Override
     @GetMapping
     public ResponseEntity<Page<ProfessorGetDTO>> getPaginatedProfessors(Pageable page) {

@@ -2,8 +2,12 @@ package com.luminabackend.services;
 
 import com.luminabackend.exceptions.EmailAlreadyInUseException;
 import com.luminabackend.exceptions.EntityNotFoundException;
+import com.luminabackend.models.education.classroom.Classroom;
+import com.luminabackend.models.user.Professor;
+import com.luminabackend.models.user.Role;
 import com.luminabackend.models.user.Student;
 import com.luminabackend.models.user.User;
+import com.luminabackend.models.user.dto.user.UserAccessDTO;
 import com.luminabackend.models.user.dto.user.UserNewDataDTO;
 import com.luminabackend.models.user.dto.user.UserPutDTO;
 import com.luminabackend.models.user.dto.user.UserSignupDTO;
@@ -28,6 +32,9 @@ public class StudentService {
 
     @Autowired
     private ClassroomService classroomService;
+
+    @Autowired
+    private ProfessorService professorService;
 
     public List<Student> getAllStudents() {
         return repository.findAll();
@@ -79,5 +86,11 @@ public class StudentService {
         classroomService.removeStudentFromAllClassrooms(id);
 
         repository.deleteById(id);
+    }
+
+    public List<Professor> getStudentProfessors(UUID studentId){
+        List<Classroom> classrooms = classroomService.getClassroomsBasedOnUserAccess(new UserAccessDTO(studentId, Role.STUDENT));
+        List<UUID> professorsIds = classrooms.stream().map(Classroom::getProfessorId).toList();
+        return professorService.getProfessorsByIds(professorsIds);
     }
 }

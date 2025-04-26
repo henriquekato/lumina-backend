@@ -2,6 +2,7 @@ package com.luminabackend.controllers.student;
 
 import com.luminabackend.exceptions.EntityNotFoundException;
 import com.luminabackend.models.user.Student;
+import com.luminabackend.models.user.dto.professor.ProfessorGetDTO;
 import com.luminabackend.models.user.dto.student.StudentGetDTO;
 import com.luminabackend.models.user.dto.user.UserPutDTO;
 import com.luminabackend.models.user.dto.user.UserSignupDTO;
@@ -76,5 +77,14 @@ public class StudentController implements StudentControllerDocumentation {
     public ResponseEntity<Void> deleteStudent(@PathVariable UUID id) {
         service.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasRole('STUDENT') or hasRole('ADMIN')")
+    @GetMapping("/{studentId}/professors")
+    public ResponseEntity<List<ProfessorGetDTO>> getStudentProfessors(
+            @PathVariable UUID studentId
+    ) {
+        List<ProfessorGetDTO> list = service.getStudentProfessors(studentId).stream().map(ProfessorGetDTO::new).toList();
+        return ResponseEntity.ok(list);
     }
 }
