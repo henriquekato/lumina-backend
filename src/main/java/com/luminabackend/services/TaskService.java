@@ -98,4 +98,14 @@ public class TaskService {
     public List<Task> getAllTasksByClassroomIdIn(List<UUID> classroomsIds){
         return repository.findAllByClassroomIdInOrderByDueDateAsc(classroomsIds);
     }
+
+    public List<Task> getTasksDoneByClassroomIdIn(UUID studentId, List<UUID> classroomsIds){
+        return repository.findAllByClassroomIdInOrderByDueDateAsc(classroomsIds)
+                .stream().filter(task -> submissionService.isTaskDone(studentId, task.getId())).toList();
+    }
+
+    public List<Task> getTasksNotDoneByClassroomIdIn(UUID studentId, List<UUID> classroomsIds){
+        return repository.findAllByClassroomIdInOrderByDueDateAsc(classroomsIds)
+                .stream().filter(task -> !submissionService.isTaskDone(studentId, task.getId())).toList();
+    }
 }

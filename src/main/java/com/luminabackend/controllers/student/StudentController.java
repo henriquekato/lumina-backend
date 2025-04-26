@@ -95,12 +95,22 @@ public class StudentController implements StudentControllerDocumentation {
     }
 
     @PreAuthorize("hasRole('STUDENT') or hasRole('ADMIN')")
-    @GetMapping("/tasks")
-    public ResponseEntity<List<TaskFullGetDTO>> getStudentTasks(
+    @GetMapping("/tasks/done")
+    public ResponseEntity<List<TaskFullGetDTO>> getStudentTasksDone(
             @RequestHeader("Authorization") String authorizationHeader
     ) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        List<TaskFullGetDTO> list = service.getStudentTasks(payloadDTO.id()).stream().map(TaskFullGetDTO::new).toList();
+        List<TaskFullGetDTO> list = service.getTasksDoneByClassroomIdIn(payloadDTO.id()).stream().map(TaskFullGetDTO::new).toList();
+        return ResponseEntity.ok(list);
+    }
+
+    @PreAuthorize("hasRole('STUDENT') or hasRole('ADMIN')")
+    @GetMapping("/tasks/not-done")
+    public ResponseEntity<List<TaskFullGetDTO>> getStudentTasksNotDone(
+            @RequestHeader("Authorization") String authorizationHeader
+    ) {
+        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+        List<TaskFullGetDTO> list = service.getTasksNotDoneByClassroomIdIn(payloadDTO.id()).stream().map(TaskFullGetDTO::new).toList();
         return ResponseEntity.ok(list);
     }
 }

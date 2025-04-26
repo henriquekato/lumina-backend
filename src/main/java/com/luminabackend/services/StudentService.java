@@ -98,16 +98,33 @@ public class StudentService {
         return professorService.getProfessorsByIds(professorsIds);
     }
 
-    public List<Task> getStudentTasks(UUID studentId){
+    public List<Task> getTasksDoneByClassroomIdIn(UUID studentId){
         if (!existsById(studentId)) throw new EntityNotFoundException("Student not found");
         List<Classroom> classrooms = classroomService.getClassroomsBasedOnUserAccess(new UserAccessDTO(studentId, Role.STUDENT));
-        return taskService.getAllTasksByClassroomIdIn(classrooms.stream()
+        return taskService.getTasksDoneByClassroomIdIn(studentId, classrooms.stream()
                         .map(Classroom::getId).toList())
                 .stream().map(task -> {
                     Optional<Classroom> classroom =
                             classrooms.stream()
                             .filter(c -> c.getId().equals(task.getClassroomId()))
                             .findAny();
+                    classroom.ifPresentOrElse(
+                            c->task.setClassroomName(c.getName()),
+                            ()->{throw new IllegalStateException("Error");});
+                    return task;
+                }).toList();
+    }
+
+    public List<Task> getTasksNotDoneByClassroomIdIn(UUID studentId){
+        if (!existsById(studentId)) throw new EntityNotFoundException("Student not found");
+        List<Classroom> classrooms = classroomService.getClassroomsBasedOnUserAccess(new UserAccessDTO(studentId, Role.STUDENT));
+        return taskService.getTasksNotDoneByClassroomIdIn(studentId, classrooms.stream()
+                        .map(Classroom::getId).toList())
+                .stream().map(task -> {
+                    Optional<Classroom> classroom =
+                            classrooms.stream()
+                                    .filter(c -> c.getId().equals(task.getClassroomId()))
+                                    .findAny();
                     classroom.ifPresentOrElse(
                             c->task.setClassroomName(c.getName()),
                             ()->{throw new IllegalStateException("Error");});

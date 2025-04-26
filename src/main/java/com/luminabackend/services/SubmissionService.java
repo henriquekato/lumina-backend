@@ -4,8 +4,6 @@ import com.luminabackend.exceptions.*;
 import com.luminabackend.models.education.submission.Submission;
 import com.luminabackend.models.education.submission.SubmissionAssessmentDTO;
 import com.luminabackend.models.education.submission.SubmissionPostDTO;
-import com.luminabackend.models.education.task.Task;
-import com.luminabackend.models.user.dto.user.UserAccessDTO;
 import com.luminabackend.repositories.submission.SubmissionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -18,7 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -80,7 +77,7 @@ public class SubmissionService {
 
     @Transactional
     public Submission save(UUID taskId, UUID studentId, SubmissionPostDTO submissionPostDTO, MultipartFile file) throws IOException {
-        if (repository.existsByStudentIdAndTaskId(studentId, taskId))
+        if (isTaskDone(studentId, taskId))
             throw new TaskAlreadySubmittedException("You have already submitted this task");
 
         String fileId = fileStorageService.storeFile(file, taskId);
@@ -111,5 +108,9 @@ public class SubmissionService {
         Submission submission = getSubmissionById(submissionId);
         submission.setGrade(submissionAssessmentDTO.grade());
         return repository.save(submission);
+    }
+
+    public boolean isTaskDone(UUID studentId, UUID taskId){
+        return repository.existsByStudentIdAndTaskId(studentId, taskId);
     }
 }
