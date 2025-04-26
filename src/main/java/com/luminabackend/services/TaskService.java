@@ -25,11 +25,11 @@ public class TaskService {
     private SubmissionService submissionService;
 
     public List<Task> getAllTasksByClassroomId(UUID classroomId) {
-        return repository.findAllByClassroomId(classroomId);
+        return repository.findAllByClassroomIdOrderByDueDateAsc(classroomId);
     }
 
     public Page<Task> getPaginatedClassroomTasks(UUID classroomId, Pageable page) {
-        return repository.findAllByClassroomId(classroomId, page);
+        return repository.findAllByClassroomIdOrderByDueDateAsc(classroomId, page);
     }
 
     public Task getTaskById(UUID taskId) {
@@ -80,7 +80,7 @@ public class TaskService {
 
     @Transactional
     public void deleteAllByClassroomId(UUID classroomId) {
-        List<Task> classroomTasks = repository.findAllByClassroomId(classroomId);
+        List<Task> classroomTasks = repository.findAllByClassroomIdOrderByDueDateAsc(classroomId);
         classroomTasks.forEach(task -> submissionService.deleteAllByTaskId(task.getId()));
         repository.deleteAllById(classroomTasks.stream().map(Task::getId).toList());
     }
@@ -92,10 +92,10 @@ public class TaskService {
     }
 
     public List<Task> getAllTasks(){
-        return repository.findAll();
+        return repository.findAllByOrderByDueDateAsc();
     }
 
     public List<Task> getAllTasksByClassroomIdIn(List<UUID> classroomsIds){
-        return repository.findAllByClassroomIdIn(classroomsIds);
+        return repository.findAllByClassroomIdInOrderByDueDateAsc(classroomsIds);
     }
 }

@@ -9,7 +9,8 @@ import java.util.List;
 import java.util.UUID;
 
 public interface TaskRepository extends MongoRepository<Task, UUID> {
-    List<Task> findAllByClassroomId(UUID classroomId);
-    Page<Task> findAllByClassroomId(UUID classroomId, Pageable page);
-    List<Task> findAllByClassroomIdIn(List<UUID> classroomsIds);
+    List<Task> findAllByClassroomIdOrderByDueDateAsc(UUID classroomId);
+    Page<Task> findAllByClassroomIdOrderByDueDateAsc(UUID classroomId, Pageable page);
+    List<Task> findAllByOrderByDueDateAsc();
+    List<Task> findAllByClassroomIdInOrderByDueDateAsc(List<UUID> classroomsIds);
 }
