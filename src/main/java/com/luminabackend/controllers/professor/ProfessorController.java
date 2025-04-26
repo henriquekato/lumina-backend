@@ -1,7 +1,7 @@
 package com.luminabackend.controllers.professor;
 
 import com.luminabackend.exceptions.EntityNotFoundException;
-import com.luminabackend.models.education.task.TaskGetDTO;
+import com.luminabackend.models.education.task.TaskFullGetDTO;
 import com.luminabackend.models.user.Professor;
 import com.luminabackend.models.user.dto.professor.ProfessorGetDTO;
 import com.luminabackend.models.user.dto.user.UserPutDTO;
@@ -88,11 +88,11 @@ public class ProfessorController implements ProfessorControllerDocumentation {
 
     @PreAuthorize("hasRole('PROFESSOR') or hasRole('ADMIN')")
     @GetMapping("/tasks")
-    public ResponseEntity<List<TaskGetDTO>> getProfessorTasks(
+    public ResponseEntity<List<TaskFullGetDTO>> getProfessorTasks(
             @RequestHeader("Authorization") String authorizationHeader
     ) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        List<TaskGetDTO> list = service.getProfessorTasks(payloadDTO.id()).stream().map(TaskGetDTO::new).toList();
+        List<TaskFullGetDTO> list = service.getProfessorTasks(payloadDTO.id()).stream().map(TaskFullGetDTO::new).toList();
         return ResponseEntity.ok(list);
     }
 }

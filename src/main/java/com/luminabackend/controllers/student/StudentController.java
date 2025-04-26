@@ -1,7 +1,7 @@
 package com.luminabackend.controllers.student;
 
 import com.luminabackend.exceptions.EntityNotFoundException;
-import com.luminabackend.models.education.task.TaskGetDTO;
+import com.luminabackend.models.education.task.TaskFullGetDTO;
 import com.luminabackend.models.user.Student;
 import com.luminabackend.models.user.dto.professor.ProfessorGetDTO;
 import com.luminabackend.models.user.dto.student.StudentGetDTO;
@@ -96,11 +96,11 @@ public class StudentController implements StudentControllerDocumentation {
 
     @PreAuthorize("hasRole('STUDENT') or hasRole('ADMIN')")
     @GetMapping("/tasks")
-    public ResponseEntity<List<TaskGetDTO>> getStudentTasks(
+    public ResponseEntity<List<TaskFullGetDTO>> getStudentTasks(
             @RequestHeader("Authorization") String authorizationHeader
     ) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        List<TaskGetDTO> list = service.getStudentTasks(payloadDTO.id()).stream().map(TaskGetDTO::new).toList();
+        List<TaskFullGetDTO> list = service.getStudentTasks(payloadDTO.id()).stream().map(TaskFullGetDTO::new).toList();
         return ResponseEntity.ok(list);
     }
 }

@@ -1,18 +1,18 @@
 package com.luminabackend.controllers.admin;
 
 import com.luminabackend.exceptions.EntityNotFoundException;
-import com.luminabackend.models.education.task.TaskGetDTO;
+import com.luminabackend.models.education.classroom.Classroom;
+import com.luminabackend.models.education.task.TaskFullGetDTO;
 import com.luminabackend.models.user.Admin;
 import com.luminabackend.models.user.Professor;
 import com.luminabackend.models.user.Student;
 import com.luminabackend.models.user.dto.admin.AdminGetDTO;
+import com.luminabackend.models.user.dto.user.UserAccessDTO;
 import com.luminabackend.models.user.dto.user.UserGetDTO;
 import com.luminabackend.models.user.dto.user.UserPutDTO;
 import com.luminabackend.models.user.dto.user.UserSignupDTO;
-import com.luminabackend.services.AdminService;
-import com.luminabackend.services.ProfessorService;
-import com.luminabackend.services.StudentService;
-import com.luminabackend.services.TaskService;
+import com.luminabackend.services.*;
+import com.luminabackend.utils.security.PayloadDTO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -44,6 +44,12 @@ public class AdminController implements AdminControllerDocumentation {
 
     @Autowired
     private TaskService taskService;
+
+    @Autowired
+    private ClassroomService classroomService;
+
+    @Autowired
+    private TokenService tokenService;
 
     @Override
     @GetMapping("/all")
@@ -114,10 +120,20 @@ public class AdminController implements AdminControllerDocumentation {
     }
 
     @GetMapping("/tasks")
-    public ResponseEntity<List<TaskGetDTO>> getAllTasks(){
-        List<TaskGetDTO> tasks = taskService.getAllTasks()
-                .stream()
-                .map(TaskGetDTO::new)
+    public ResponseEntity<List<TaskFullGetDTO>> getAllTasks(@RequestHeader("Authorization") String authorizationHeader) {
+        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+        List<Classroom> classrooms = classroomService.getClassroomsBasedOnUserAccess(new UserAccessDTO(payloadDTO));
+        List<TaskFullGetDTO> tasks = taskService.getAllTasks()
+                .stream().map(task -> {
+                    Optional<Classroom> classroom =
+                            classrooms.stream()
+                                    .filter(c -> c.getId().equals(task.getClassroomId()))
+                                    .findAny();
+                    classroom.ifPresentOrElse(
+                            c->task.setClassroomName(c.getName()),
+                            ()->{throw new IllegalStateException("Error");});
+                    return task;
+                }).map(TaskFullGetDTO::new)
                 .toList();
         return ResponseEntity.ok(tasks);
     }

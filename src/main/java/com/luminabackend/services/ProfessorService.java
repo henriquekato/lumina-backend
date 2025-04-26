@@ -89,6 +89,17 @@ public class ProfessorService {
     public List<Task> getProfessorTasks(UUID professorId){
         if (!existsById(professorId)) throw new EntityNotFoundException("Professor not found");
         List<Classroom> classrooms = classroomService.getClassroomsBasedOnUserAccess(new UserAccessDTO(professorId, Role.PROFESSOR));
-        return taskService.getAllTasksByClassroomIdIn(classrooms.stream().map(Classroom::getId).toList());
+        return taskService.getAllTasksByClassroomIdIn(classrooms.stream()
+                        .map(Classroom::getId).toList())
+                .stream().map(task -> {
+                    Optional<Classroom> classroom =
+                            classrooms.stream()
+                                    .filter(c -> c.getId().equals(task.getClassroomId()))
+                                    .findAny();
+                    classroom.ifPresentOrElse(
+                            c->task.setClassroomName(c.getName()),
+                            ()->{throw new IllegalStateException("Error");});
+                    return task;
+                }).toList();
     }
 }
