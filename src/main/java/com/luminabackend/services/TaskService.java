@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -92,20 +93,20 @@ public class TaskService {
     }
 
     public List<Task> getAllTasks(){
-        return repository.findAllByOrderByDueDateAsc();
+        return repository.findAllByDueDateAfterOrderByDueDateAsc(LocalDateTime.now());
     }
 
     public List<Task> getAllTasksByClassroomIdIn(List<UUID> classroomsIds){
-        return repository.findAllByClassroomIdInOrderByDueDateAsc(classroomsIds);
+        return repository.findAllByClassroomIdInAndDueDateAfterOrderByDueDateAsc(classroomsIds, LocalDateTime.now());
     }
 
     public List<Task> getTasksDoneByClassroomIdIn(UUID studentId, List<UUID> classroomsIds){
-        return repository.findAllByClassroomIdInOrderByDueDateAsc(classroomsIds)
+        return repository.findAllByClassroomIdInOrderByDueDateDesc(classroomsIds)
                 .stream().filter(task -> submissionService.isTaskDone(studentId, task.getId())).toList();
     }
 
     public List<Task> getTasksNotDoneByClassroomIdIn(UUID studentId, List<UUID> classroomsIds){
-        return repository.findAllByClassroomIdInOrderByDueDateAsc(classroomsIds)
+        return repository.findAllByClassroomIdInAndDueDateAfterOrderByDueDateAsc(classroomsIds, LocalDateTime.now())
                 .stream().filter(task -> !submissionService.isTaskDone(studentId, task.getId())).toList();
     }
 }
