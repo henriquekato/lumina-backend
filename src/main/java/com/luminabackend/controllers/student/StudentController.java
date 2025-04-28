@@ -7,6 +7,8 @@ import com.luminabackend.models.user.dto.student.StudentGetDTO;
 import com.luminabackend.models.user.dto.user.UserPutDTO;
 import com.luminabackend.models.user.dto.user.UserSignupDTO;
 import com.luminabackend.services.StudentService;
+import com.luminabackend.services.TokenService;
+import com.luminabackend.utils.security.PayloadDTO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -27,6 +29,9 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class StudentController implements StudentControllerDocumentation {
     @Autowired
     private StudentService service;
+
+    @Autowired
+    private TokenService tokenService;
 
     @Override
     @GetMapping
@@ -72,20 +77,23 @@ public class StudentController implements StudentControllerDocumentation {
     }
 
     @PreAuthorize("hasRole('STUDENT')")
-    @GetMapping("/{id}/tasks/done")
+    @GetMapping("/tasks/done")
     public ResponseEntity<Page<TaskFullGetDTO>> getStudentDoneTasks(
-            @PathVariable UUID id, Pageable page
+            Pageable page, @RequestHeader("Authorization") String authorizationHeader
     ) {
-        Page<TaskFullGetDTO> list = service.getDoneTasksByStudent(id, page).map(TaskFullGetDTO::new);
+        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+        Page<TaskFullGetDTO> list = service.getDoneTasksByStudent(payloadDTO.id(), page).map(TaskFullGetDTO::new);
         return ResponseEntity.ok(list);
     }
 
     @PreAuthorize("hasRole('STUDENT')")
-    @GetMapping("/{id}/tasks/not-done")
+    @GetMapping("/tasks/not-done")
     public ResponseEntity<Page<TaskFullGetDTO>> getStudentNotDoneTasks(
-            @PathVariable UUID id, Pageable page
+            Pageable page,
+            @RequestHeader("Authorization") String authorizationHeader
     ) {
-        Page<TaskFullGetDTO> list = service.getNotDoneTasksByStudent(id, page).map(TaskFullGetDTO::new);
+        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
+        Page<TaskFullGetDTO> list = service.getNotDoneTasksByStudent(payloadDTO.id(), page).map(TaskFullGetDTO::new);
         return ResponseEntity.ok(list);
     }
 }

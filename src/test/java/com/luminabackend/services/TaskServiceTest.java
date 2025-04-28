@@ -64,7 +64,7 @@ class TaskServiceTest {
     @Test
     @DisplayName("should return all tasks from one classroom")
     void shouldReturnAllTasksOneClassroom() {
-        when(repository.findAllByClassroomId(classroom1.getId())).thenReturn(tasksClassroom1);
+        when(repository.findAllByClassroomIdOrderByDueDateAsc(classroom1.getId())).thenReturn(tasksClassroom1);
 
         List<Task> tasks = sut.getAllTasksByClassroomId(classroom1.getId());
 
@@ -129,11 +129,11 @@ class TaskServiceTest {
     @Test
     @DisplayName("should delete all tasks by classroom id")
     void shouldDeleteAllTasksByClassroomId() {
-        when(repository.findAllByClassroomId(task1.getClassroomId())).thenReturn(tasksClassroom1);
+        when(repository.findAllByClassroomIdOrderByDueDateAsc(task1.getClassroomId())).thenReturn(tasksClassroom1);
 
         sut.deleteAllByClassroomId(classroom1.getId());
 
-        verify(repository, times(1)).findAllByClassroomId(task2.getClassroomId());
+        verify(repository, times(1)).findAllByClassroomIdOrderByDueDateAsc(task2.getClassroomId());
         verify(submissionService, times(tasksClassroom1.size())).deleteAllByTaskId(any(UUID.class));
         verify(repository, times(1)).deleteAllById(anyCollection());
     }

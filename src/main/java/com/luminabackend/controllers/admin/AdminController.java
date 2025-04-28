@@ -35,9 +35,6 @@ public class AdminController implements AdminControllerDocumentation {
     private AdminService service;
 
     @Autowired
-    private TaskService taskService;
-
-    @Autowired
     private UserService userService;
 
     @Override
@@ -92,7 +89,7 @@ public class AdminController implements AdminControllerDocumentation {
 
     @GetMapping("/tasks")
     public ResponseEntity<Page<TaskFullGetDTO>> getAllTasks(Pageable page) {
-        Page<Task> tasks = taskService.getAllTasks(page);
+        Page<Task> tasks = service.getAllTasks(page);
         return ResponseEntity.ok(tasks.map(TaskFullGetDTO::new));
     }
 }

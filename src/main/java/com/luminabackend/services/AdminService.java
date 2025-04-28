@@ -3,6 +3,7 @@ package com.luminabackend.services;
 import com.luminabackend.exceptions.CannotDeleteLastAdministratorException;
 import com.luminabackend.exceptions.EmailAlreadyInUseException;
 import com.luminabackend.exceptions.EntityNotFoundException;
+import com.luminabackend.models.education.task.Task;
 import com.luminabackend.models.user.Admin;
 import com.luminabackend.models.user.User;
 import com.luminabackend.models.user.dto.user.UserNewDataDTO;
@@ -25,6 +26,9 @@ public class AdminService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private TaskService taskService;
 
     public Page<Admin> getPaginatedAdmins(Pageable page){
         return repository.findAll(page);
@@ -73,5 +77,9 @@ public class AdminService {
 
     long count(){
         return repository.count();
+    }
+
+    public Page<Task> getAllTasks(Pageable page){
+        return taskService.getAllTasks(page);
     }
 }
