@@ -49,26 +49,6 @@ class AdminServiceTest {
 
     @Tag("UnitTest")
     @Test
-    @DisplayName("should return all admins")
-    void shouldReturnAllAdmins() {
-        List<Admin> admins = List.of(
-                new Admin("john@mail.com", "9fds4hfa", "John", "Doe"),
-                new Admin("jane@mail.com", "4fas3fa", "Jane", "Doe"),
-                new Admin("mike@mail.com", "va34fa324", "Mike", "Doe"));
-        when(adminRepository.findAll()).thenReturn(admins);
-        assertThat(sut.getAllAdmins()).isEqualTo(admins);
-    }
-
-    @Tag("UnitTest")
-    @Test
-    @DisplayName("should return empty list when adminRepository returns empty list")
-    void shouldReturnEmptyList() {
-        when(adminRepository.findAll()).thenReturn(Collections.emptyList());
-        assertThat(sut.getAllAdmins()).isEqualTo(Collections.emptyList());
-    }
-
-    @Tag("UnitTest")
-    @Test
     @DisplayName("should return optional admin by id")
     void shouldReturnOptionalAdminById() {
         when(adminRepository.findById(admin.getId())).thenReturn(Optional.of(admin));

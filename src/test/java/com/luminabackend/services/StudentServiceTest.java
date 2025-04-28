@@ -3,7 +3,6 @@ package com.luminabackend.services;
 import com.luminabackend.exceptions.EmailAlreadyInUseException;
 import com.luminabackend.exceptions.EntityNotFoundException;
 import com.luminabackend.models.user.Student;
-import com.luminabackend.models.user.dto.user.UserAccessDTO;
 import com.luminabackend.models.user.dto.user.UserNewDataDTO;
 import com.luminabackend.models.user.dto.user.UserPutDTO;
 import com.luminabackend.models.user.dto.user.UserSignupDTO;
@@ -17,8 +16,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -47,26 +44,6 @@ class StudentServiceTest {
     @BeforeAll
     static void beforeAll() {
         student = new Student("john@mail.com", "9fds4hfa", "John", "Doe");
-    }
-
-    @Tag("UnitTest")
-    @Test
-    @DisplayName("should return all students")
-    void shouldReturnAllStudents() {
-        List<Student> students = List.of(
-                new Student("john@mail.com", "9fds4hfa", "John", "Doe"),
-                new Student("jane@mail.com", "4fas3fa", "Jane", "Doe"),
-                new Student("mike@mail.com", "va34fa324", "Mike", "Doe"));
-        when(studentRepository.findAll()).thenReturn(students);
-        assertThat(sut.getAllStudents()).isEqualTo(students);
-    }
-
-    @Tag("UnitTest")
-    @Test
-    @DisplayName("should return empty list when studentRepository returns empty list")
-    void shouldReturnEmptyList() {
-        when(studentRepository.findAll()).thenReturn(Collections.emptyList());
-        assertThat(sut.getAllStudents()).isEqualTo(Collections.emptyList());
     }
 
     @Tag("UnitTest")

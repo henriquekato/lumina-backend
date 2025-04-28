@@ -26,10 +26,6 @@ public class AdminService {
     @Autowired
     private UserService userService;
 
-    public List<Admin> getAllAdmins() {
-        return repository.findAll();
-    }
-
     public Page<Admin> getPaginatedAdmins(Pageable page){
         return repository.findAll(page);
     }

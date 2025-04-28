@@ -29,16 +29,6 @@ import java.util.UUID;
                         schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
 })
 public interface AdminControllerDocumentation {
-    @Operation(summary = "Get all admins")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Returns a list with all admins",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = AdminGetDTO.class))})
-    })
-    ResponseEntity<List<AdminGetDTO>> getAllAdmins();
-
     @Operation(summary = "Get a paginated list of admins")
     @ApiResponses(value = {
             @ApiResponse(

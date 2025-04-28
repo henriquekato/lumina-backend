@@ -12,13 +12,14 @@ import java.util.UUID;
 @Getter
 @Setter
 @EqualsAndHashCode(of = "id")
-public sealed abstract class User implements UserDetails permits Student, Professor, Admin  {
+public abstract class User implements UserDetails {
     @Id
     private UUID id;
     private String email;
     private String password;
     private String firstName;
     private String lastName;
+    private Role role;
 
     User(UUID id, String email, String password, String firstName, String lastName) {
         this.id = id;

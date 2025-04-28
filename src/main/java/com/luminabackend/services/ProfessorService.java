@@ -36,20 +36,12 @@ public class ProfessorService {
     @Autowired
     private TaskService taskService;
 
-    public List<Professor> getAllProfessors() {
-        return repository.findAll();
-    }
-
     public Page<Professor> getPaginatedProfessors(Pageable page) {
         return repository.findAll(page);
     }
 
     public Optional<Professor> getProfessorById(UUID id) {
         return repository.findById(id);
-    }
-
-    public List<Professor> getProfessorsByIds(List<UUID> ids){
-        return repository.findAllById(ids);
     }
 
     public boolean existsById(UUID id) {
@@ -86,20 +78,10 @@ public class ProfessorService {
         repository.deleteById(id);
     }
 
-    public List<Task> getProfessorTasks(UUID professorId){
+    public Page<Task> getProfessorTasks(UUID professorId, Pageable page){
         if (!existsById(professorId)) throw new EntityNotFoundException("Professor not found");
         List<Classroom> classrooms = classroomService.getClassroomsBasedOnUserAccess(new UserAccessDTO(professorId, Role.PROFESSOR));
         return taskService.getAllTasksByClassroomIdIn(classrooms.stream()
-                        .map(Classroom::getId).toList())
-                .stream().map(task -> {
-                    Optional<Classroom> classroom =
-                            classrooms.stream()
-                                    .filter(c -> c.getId().equals(task.getClassroomId()))
-                                    .findAny();
-                    classroom.ifPresentOrElse(
-                            c->task.setClassroomName(c.getName()),
-                            ()->{throw new IllegalStateException("Error");});
-                    return task;
-                }).toList();
+                        .map(Classroom::getId).toList(), page);
     }
 }

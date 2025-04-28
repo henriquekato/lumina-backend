@@ -17,7 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -35,14 +34,6 @@ public class ProfessorController implements ProfessorControllerDocumentation {
     private TokenService tokenService;
 
     @PreAuthorize("hasRole('STUDENT') or hasRole('PROFESSOR') or hasRole('ADMIN')")
-    @Override
-    @GetMapping("/all")
-    public ResponseEntity<List<ProfessorGetDTO>> getAllProfessors() {
-        List<Professor> professors = service.getAllProfessors();
-        return ResponseEntity.ok(professors.stream().map(ProfessorGetDTO::new).toList());
-    }
-
-    @PreAuthorize("hasRole('PROFESSOR') or hasRole('ADMIN')")
     @Override
     @GetMapping
     public ResponseEntity<Page<ProfessorGetDTO>> getPaginatedProfessors(Pageable page) {
@@ -86,13 +77,14 @@ public class ProfessorController implements ProfessorControllerDocumentation {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasRole('PROFESSOR') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('PROFESSOR')")
     @GetMapping("/tasks")
-    public ResponseEntity<List<TaskFullGetDTO>> getProfessorTasks(
+    public ResponseEntity<Page<TaskFullGetDTO>> getProfessorTasks(
+            Pageable page,
             @RequestHeader("Authorization") String authorizationHeader
     ) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        List<TaskFullGetDTO> list = service.getProfessorTasks(payloadDTO.id()).stream().map(TaskFullGetDTO::new).toList();
+        Page<TaskFullGetDTO> list = service.getProfessorTasks(payloadDTO.id(), page).map(TaskFullGetDTO::new);
         return ResponseEntity.ok(list);
     }
 }

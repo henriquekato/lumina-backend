@@ -28,16 +28,6 @@ import java.util.UUID;
                         schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
 })
 public interface StudentControllerDocumentation {
-    @Operation(summary = "Get all students")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Returns a list with all students",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = StudentGetDTO.class)) })
-    })
-    ResponseEntity<List<StudentGetDTO>> getAllStudents();
-
     @Operation(summary = "Get a paginated list of students")
     @ApiResponses(value = {
             @ApiResponse(

@@ -105,6 +105,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<GeneralErrorResponseDTO> handleIllegalArgumentException(IllegalArgumentException e){
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new GeneralErrorResponseDTO(e.getMessage()));
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new GeneralErrorResponseDTO("Internal server error"));
     }
 }

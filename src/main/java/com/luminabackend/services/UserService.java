@@ -1,15 +1,19 @@
 package com.luminabackend.services;
 
 import com.luminabackend.exceptions.EmailAlreadyInUseException;
+import com.luminabackend.models.user.Role;
 import com.luminabackend.models.user.User;
 import com.luminabackend.models.user.dto.user.UserNewDataDTO;
 import com.luminabackend.models.user.dto.user.UserPutDTO;
 import com.luminabackend.models.user.dto.user.UserSignupDTO;
 import com.luminabackend.repositories.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,6 +32,13 @@ public class UserService {
 
     public Optional<User> getUserById(UUID id){
         return repository.findByUUID(id);
+    }
+
+    public Page<User> getPaginatedUsers(List<Role> roles, Pageable page){
+        if (roles.isEmpty()){
+            roles.addAll(List.of(Role.ADMIN, Role.PROFESSOR, Role.STUDENT));
+        }
+        return repository.findAllByRoleIn(roles, page);
     }
 
     public void validateUserSignupData(UserSignupDTO userSignupDTO){

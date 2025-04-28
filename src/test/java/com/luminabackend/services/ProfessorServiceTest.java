@@ -54,26 +54,6 @@ class ProfessorServiceTest {
 
     @Tag("UnitTest")
     @Test
-    @DisplayName("should return all professors")
-    void shouldReturnAllProfessors() {
-        List<Professor> professors = List.of(
-                new Professor("john@mail.com", "9fds4hfa", "John", "Doe"),
-                new Professor("jane@mail.com", "4fas3fa", "Jane", "Doe"),
-                new Professor("mike@mail.com", "va34fa324", "Mike", "Doe"));
-        when(professorRepository.findAll()).thenReturn(professors);
-        assertThat(sut.getAllProfessors()).isEqualTo(professors);
-    }
-
-    @Tag("UnitTest")
-    @Test
-    @DisplayName("should return empty list when professorRepository returns empty list")
-    void shouldReturnEmptyList() {
-        when(professorRepository.findAll()).thenReturn(Collections.emptyList());
-        assertThat(sut.getAllProfessors()).isEqualTo(Collections.emptyList());
-    }
-
-    @Tag("UnitTest")
-    @Test
     @DisplayName("should return optional professor by id")
     void shouldReturnOptionalProfessorById() {
         when(professorRepository.findById(professor.getId())).thenReturn(Optional.of(professor));

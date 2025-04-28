@@ -4,7 +4,6 @@ import com.luminabackend.exceptions.EmailAlreadyInUseException;
 import com.luminabackend.exceptions.EntityNotFoundException;
 import com.luminabackend.models.education.classroom.Classroom;
 import com.luminabackend.models.education.task.Task;
-import com.luminabackend.models.user.Professor;
 import com.luminabackend.models.user.Role;
 import com.luminabackend.models.user.Student;
 import com.luminabackend.models.user.User;
@@ -35,14 +34,7 @@ public class StudentService {
     private ClassroomService classroomService;
 
     @Autowired
-    private ProfessorService professorService;
-
-    @Autowired
     private TaskService taskService;
-
-    public List<Student> getAllStudents() {
-        return repository.findAll();
-    }
 
     public Page<Student> getPaginatedStudents(Pageable page) {
         return repository.findAll(page);
@@ -92,43 +84,21 @@ public class StudentService {
         repository.deleteById(id);
     }
 
-    public List<Professor> getStudentProfessors(UUID studentId){
-        List<Classroom> classrooms = classroomService.getClassroomsBasedOnUserAccess(new UserAccessDTO(studentId, Role.STUDENT));
-        List<UUID> professorsIds = classrooms.stream().map(Classroom::getProfessorId).toList();
-        return professorService.getProfessorsByIds(professorsIds);
-    }
-
-    public List<Task> getTasksDoneByClassroomIdIn(UUID studentId){
+    public Page<Task> getDoneTasksByStudent(UUID studentId, Pageable page){
         if (!existsById(studentId)) throw new EntityNotFoundException("Student not found");
         List<Classroom> classrooms = classroomService.getClassroomsBasedOnUserAccess(new UserAccessDTO(studentId, Role.STUDENT));
-        return taskService.getTasksDoneByClassroomIdIn(studentId, classrooms.stream()
-                        .map(Classroom::getId).toList())
-                .stream().map(task -> {
-                    Optional<Classroom> classroom =
-                            classrooms.stream()
-                            .filter(c -> c.getId().equals(task.getClassroomId()))
-                            .findAny();
-                    classroom.ifPresentOrElse(
-                            c->task.setClassroomName(c.getName()),
-                            ()->{throw new IllegalStateException("Error");});
-                    return task;
-                }).toList();
+        return taskService.getDoneTasksByStudent(
+                studentId,
+                classrooms.stream().map(Classroom::getId).toList(),
+                page);
     }
 
-    public List<Task> getTasksNotDoneByClassroomIdIn(UUID studentId){
+    public Page<Task> getNotDoneTasksByStudent(UUID studentId, Pageable page){
         if (!existsById(studentId)) throw new EntityNotFoundException("Student not found");
         List<Classroom> classrooms = classroomService.getClassroomsBasedOnUserAccess(new UserAccessDTO(studentId, Role.STUDENT));
-        return taskService.getTasksNotDoneByClassroomIdIn(studentId, classrooms.stream()
-                        .map(Classroom::getId).toList())
-                .stream().map(task -> {
-                    Optional<Classroom> classroom =
-                            classrooms.stream()
-                                    .filter(c -> c.getId().equals(task.getClassroomId()))
-                                    .findAny();
-                    classroom.ifPresentOrElse(
-                            c->task.setClassroomName(c.getName()),
-                            ()->{throw new IllegalStateException("Error");});
-                    return task;
-                }).toList();
+        return taskService.getNotDoneTasksByStudent(
+                studentId,
+                classrooms.stream().map(Classroom::getId).toList(),
+                page);
     }
 }
