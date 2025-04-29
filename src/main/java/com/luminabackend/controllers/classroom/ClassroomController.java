@@ -1,9 +1,9 @@
 package com.luminabackend.controllers.classroom;
 
 import com.luminabackend.models.education.classroom.*;
-import com.luminabackend.models.user.dto.user.UserAccessDTO;
+import com.luminabackend.models.user.dto.UserAccessDTO;
 import com.luminabackend.services.*;
-import com.luminabackend.utils.security.PayloadDTO;
+import com.luminabackend.security.PayloadDTO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;

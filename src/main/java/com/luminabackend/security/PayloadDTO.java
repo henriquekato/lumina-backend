@@ -1,4 +1,4 @@
-package com.luminabackend.utils.security;
+package com.luminabackend.security;
 
 import com.luminabackend.models.user.Role;
 

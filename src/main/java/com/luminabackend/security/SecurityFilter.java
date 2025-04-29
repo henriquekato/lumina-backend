@@ -1,4 +1,4 @@
-package com.luminabackend.utils.security;
+package com.luminabackend.security;
 
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
@@ -34,6 +34,7 @@ public class SecurityFilter extends OncePerRequestFilter {
     private UserRepository repository;
 
     private final List<String> excludedUrls = Arrays.asList(
+            "/create-super-user",
             "/login",
             "/v1/api/",
             "/v2/api-docs",

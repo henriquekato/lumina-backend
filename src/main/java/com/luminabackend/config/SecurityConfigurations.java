@@ -1,6 +1,6 @@
 package com.luminabackend.config;
 
-import com.luminabackend.utils.security.SecurityFilter;
+import com.luminabackend.security.SecurityFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -39,6 +39,7 @@ public class SecurityConfigurations {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(req -> {
                     req.requestMatchers(
+                            antMatcher("/create-super-user"),
                             antMatcher("/login"),
                             antMatcher("/v1/api/**"),
                             antMatcher("/v2/api-docs"),

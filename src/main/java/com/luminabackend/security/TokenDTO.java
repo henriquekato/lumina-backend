@@ -1,4 +1,4 @@
-package com.luminabackend.utils.security;
+package com.luminabackend.security;
 
 public record TokenDTO(String token) {
 }

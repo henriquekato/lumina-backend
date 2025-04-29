@@ -1,15 +1,13 @@
 package com.luminabackend.controllers.submission;
 
 import com.luminabackend.exceptions.MissingFileException;
-import com.luminabackend.exceptions.TaskDueDateExpiredException;
 import com.luminabackend.models.education.submission.Submission;
 import com.luminabackend.models.education.submission.SubmissionAssessmentDTO;
 import com.luminabackend.models.education.submission.SubmissionGetDTO;
 import com.luminabackend.models.education.submission.SubmissionPostDTO;
-import com.luminabackend.models.education.task.Task;
-import com.luminabackend.models.user.dto.user.UserAccessDTO;
+import com.luminabackend.models.user.dto.UserAccessDTO;
 import com.luminabackend.services.*;
-import com.luminabackend.utils.security.PayloadDTO;
+import com.luminabackend.security.PayloadDTO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
