@@ -1,4 +1,4 @@
-package com.luminabackend.models.user.dto.user;
+package com.luminabackend.models.user.dto;
 
 import com.luminabackend.models.user.User;
 

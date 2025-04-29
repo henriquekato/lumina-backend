@@ -6,7 +6,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.luminabackend.models.user.Role;
 import com.luminabackend.models.user.User;
-import com.luminabackend.utils.security.PayloadDTO;
+import com.luminabackend.security.PayloadDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +33,7 @@ public class TokenService {
                 .withClaim("first_name", user.getFirstName())
                 .withClaim("last_name", user.getLastName())
                 .withClaim("email", user.getEmail())
-                .withClaim("role", user.getClass().getSimpleName().toLowerCase())
+                .withClaim("role", user.getRole().toString().toLowerCase())
                 .sign(algorithm);
     }
 
@@ -55,6 +55,7 @@ public class TokenService {
         String firstName = decodedJWT.getClaim("first_name").asString();
         String lastName = decodedJWT.getClaim("last_name").asString();
         String email = decodedJWT.getClaim("email").asString();
+        System.out.println(decodedJWT.getClaim("role").asString());
         Role role = Role.getRoleFromString(decodedJWT.getClaim("role").asString());
         return new PayloadDTO(id, firstName, lastName, email, role);
     }
