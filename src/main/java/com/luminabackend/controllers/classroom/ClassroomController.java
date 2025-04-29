@@ -35,15 +35,6 @@ public class ClassroomController implements ClassroomControllerDocumentation {
 
     @Override
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
-    @GetMapping("/all")
-    public ResponseEntity<List<ClassroomGetDTO>> getAllClassrooms(@RequestHeader("Authorization") String authorizationHeader) {
-        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        List<Classroom> classrooms = classroomService.getClassroomsBasedOnUserAccess(new UserAccessDTO(payloadDTO));
-        return ResponseEntity.ok(classrooms.stream().map(ClassroomGetDTO::new).toList());
-    }
-
-    @Override
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
     @GetMapping
     public ResponseEntity<Page<ClassroomGetDTO>> getPaginatedClassrooms(
             Pageable page,

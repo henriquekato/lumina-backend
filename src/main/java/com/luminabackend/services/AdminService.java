@@ -28,7 +28,7 @@ public class AdminService extends UserService {
     }
 
     public User createSuperUser(){
-        if (repository.countUserByRoleIs(Role.ADMIN) > 0) throw new SuperUserAlreadyCreated("Super user already created");
+        if (repository.count() > 0) throw new SuperUserAlreadyCreated("Super user already created");
         String email = "superuser@email.com";
         String password = "superuser";
         String firstName = "user";
