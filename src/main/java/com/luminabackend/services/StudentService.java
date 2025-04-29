@@ -21,21 +21,6 @@ public class StudentService extends UserService {
     @Autowired
     private UserRepository repository;
 
-    @Autowired
-    private ClassroomService classroomService;
-
-    @Transactional
-    @Override
-    public void deleteById(UUID id) {
-        if (!repository.existsById(id)) {
-            throw new EntityNotFoundException("Student not found");
-        }
-
-        classroomService.removeStudentFromAllClassrooms(id);
-
-        repository.deleteById(id);
-    }
-
     public Page<Task> getStudentDoneTasks(UUID studentId, Pageable page){
         if (!repository.existsById(studentId)) throw new EntityNotFoundException("Student not found");
         List<Task> tasks = repository.findStudentDoneTasks(studentId);

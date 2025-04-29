@@ -18,6 +18,7 @@ import java.util.UUID;
 public interface UserRepository extends MongoRepository<User, UUID> {
     Optional<User> findByEmail(String email);
     Page<User> findAllByRoleIn(List<Role> roles, Pageable page);
+    int countUserByRoleIs(Role role);
 
     @Aggregation(pipeline = {
             "{$match:  {'_id':  ?0}}",

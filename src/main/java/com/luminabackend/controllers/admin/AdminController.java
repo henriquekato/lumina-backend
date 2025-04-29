@@ -19,12 +19,6 @@ public class AdminController implements AdminControllerDocumentation {
     @Autowired
     private AdminService service;
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAdmin(@PathVariable UUID id) {
-        service.deleteById(id);
-        return ResponseEntity.noContent().build();
-    }
-
     @GetMapping("/tasks")
     public ResponseEntity<Page<TaskFullGetDTO>> getAllTasks(Pageable page) {
         Page<Task> tasks = service.getAllTasks(page);

@@ -55,7 +55,6 @@ public class TokenService {
         String firstName = decodedJWT.getClaim("first_name").asString();
         String lastName = decodedJWT.getClaim("last_name").asString();
         String email = decodedJWT.getClaim("email").asString();
-        System.out.println(decodedJWT.getClaim("role").asString());
         Role role = Role.getRoleFromString(decodedJWT.getClaim("role").asString());
         return new PayloadDTO(id, firstName, lastName, email, role);
     }

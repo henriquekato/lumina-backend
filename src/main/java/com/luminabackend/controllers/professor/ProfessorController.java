@@ -35,12 +35,6 @@ public class ProfessorController implements ProfessorControllerDocumentation {
         return ResponseEntity.ok(admins.map(UserGetDTO::new));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProfessor(@PathVariable UUID id) {
-        service.deleteById(id);
-        return ResponseEntity.noContent().build();
-    }
-
     @PreAuthorize("hasRole('PROFESSOR')")
     @GetMapping("/tasks")
     public ResponseEntity<Page<TaskFullGetDTO>> getProfessorTasks(

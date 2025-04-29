@@ -23,27 +23,12 @@ public class AdminService extends UserService {
     @Autowired
     private TaskService taskService;
 
-    @Override
-    public void deleteById(UUID id) {
-        if (!repository.existsById(id))
-            throw new EntityNotFoundException("Admin not found");
-
-        if (count() == 1)
-            throw new CannotDeleteLastAdministratorException("The last administrator cannot be deleted");
-
-        repository.deleteById(id);
-    }
-
-    public long count(){
-        return repository.count();
-    }
-
     public Page<Task> getAllTasks(Pageable page){
         return taskService.getAllTasks(page);
     }
 
     public User createSuperUser(){
-        if (count() > 0) throw new SuperUserAlreadyCreated("Super user already created");
+        if (repository.countUserByRoleIs(Role.ADMIN) > 0) throw new SuperUserAlreadyCreated("Super user already created");
         String email = "superuser@email.com";
         String password = "superuser";
         String firstName = "user";

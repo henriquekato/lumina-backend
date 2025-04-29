@@ -22,19 +22,6 @@ public class ProfessorService extends UserService {
     @Autowired
     private UserRepository repository;
 
-    @Autowired
-    private ClassroomService classroomService;
-
-    @Override
-    public void deleteById(UUID id) {
-        if (!repository.existsById(id)) throw new EntityNotFoundException("Professor not found");
-
-        if (!classroomService.getClassroomsBasedOnUserAccess(new UserAccessDTO(id, Role.PROFESSOR)).isEmpty())
-            throw new CannotDeleteActiveProfessorException("Cannot delete professor because they are currently assigned to one or more active classrooms");
-
-        repository.deleteById(id);
-    }
-
     public Page<Task> getProfessorTasks(UUID professorId, Pageable page){
         if (!repository.existsById(professorId)) throw new EntityNotFoundException("Professor not found");
         List<Task> tasks = repository.findProfessorTasks(professorId, LocalDateTime.now());

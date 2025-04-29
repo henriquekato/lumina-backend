@@ -23,12 +23,6 @@ public class StudentController implements StudentControllerDocumentation {
     @Autowired
     private TokenService tokenService;
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteStudent(@PathVariable UUID id) {
-        service.deleteById(id);
-        return ResponseEntity.noContent().build();
-    }
-
     @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/tasks/done")
     public ResponseEntity<Page<TaskFullGetDTO>> getStudentDoneTasks(
