@@ -2,22 +2,21 @@ package com.luminabackend.services;
 
 import com.luminabackend.exceptions.EmailAlreadyInUseException;
 import com.luminabackend.exceptions.EntityNotFoundException;
-import com.luminabackend.models.education.classroom.Classroom;
 import com.luminabackend.models.education.task.Task;
-import com.luminabackend.models.user.Role;
 import com.luminabackend.models.user.Student;
 import com.luminabackend.models.user.User;
-import com.luminabackend.models.user.dto.user.UserAccessDTO;
 import com.luminabackend.models.user.dto.user.UserNewDataDTO;
 import com.luminabackend.models.user.dto.user.UserPutDTO;
 import com.luminabackend.models.user.dto.user.UserSignupDTO;
 import com.luminabackend.repositories.student.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -40,7 +39,7 @@ public class StudentService {
         return repository.findAll(page);
     }
 
-    public List<Student> getAllStudentsById(List<UUID> studentIds){
+    public List<Student> getAllStudentsById(List<UUID> studentIds) {
         return repository.findAllById(studentIds);
     }
 
@@ -83,22 +82,19 @@ public class StudentService {
 
         repository.deleteById(id);
     }
-
-    public Page<Task> getDoneTasksByStudent(UUID studentId, Pageable page){
+    public Page<Task> getStudentDoneTasks(UUID studentId, Pageable page){
         if (!existsById(studentId)) throw new EntityNotFoundException("Student not found");
-        List<Classroom> classrooms = classroomService.getClassroomsBasedOnUserAccess(new UserAccessDTO(studentId, Role.STUDENT));
-        return taskService.getDoneTasksByStudent(
-                studentId,
-                classrooms.stream().map(Classroom::getId).toList(),
-                page);
+        List<Task> tasks = repository.findStudentDoneTasks(studentId);
+        final int start = (int) page.getOffset();
+        final int end = Math.min((start + page.getPageSize()), tasks.size());
+        return new PageImpl<>(tasks.subList(start, end), page, tasks.size());
     }
 
-    public Page<Task> getNotDoneTasksByStudent(UUID studentId, Pageable page){
+    public Page<Task> getStudentNotDoneTasks(UUID studentId, Pageable page){
         if (!existsById(studentId)) throw new EntityNotFoundException("Student not found");
-        List<Classroom> classrooms = classroomService.getClassroomsBasedOnUserAccess(new UserAccessDTO(studentId, Role.STUDENT));
-        return taskService.getNotDoneTasksByStudent(
-                studentId,
-                classrooms.stream().map(Classroom::getId).toList(),
-                page);
+        List<Task> tasks =  repository.findStudentNotDoneTasks(studentId, LocalDateTime.now());
+        final int start = (int) page.getOffset();
+        final int end = Math.min((start + page.getPageSize()), tasks.size());
+        return new PageImpl<>(tasks.subList(start, end), page, tasks.size());
     }
 }

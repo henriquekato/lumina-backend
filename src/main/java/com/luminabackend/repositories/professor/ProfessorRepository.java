@@ -21,9 +21,9 @@ public interface ProfessorRepository extends MongoRepository<Professor, UUID> {
         "{$unwind: '$professorClassrooms'}",
         "{$lookup:  {from:  'tasks', localField:  'professorClassrooms._id', foreignField:  'classroomId', as:  'professorTasks'}}",
         "{$unwind: '$professorTasks'}",
+        "{$match:  {'professorTasks.dueDate': {$gt: ?1}}}",
         "{$addFields: {_id: '$professorTasks._id', title: '$professorTasks.title', description: '$professorTasks.description', dueDate: '$professorTasks.dueDate', classroomId: '$professorClassrooms._id', classroomName: '$professorClassrooms.name'}}",
         "{$project: {'professorClassrooms': 0, 'professorTasks': 0}}",
-        "{$match:  {'dueDate': {$gt: ?1}}}",
         "{$sort:  {'dueDate':  1}}"
     })
     List<Task> findProfessorTasks(UUID professorId, LocalDateTime dateTime);

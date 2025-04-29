@@ -82,7 +82,7 @@ public class StudentController implements StudentControllerDocumentation {
             Pageable page, @RequestHeader("Authorization") String authorizationHeader
     ) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        Page<TaskFullGetDTO> list = service.getDoneTasksByStudent(payloadDTO.id(), page).map(TaskFullGetDTO::new);
+        Page<TaskFullGetDTO> list = service.getStudentDoneTasks(payloadDTO.id(), page).map(TaskFullGetDTO::new);
         return ResponseEntity.ok(list);
     }
 
@@ -93,7 +93,7 @@ public class StudentController implements StudentControllerDocumentation {
             @RequestHeader("Authorization") String authorizationHeader
     ) {
         PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        Page<TaskFullGetDTO> list = service.getNotDoneTasksByStudent(payloadDTO.id(), page).map(TaskFullGetDTO::new);
+        Page<TaskFullGetDTO> list = service.getStudentNotDoneTasks(payloadDTO.id(), page).map(TaskFullGetDTO::new);
         return ResponseEntity.ok(list);
     }
 }
