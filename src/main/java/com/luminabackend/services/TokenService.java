@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -55,8 +56,9 @@ public class TokenService {
         String firstName = decodedJWT.getClaim("first_name").asString();
         String lastName = decodedJWT.getClaim("last_name").asString();
         String email = decodedJWT.getClaim("email").asString();
-        Role role = Role.getRoleFromString(decodedJWT.getClaim("role").asString());
-        return new PayloadDTO(id, firstName, lastName, email, role);
+        Optional<Role> role = Role.getRoleFromString(decodedJWT.getClaim("role").asString());
+        if (role.isEmpty()) throw new IllegalStateException("Error");
+        return new PayloadDTO(id, firstName, lastName, email, role.get());
     }
 
     private Instant expirationDate(){

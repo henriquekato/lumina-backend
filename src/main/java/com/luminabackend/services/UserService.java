@@ -17,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -46,6 +47,7 @@ public abstract class UserService {
 
     public Page<User> getPaginatedUsers(List<Role> roles, Pageable page) {
         if (roles.isEmpty()) {
+            roles = new ArrayList<>();
             roles.addAll(List.of(Role.ADMIN, Role.PROFESSOR, Role.STUDENT));
         }
         return repository.findAllByRoleIn(roles, page);

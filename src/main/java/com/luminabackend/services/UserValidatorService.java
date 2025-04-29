@@ -36,8 +36,9 @@ public class UserValidatorService {
         String encodedPassword = passwordEncoder.encode(password);
         String firstName = userSignupDTO.firstName().trim();
         String lastName = userSignupDTO.lastName().trim();
-        Role role = Role.getRoleFromString(userSignupDTO.role());
-        return new UserNewDataDTO(email, encodedPassword, firstName, lastName, role);
+        Optional<Role> role = Role.getRoleFromString(userSignupDTO.role());
+        if (role.isEmpty()) throw new IllegalStateException("Error");
+        return new UserNewDataDTO(email, encodedPassword, firstName, lastName, role.get());
     }
 
     public User editUserData(User user, UserPutDTO userPutDTO){

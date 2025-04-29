@@ -1,6 +1,7 @@
 package com.luminabackend.models.user.dto;
 
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Pattern;
 import org.hibernate.validator.constraints.Length;
 
 public record UserPutDTO(
@@ -12,8 +13,6 @@ public record UserPutDTO(
 
         String firstName,
 
-        String lastName,
-
-        String role
+        String lastName
 ) {
 }
