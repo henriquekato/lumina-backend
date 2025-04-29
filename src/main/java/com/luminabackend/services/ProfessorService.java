@@ -15,9 +15,11 @@ import com.luminabackend.models.user.dto.user.UserSignupDTO;
 import com.luminabackend.repositories.professor.ProfessorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -32,9 +34,6 @@ public class ProfessorService {
 
     @Autowired
     private ClassroomService classroomService;
-
-    @Autowired
-    private TaskService taskService;
 
     public Page<Professor> getPaginatedProfessors(Pageable page) {
         return repository.findAll(page);
@@ -80,8 +79,9 @@ public class ProfessorService {
 
     public Page<Task> getProfessorTasks(UUID professorId, Pageable page){
         if (!existsById(professorId)) throw new EntityNotFoundException("Professor not found");
-        List<Classroom> classrooms = classroomService.getClassroomsBasedOnUserAccess(new UserAccessDTO(professorId, Role.PROFESSOR));
-        return taskService.getAllTasksByClassroomIdIn(classrooms.stream()
-                        .map(Classroom::getId).toList(), page);
+        List<Task> tasks = repository.findProfessorTasks(professorId, LocalDateTime.now());
+        final int start = (int) page.getOffset();
+        final int end = Math.min((start + page.getPageSize()), tasks.size());
+        return new PageImpl<>(tasks.subList(start, end), page, tasks.size());
     }
 }
