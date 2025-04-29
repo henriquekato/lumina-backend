@@ -13,6 +13,7 @@ import com.luminabackend.models.user.dto.user.UserNewDataDTO;
 import com.luminabackend.models.user.dto.user.UserPutDTO;
 import com.luminabackend.models.user.dto.user.UserSignupDTO;
 import com.luminabackend.repositories.professor.ProfessorRepository;
+import com.luminabackend.utils.Sublist;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -80,10 +81,7 @@ public class ProfessorService {
     public Page<Task> getProfessorTasks(UUID professorId, Pageable page){
         if (!existsById(professorId)) throw new EntityNotFoundException("Professor not found");
         List<Task> tasks = repository.findProfessorTasks(professorId, LocalDateTime.now());
-        final int start = (int) page.getOffset();
-        final int end = Math.min((start + page.getPageSize()), tasks.size());
-        List<Task> subList = List.of();
-        if (start <= end) subList = tasks.subList(start, end);
-        return new PageImpl<>(subList, page, subList.size());
+        List<Task> sublist = Sublist.getSublist(tasks, page);
+        return new PageImpl<>(sublist, page, tasks.size());
     }
 }

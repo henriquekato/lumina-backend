@@ -9,6 +9,7 @@ import com.luminabackend.models.user.dto.user.UserNewDataDTO;
 import com.luminabackend.models.user.dto.user.UserPutDTO;
 import com.luminabackend.models.user.dto.user.UserSignupDTO;
 import com.luminabackend.repositories.student.StudentRepository;
+import com.luminabackend.utils.Sublist;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -86,20 +87,14 @@ public class StudentService {
     public Page<Task> getStudentDoneTasks(UUID studentId, Pageable page){
         if (!existsById(studentId)) throw new EntityNotFoundException("Student not found");
         List<Task> tasks = repository.findStudentDoneTasks(studentId);
-        final int start = (int) page.getOffset();
-        final int end = Math.min((start + page.getPageSize()), tasks.size());
-        List<Task> subList = List.of();
-        if (start <= end) subList = tasks.subList(start, end);
-        return new PageImpl<>(subList, page, subList.size());
+        List<Task> sublist = Sublist.getSublist(tasks, page);
+        return new PageImpl<>(sublist, page, tasks.size());
     }
 
     public Page<Task> getStudentNotDoneTasks(UUID studentId, Pageable page){
         if (!existsById(studentId)) throw new EntityNotFoundException("Student not found");
         List<Task> tasks =  repository.findStudentNotDoneTasks(studentId, LocalDateTime.now());
-        final int start = (int) page.getOffset();
-        final int end = Math.min((start + page.getPageSize()), tasks.size());
-        List<Task> subList = List.of();
-        if (start <= end) subList = tasks.subList(start, end);
-        return new PageImpl<>(subList, page, subList.size());
+        List<Task> sublist = Sublist.getSublist(tasks, page);
+        return new PageImpl<>(sublist, page, tasks.size());
     }
 }

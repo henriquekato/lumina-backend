@@ -6,6 +6,7 @@ import com.luminabackend.models.education.task.Task;
 import com.luminabackend.models.education.task.TaskCreateDTO;
 import com.luminabackend.models.education.task.TaskPutDTO;
 import com.luminabackend.repositories.task.TaskRepository;
+import com.luminabackend.utils.Sublist;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -96,10 +97,7 @@ public class TaskService {
 
     public Page<Task> getAllTasks(Pageable page){
         List<Task> tasks = repository.findAllAfterDueDate(LocalDateTime.now());
-        final int start = (int) page.getOffset();
-        final int end = Math.min((start + page.getPageSize()), tasks.size());
-        List<Task> subList = List.of();
-        if (start <= end) subList = tasks.subList(start, end);
-        return new PageImpl<>(subList, page, subList.size());
+        List<Task> sublist = Sublist.getSublist(tasks, page);
+        return new PageImpl<>(sublist, page, tasks.size());
     }
 }
