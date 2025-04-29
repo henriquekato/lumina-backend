@@ -8,7 +8,9 @@ import com.luminabackend.models.education.task.TaskPutDTO;
 import com.luminabackend.repositories.task.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -92,21 +94,10 @@ public class TaskService {
             throw new TaskDueDateExpiredException("Task due date expired");
     }
 
-    public List<Task> getAllTasks(){
-        return repository.findAllByDueDateAfterOrderByDueDateAsc(LocalDateTime.now());
-    }
-
-    public List<Task> getAllTasksByClassroomIdIn(List<UUID> classroomsIds){
-        return repository.findAllByClassroomIdInAndDueDateAfterOrderByDueDateAsc(classroomsIds, LocalDateTime.now());
-    }
-
-    public List<Task> getTasksDoneByClassroomIdIn(UUID studentId, List<UUID> classroomsIds){
-        return repository.findAllByClassroomIdInOrderByDueDateDesc(classroomsIds)
-                .stream().filter(task -> submissionService.isTaskDone(studentId, task.getId())).toList();
-    }
-
-    public List<Task> getTasksNotDoneByClassroomIdIn(UUID studentId, List<UUID> classroomsIds){
-        return repository.findAllByClassroomIdInAndDueDateAfterOrderByDueDateAsc(classroomsIds, LocalDateTime.now())
-                .stream().filter(task -> !submissionService.isTaskDone(studentId, task.getId())).toList();
+    public Page<Task> getAllTasks(Pageable page){
+        List<Task> tasks = repository.findAllAfterDueDate(LocalDateTime.now());
+        final int start = (int) page.getOffset();
+        final int end = Math.min((start + page.getPageSize()), tasks.size());
+        return new PageImpl<>(tasks.subList(start, end), page, tasks.size());
     }
 }

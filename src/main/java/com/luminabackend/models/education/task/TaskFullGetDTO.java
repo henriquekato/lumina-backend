@@ -8,9 +8,10 @@ public record TaskFullGetDTO(
         String title,
         String description,
         LocalDateTime dueDate,
+        UUID classroomId,
         String classroomName
 ){
     public TaskFullGetDTO(Task task){
-        this(task.getId(), task.getTitle(), task.getDescription(), task.getDueDate(), task.getClassroomName());
+        this(task.getId(), task.getTitle(), task.getDescription(), task.getDueDate(), task.getClassroomId(), task.getClassroomName());
     }
 }
