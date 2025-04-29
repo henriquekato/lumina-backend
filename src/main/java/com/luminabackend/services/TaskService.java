@@ -98,6 +98,8 @@ public class TaskService {
         List<Task> tasks = repository.findAllAfterDueDate(LocalDateTime.now());
         final int start = (int) page.getOffset();
         final int end = Math.min((start + page.getPageSize()), tasks.size());
-        return new PageImpl<>(tasks.subList(start, end), page, tasks.size());
+        List<Task> subList = List.of();
+        if (start <= end) subList = tasks.subList(start, end);
+        return new PageImpl<>(subList, page, subList.size());
     }
 }
