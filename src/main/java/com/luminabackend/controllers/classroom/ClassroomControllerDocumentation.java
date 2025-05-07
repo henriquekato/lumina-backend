@@ -18,7 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @ApiResponses(value = {
@@ -30,16 +29,6 @@ import java.util.UUID;
                         schema = @Schema(implementation = GeneralErrorResponseDTO.class)) }),
 })
 public interface ClassroomControllerDocumentation {
-    @Operation(summary = "Get a list of all classrooms based on user access")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Returns a list of all classrooms",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ClassroomGetDTO.class)) })
-    })
-    ResponseEntity<List<ClassroomGetDTO>> getAllClassrooms(@RequestHeader("Authorization") String authorizationHeader);
-
     @Operation(summary = "Get a paginated list of classrooms based on user access")
     @ApiResponses(value = {
             @ApiResponse(

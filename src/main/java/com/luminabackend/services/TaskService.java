@@ -6,12 +6,16 @@ import com.luminabackend.models.education.task.Task;
 import com.luminabackend.models.education.task.TaskCreateDTO;
 import com.luminabackend.models.education.task.TaskPutDTO;
 import com.luminabackend.repositories.task.TaskRepository;
+import com.luminabackend.utils.Sublist;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,11 +29,11 @@ public class TaskService {
     private SubmissionService submissionService;
 
     public List<Task> getAllTasksByClassroomId(UUID classroomId) {
-        return repository.findAllByClassroomId(classroomId);
+        return repository.findAllByClassroomIdOrderByDueDateAsc(classroomId);
     }
 
     public Page<Task> getPaginatedClassroomTasks(UUID classroomId, Pageable page) {
-        return repository.findAllByClassroomId(classroomId, page);
+        return repository.findAllByClassroomIdOrderByDueDateAsc(classroomId, page);
     }
 
     public Task getTaskById(UUID taskId) {
@@ -80,7 +84,7 @@ public class TaskService {
 
     @Transactional
     public void deleteAllByClassroomId(UUID classroomId) {
-        List<Task> classroomTasks = repository.findAllByClassroomId(classroomId);
+        List<Task> classroomTasks = repository.findAllByClassroomIdOrderByDueDateAsc(classroomId);
         classroomTasks.forEach(task -> submissionService.deleteAllByTaskId(task.getId()));
         repository.deleteAllById(classroomTasks.stream().map(Task::getId).toList());
     }
@@ -89,5 +93,11 @@ public class TaskService {
         Task task = getTaskById(taskId);
         if (task.isDueDateExpired())
             throw new TaskDueDateExpiredException("Task due date expired");
+    }
+
+    public Page<Task> getAllTasks(Pageable page){
+        List<Task> tasks = repository.findAllAfterDueDate(LocalDateTime.now());
+        List<Task> sublist = Sublist.getSublist(tasks, page);
+        return new PageImpl<>(sublist, page, tasks.size());
     }
 }

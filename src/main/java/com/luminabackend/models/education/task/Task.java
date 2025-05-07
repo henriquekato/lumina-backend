@@ -18,6 +18,7 @@ public class Task {
     private String description;
     private LocalDateTime dueDate;
     private UUID classroomId;
+    private String classroomName;
 
     public Task(TaskCreateDTO taskCreateDTO) {
         this.id = UUID.randomUUID();

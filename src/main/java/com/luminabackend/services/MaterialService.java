@@ -1,10 +1,8 @@
 package com.luminabackend.services;
 
-import com.luminabackend.exceptions.AccessDeniedException;
 import com.luminabackend.exceptions.EntityNotFoundException;
 import com.luminabackend.exceptions.ZipProcessingException;
 import com.luminabackend.models.education.material.Material;
-import com.luminabackend.models.user.dto.user.UserAccessDTO;
 import com.luminabackend.repositories.material.MaterialRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;

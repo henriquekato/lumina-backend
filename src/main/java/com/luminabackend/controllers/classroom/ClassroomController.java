@@ -1,9 +1,9 @@
 package com.luminabackend.controllers.classroom;
 
 import com.luminabackend.models.education.classroom.*;
-import com.luminabackend.models.user.dto.user.UserAccessDTO;
+import com.luminabackend.models.user.dto.UserAccessDTO;
 import com.luminabackend.services.*;
-import com.luminabackend.utils.security.PayloadDTO;
+import com.luminabackend.security.PayloadDTO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -32,15 +32,6 @@ public class ClassroomController implements ClassroomControllerDocumentation {
 
     @Autowired
     private ClassroomWithRelationsService classroomWithRelationsService;
-
-    @Override
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")
-    @GetMapping("/all")
-    public ResponseEntity<List<ClassroomGetDTO>> getAllClassrooms(@RequestHeader("Authorization") String authorizationHeader) {
-        PayloadDTO payloadDTO = tokenService.getPayloadFromAuthorizationHeader(authorizationHeader);
-        List<Classroom> classrooms = classroomService.getClassroomsBasedOnUserAccess(new UserAccessDTO(payloadDTO));
-        return ResponseEntity.ok(classrooms.stream().map(ClassroomGetDTO::new).toList());
-    }
 
     @Override
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESSOR') or hasRole('STUDENT')")

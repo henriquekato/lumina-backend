@@ -1,6 +1,7 @@
-package com.luminabackend.models.user.dto.user;
+package com.luminabackend.models.user.dto;
 
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Pattern;
 import org.hibernate.validator.constraints.Length;
 
 public record UserPutDTO(

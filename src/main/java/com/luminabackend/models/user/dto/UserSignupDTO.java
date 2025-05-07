@@ -1,7 +1,8 @@
-package com.luminabackend.models.user.dto.user;
+package com.luminabackend.models.user.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import org.hibernate.validator.constraints.Length;
 
 public record UserSignupDTO(
@@ -17,6 +18,10 @@ public record UserSignupDTO(
         String firstName,
 
         @NotBlank(message = "Last name can not be null")
-        String lastName
-) {
+        String lastName,
+
+        @NotBlank(message = "Role can not be null")
+        @Pattern(regexp = "^(?i)(ADMIN|PROFESSOR|STUDENT)$", message = "Role does not exist")
+        String role
+        ) {
 }

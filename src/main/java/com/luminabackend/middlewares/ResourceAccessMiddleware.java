@@ -1,9 +1,9 @@
 package com.luminabackend.middlewares;
 
-import com.luminabackend.models.user.dto.user.UserAccessDTO;
+import com.luminabackend.models.user.dto.UserAccessDTO;
 import com.luminabackend.services.AccessService;
 import com.luminabackend.services.TokenService;
-import com.luminabackend.utils.security.PayloadDTO;
+import com.luminabackend.security.PayloadDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

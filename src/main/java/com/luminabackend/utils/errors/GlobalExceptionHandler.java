@@ -48,6 +48,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(new GeneralErrorResponseDTO(e.getMessage()));
     }
 
+    @ExceptionHandler(SuperUserAlreadyCreated.class)
+    public ResponseEntity<GeneralErrorResponseDTO> handleSuperUserAlreadyCreated(SuperUserAlreadyCreated e){
+        return ResponseEntity.badRequest().body(new GeneralErrorResponseDTO(e.getMessage()));
+    }
+
     @ExceptionHandler(CannotDeleteActiveProfessorException.class)
     public ResponseEntity<GeneralErrorResponseDTO> handleCannotDeleteActiveProfessorException(CannotDeleteActiveProfessorException e){
         return ResponseEntity.badRequest().body(new GeneralErrorResponseDTO(e.getMessage()));
@@ -105,6 +110,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<GeneralErrorResponseDTO> handleIllegalArgumentException(IllegalArgumentException e){
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new GeneralErrorResponseDTO(e.getMessage()));
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new GeneralErrorResponseDTO("Internal server error"));
     }
 }
