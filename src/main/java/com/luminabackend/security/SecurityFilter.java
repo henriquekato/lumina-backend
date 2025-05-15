@@ -7,7 +7,7 @@ import com.luminabackend.exceptions.AuthorizationHeaderNotFoundException;
 import com.luminabackend.models.user.User;
 import com.luminabackend.repositories.user.UserRepository;
 import com.luminabackend.services.TokenService;
-import com.luminabackend.utils.errors.GeneralErrorResponseDTO;
+import com.luminabackend.exceptions.errors.GeneralErrorResponseDTO;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

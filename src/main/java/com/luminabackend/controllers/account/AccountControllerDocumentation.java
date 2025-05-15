@@ -1,7 +1,7 @@
 package com.luminabackend.controllers.account;
 
 import com.luminabackend.models.user.dto.UserLoginDTO;
-import com.luminabackend.utils.errors.GeneralErrorResponseDTO;
+import com.luminabackend.exceptions.errors.GeneralErrorResponseDTO;
 import com.luminabackend.security.TokenDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

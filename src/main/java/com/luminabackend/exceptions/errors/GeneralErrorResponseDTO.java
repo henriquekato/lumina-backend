@@ -1,4 +1,4 @@
-package com.luminabackend.utils.errors;
+package com.luminabackend.exceptions.errors;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

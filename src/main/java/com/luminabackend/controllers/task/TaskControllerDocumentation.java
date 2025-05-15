@@ -1,8 +1,8 @@
 package com.luminabackend.controllers.task;
 
 import com.luminabackend.models.education.task.*;
-import com.luminabackend.utils.errors.GeneralErrorResponseDTO;
-import com.luminabackend.utils.errors.ValidationErrorResponseDTO;
+import com.luminabackend.exceptions.errors.GeneralErrorResponseDTO;
+import com.luminabackend.exceptions.errors.ValidationErrorResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

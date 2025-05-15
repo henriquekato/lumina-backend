@@ -1,4 +1,4 @@
-package com.luminabackend.utils.errors;
+package com.luminabackend.exceptions.errors;
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.luminabackend.exceptions.*;

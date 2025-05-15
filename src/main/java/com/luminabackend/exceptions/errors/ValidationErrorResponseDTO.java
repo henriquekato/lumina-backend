@@ -1,4 +1,4 @@
-package com.luminabackend.utils.errors;
+package com.luminabackend.exceptions.errors;
 
 import lombok.Getter;
 import org.springframework.validation.FieldError;
@@ -22,4 +22,3 @@ public class ValidationErrorResponseDTO {
 
     record ErrorValidationDTO(String field, String errorMsg){}
 }
-

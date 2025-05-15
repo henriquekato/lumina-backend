@@ -1,23 +1,10 @@
 package com.luminabackend.controllers.admin;
 
-import com.luminabackend.models.user.dto.UserGetDTO;
-import com.luminabackend.models.user.dto.UserPutDTO;
-import com.luminabackend.models.user.dto.UserSignupDTO;
-import com.luminabackend.utils.errors.GeneralErrorResponseDTO;
-import com.luminabackend.utils.errors.ValidationErrorResponseDTO;
-import io.swagger.v3.oas.annotations.Operation;
+import com.luminabackend.exceptions.errors.GeneralErrorResponseDTO;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.validation.Valid;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-
-import java.util.UUID;
 
 @ApiResponses(value = {
         @ApiResponse(
